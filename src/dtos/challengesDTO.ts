@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { ChallengeCategory } from '../types';
 
 class ChallengesDTO {
     id: string | undefined;
@@ -10,7 +11,7 @@ class ChallengesDTO {
     projectDescription: string | undefined;
     projectBrief: string | undefined;
     projectTasks: string | undefined;
-    challengeCategory!: 'Web Design' | 'UI/UX' | 'Frontend' | 'Backend' | 'Fullstack' | 'Mobile' | 'Data Science' | 'Cybersecurity' | 'Cloud Computing' | 'DevOps' | 'AI/ML' | 'IoT' | 'Blockchain' | 'AR/VR' | 'Game Development' | 'Robotics' | 'Digital Marketing' | 'Content Writing' | 'Graphic Design' | 'Video Editing' | 'Animation' | 'Music Production' | 'Photography' | '3D Modelling' | 'CAD Design' | 'Interior Design' | 'Fashion Design' | 'Product Design' | 'Architecture' | 'Civil Engineering' | 'Mechanical Engineering' | 'Electrical Engineering' | 'Aerospace Engineering' | 'Automotive Engineering';
+    challengeCategory!: ChallengeCategory;
     status: 'open' | 'ongoing' | 'completed' | undefined;
 
     constructor(
@@ -23,7 +24,7 @@ class ChallengesDTO {
         projectDescription: string | undefined,
         projectBrief: string | undefined,
         projectTasks: string | undefined,
-        challengeCategory: 'Web Design' | 'UI/UX' | 'Frontend' | 'Backend' | 'Fullstack' | 'Mobile' | 'Data Science' | 'Cybersecurity' | 'Cloud Computing' | 'DevOps' | 'AI/ML' | 'IoT' | 'Blockchain' | 'AR/VR' | 'Game Development' | 'Robotics' | 'Digital Marketing' | 'Content Writing' | 'Graphic Design' | 'Video Editing' | 'Animation' | 'Music Production' | 'Photography' | '3D Modelling' | 'CAD Design' | 'Interior Design' | 'Fashion Design' | 'Product Design' | 'Architecture' | 'Civil Engineering' | 'Mechanical Engineering' | 'Electrical Engineering' | 'Aerospace Engineering' | 'Automotive Engineering',
+        challengeCategory: ChallengeCategory,
         status: 'open' | 'ongoing' | 'completed' | undefined
     ) {
         this.id = id;
@@ -50,7 +51,7 @@ class ChallengesDTO {
         projectDescription: string;
         projectBrief: string;
         projectTasks: string;
-        challengeCategory: 'Web Design' | 'UI/UX' | 'Frontend' | 'Backend' | 'Fullstack' | 'Mobile' | 'Data Science' | 'Cybersecurity' | 'Cloud Computing' | 'DevOps' | 'AI/ML' | 'IoT' | 'Blockchain' | 'AR/VR' | 'Game Development' | 'Robotics' | 'Digital Marketing' | 'Content Writing' | 'Graphic Design' | 'Video Editing' | 'Animation' | 'Music Production' | 'Photography' | '3D Modelling' | 'CAD Design' | 'Interior Design' | 'Fashion Design' | 'Product Design' | 'Architecture' | 'Civil Engineering' | 'Mechanical Engineering' | 'Electrical Engineering' | 'Aerospace Engineering' | 'Automotive Engineering';
+        challengeCategory: ChallengeCategory;
     }) {
         const schema = Joi.object({
             challengeName: Joi.string().required(),
@@ -62,7 +63,44 @@ class ChallengesDTO {
             projectBrief: Joi.string().required(),
             projectTasks: Joi.string().required(),
             challengeCategory: Joi.string().valid(
-                'Web Design', 'UI/UX', 'Frontend', 'Backend', 'Fullstack', 'Mobile', 'Data Science', 'Cybersecurity', 'Cloud Computing', 'DevOps', 'AI/ML', 'IoT', 'Blockchain', 'AR/VR', 'Game Development', 'Robotics', 'Digital Marketing', 'Content Writing', 'Graphic Design', 'Video Editing', 'Animation', 'Music Production', 'Photography', '3D Modelling', 'CAD Design', 'Interior Design', 'Fashion Design', 'Product Design', 'Architecture', 'Civil Engineering', 'Mechanical Engineering', 'Electrical Engineering', 'Aerospace Engineering', 'Automotive Engineering', 'Bioinformatics', 'Quantum Computing', 'Network Engineering', 'Systems Engineering'
+                'Web Design',
+                'UI/UX',
+                'Frontend',
+                'Backend',
+                'Fullstack',
+                'Mobile',
+                'Data Science',
+                'Cybersecurity',
+                'Cloud Computing',
+                'DevOps',
+                'AI/ML',
+                'IoT',
+                'Blockchain',
+                'AR/VR',
+                'Game Development',
+                'Robotics',
+                'Digital Marketing',
+                'Content Writing',
+                'Graphic Design',
+                'Video Editing',
+                'Animation',
+                'Music Production',
+                'Photography',
+                '3D Modelling',
+                'CAD Design',
+                'Interior Design',
+                'Fashion Design',
+                'Product Design',
+                'Architecture',
+                'Civil Engineering',
+                'Mechanical Engineering',
+                'Electrical Engineering',
+                'Aerospace Engineering',
+                'Automotive Engineering',
+                'Bioinformatics',
+                'Quantum Computing',
+                'Network Engineering',
+                'Systems Engineering'
             ).required()
         });
 

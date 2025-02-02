@@ -15,12 +15,11 @@ const app = express();
 
 app.use(express.json());
 
-// Swagger setup
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-
 app.use("/api/skills", skillsRoutes);
 app.use("/api/challenge", challengesRoutes);
 app.use("/public/api", publicRoutes);
+// Swagger setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);

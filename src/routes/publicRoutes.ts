@@ -52,15 +52,5 @@ publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
  */
 publicRoutes.post('/join', publicController.joinChallenge);
 
-/**
- * @swagger
- * /:
- *   get:
- *     summary: Get the home page
- *     responses:
- *       200:
- *         description: Successfully retrieved the home page
- */
-publicRoutes.get('/', publicController.getWelcomeMessage);
 
 export default publicRoutes;
