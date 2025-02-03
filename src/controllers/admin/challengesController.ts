@@ -6,7 +6,7 @@ import { StatusCodes } from "http-status-codes";
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
-    const { page = 1, limit = 10, search = '' } = req.query;
+    const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
     const searchQuery = search ? { $text: { $search: search as string } } : {};
@@ -16,15 +16,21 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
         const totalCompletedChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'completed' });
         const totalOpenChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'open' });
         const totalOngoingChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'ongoing' });
-        const challenges = await Challenge.find(searchQuery)
-            .sort({ createdAt: -1 })
-            .skip((pageNumber - 1) * limitNumber)
-            .limit(limitNumber);
+
+        let challenges;
+        if (all === 'true') {
+            challenges = await Challenge.find(searchQuery).sort({ createdAt: -1 });
+        } else {
+            challenges = await Challenge.find(searchQuery)
+                .sort({ createdAt: -1 })
+                .skip((pageNumber - 1) * limitNumber)
+                .limit(limitNumber);
+        }
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges fetched successfully', {
             aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
             challenges,
-            pagination: {
+            pagination: all === 'true' ? null : {
                 currentPage: pageNumber,
                 totalPages: Math.ceil(totalChallenges / limitNumber),
                 pageSize: limitNumber,
