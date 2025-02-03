@@ -65,3 +65,6 @@ build/
 
 # whatsapp
 .wwebjs*
+
+# logs
+combined.log
