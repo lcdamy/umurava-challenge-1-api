@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { formatResponse, mockAdminUser, mockParticipanteUser } from '../../utils/helper';
 import { Client, LocalAuth } from 'whatsapp-web.js';
 import { StatusCodes } from "http-status-codes";
-const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
+const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
 const qrcode = require("qrcode-terminal");
 
@@ -18,11 +18,11 @@ export const getWelcomeMessage = async (req: Request, res: Response): Promise<Re
 
 // Join the program
 export const joinProgram = async (req: Request, res: Response): Promise<Response> => {
-    const { error, value } = JoinChallengeDTO.validate(req.body);
-    if (error) {
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Validation Error", error.details));
+    const { errors, value } = JoinProgramDTO.validate(req.body);
+    if (errors) {
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Validation Error", errors));
     }
-
+    
     try {
         const SECRET_KEY = process.env.TOKEN_SECRET;
         if (!SECRET_KEY) {
@@ -37,15 +37,16 @@ export const joinProgram = async (req: Request, res: Response): Promise<Response
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Token for entering the program created', { user, token }));
 
     } catch (error) {
+        console.log(error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error creating token", error));
     }
 };
 
 // Join WhatsApp community using whatsapp-web.js
 export const joinWhatsAppCommunity = async (req: Request, res: Response) => {
-    const { error, value } = JoinCommunityDTO.validate(req.body);
-    if (error) {
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Validation Error", error.details));
+    const { errors, value } = JoinCommunityDTO.validate(req.body);
+    if (errors) {
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Validation Error", errors));
     }
 
     const client = new Client({ authStrategy: new LocalAuth() });
