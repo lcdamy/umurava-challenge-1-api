@@ -6,43 +6,21 @@ module.exports = {
    */
   async up(db, client) {
     const now = new Date();
-    await db.collection('skills').insertMany([
-      {
-        skillName: "Javascript",
-        status: "active",
-        createdAt: now,
-        updatedAt: now,
-        "__v": 0
-      },
-      {
-        skillName: "Python",
-        status: "active",
-        createdAt: now,
-        updatedAt: now,
-        "__v": 0
-      },
-      {
-        skillName: "Java",
-        status: "active",
-        createdAt: now,
-        updatedAt: now,
-        "__v": 0
-      },
-      {
-        skillName: "C++",
-        status: "active",
-        createdAt: now,
-        updatedAt: now,
-        "__v": 0
-      },
-      {
-        skillName: "C#",
-        status: "active",
-        createdAt: now,
-        updatedAt: now,
-        "__v": 0
-      }
-    ]);
+    const skills = [
+      "Javascript",
+      "Python",
+      "Java",
+      "C++",
+      "C#"
+    ].map(skillName => ({
+      skillName,
+      status: "active",
+      createdAt: now,
+      updatedAt: now,
+      "__v": 0
+    }));
+
+    await db.collection('skills').insertMany(skills);
   },
 
   /**
