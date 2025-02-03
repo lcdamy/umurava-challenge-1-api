@@ -105,9 +105,9 @@ export const getChallengesStatistics = async (req: Request, res: Response): Prom
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges statistics fetched successfully', {
             totalChallengesThisWeek,
-            totalChallengesChange: calculatePercentageChange(totalChallengesThisWeek, totalChallengesPreviousWeek),
+            totalChallengesThisWeekChange: calculatePercentageChange(totalChallengesThisWeek, totalChallengesPreviousWeek),
             totalParticipantsThisWeek: totalParticipantsThisWeek.length,
-            totalParticipantsChange: calculatePercentageChange(totalParticipantsThisWeek.length, totalParticipantsPreviousWeek.length),
+            totalParticipantsThisWeekChange: calculatePercentageChange(totalParticipantsThisWeek.length, totalParticipantsPreviousWeek.length),
             totalCompletedChallenges,
             totalCompletedChallengesChange: calculatePercentageChange(totalCompletedChallenges, totalCompletedChallengesPrevious),
             totalOngoingChallenges,
