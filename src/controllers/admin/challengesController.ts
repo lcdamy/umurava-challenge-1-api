@@ -3,6 +3,7 @@ import Challenge from '../../models/challengeModel';
 const ChallengeDTO = require('../../dtos/challengesDTO');
 import { convertToISO, formatResponse, getStartDate, mockParticipanteUser } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
+import logger from '../../config/logger';
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -12,6 +13,7 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
     const searchQuery = search ? { $text: { $search: search as string } } : {};
 
     try {
+        logger.info('Fetching challenges with query', { page, limit, search, all });
         const totalChallenges = await Challenge.countDocuments(searchQuery);
         const totalCompletedChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'completed' });
         const totalOpenChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'open' });
@@ -27,6 +29,7 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
                 .limit(limitNumber);
         }
 
+        logger.info('Challenges fetched successfully');
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges fetched successfully', {
             aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
             challenges,
@@ -38,6 +41,7 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
             }
         }));
     } catch (error) {
+        logger.error('Error fetching challenges', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenges', error));
     }
 };
@@ -45,8 +49,10 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
 // Get a single challenge by ID
 export const getChallengeById = async (req: Request, res: Response): Promise<Response> => {
     try {
+        logger.info('Fetching challenge by ID', { id: req.params.id });
         const challenge = await Challenge.findById(req.params.id);
         if (!challenge) {
+            logger.warn('Challenge not found', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
 
@@ -59,8 +65,10 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
             participants
         };
 
+        logger.info('Challenge fetched successfully', { id: req.params.id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challengeWithParticipants));
     } catch (error) {
+        logger.error('Error fetching challenge', { id: req.params.id, error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge', error));
     }
 };
@@ -69,19 +77,22 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
 export const createChallenge = async (req: Request, res: Response): Promise<Response> => {
     const { errors, value } = ChallengeDTO.validate(req.body);
     if (errors) {
+        logger.warn('Validation error creating challenge', { errors });
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
     try {
-
         const endDate = convertToISO(value.endDate);
         const startDate = getStartDate(endDate, value.duration);
         if (new Date(startDate) < new Date()) {
+            logger.warn('Invalid duration for challenge', { startDate, endDate });
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Invalid duration'));
         }
         const newChallenge = new Challenge({ ...value, endDate, startDate });
         const savedChallenge = await newChallenge.save();
+        logger.info('Challenge created successfully', { id: savedChallenge._id });
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Challenge created successfully', savedChallenge));
     } catch (error) {
+        logger.error('Error creating challenge', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error creating challenge', error));
     }
 };
@@ -90,15 +101,20 @@ export const createChallenge = async (req: Request, res: Response): Promise<Resp
 export const updateChallenge = async (req: Request, res: Response): Promise<Response> => {
     const { errors, value } = ChallengeDTO.validate(req.body);
     if (errors) {
+        logger.warn('Validation error updating challenge', { errors });
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
     try {
+        logger.info('Updating challenge', { id: req.params.id });
         const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, value, { new: true });
         if (!updatedChallenge) {
+            logger.warn('Challenge not found for update', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
+        logger.info('Challenge updated successfully', { id: req.params.id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge updated successfully', updatedChallenge));
     } catch (error) {
+        logger.error('Error updating challenge', { id: req.params.id, error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error updating challenge', error));
     }
 };
@@ -106,19 +122,24 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
 // Delete a challenge
 export const deleteChallenge = async (req: Request, res: Response): Promise<Response> => {
     try {
+        logger.info('Deleting challenge', { id: req.params.id });
         const deletedChallenge = await Challenge.findByIdAndDelete(req.params.id);
         if (!deletedChallenge) {
+            logger.warn('Challenge not found for deletion', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
+        logger.info('Challenge deleted successfully', { id: req.params.id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge deleted successfully'));
     } catch (error) {
+        logger.error('Error deleting challenge', { id: req.params.id, error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deleting challenge', error));
     }
 };
 
-//Get all challenges statistics, Total number of challenges this week, Total number of participants this week, Total number of completed challenges in the last 30 days, Total number of ongoing challenges in the last 30 days, TOTAL number of open challenges in the last 30 days.
+// Get all challenges statistics
 export const getChallengesStatistics = async (req: Request, res: Response): Promise<Response> => {
     try {
+        logger.info('Fetching challenges statistics');
         const today = new Date();
         const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
         const last30Days = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
@@ -145,6 +166,7 @@ export const getChallengesStatistics = async (req: Request, res: Response): Prom
             return current >= previous ? 'positive' : 'negative';
         };
 
+        logger.info('Challenges statistics fetched successfully');
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges statistics fetched successfully', {
             totalChallengesThisWeek,
             totalChallengesThisWeekChange: calculatePercentageChange(totalChallengesThisWeek, totalChallengesPreviousWeek),
@@ -163,6 +185,7 @@ export const getChallengesStatistics = async (req: Request, res: Response): Prom
             totalOpenChallengesChangeDirection: calculateChangeDirection(totalOpenChallenges, totalOpenChallengesPrevious)
         }));
     } catch (error) {
+        logger.error('Error fetching challenges statistics', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenges statistics', error));
     }
-}
+};

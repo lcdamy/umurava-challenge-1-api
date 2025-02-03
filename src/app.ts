@@ -8,6 +8,8 @@ import publicRoutes from './routes/publicRoutes';
 import skillsRoutes from './routes/admin/skillsRoutes';
 import adminChallengesRoutes from './routes/admin/challengesRoutes';
 import participantChallengeRoutes from './routes/participant/challengesRoutes';
+import expressWinston from 'express-winston';
+import logger from './config/logger';
 
 // Import the cron job file
 require(path.join(__dirname, 'cronjobs', 'schedules'));
@@ -16,14 +18,17 @@ require(path.join(__dirname, 'cronjobs', 'schedules'));
 connectDB();
 
 const app = express();
-
 app.use(express.json());
+app.use(expressWinston.logger({
+    winstonInstance: logger,
+    statusLevels: true,
+}));
 // admin routes
 app.use("/api/skills", skillsRoutes);
 app.use("/api/challenge", adminChallengesRoutes);
 app.use("/public/api", publicRoutes);
 // participant routes
-app.use("/api/participant",participantChallengeRoutes);
+app.use("/api/participant", participantChallengeRoutes);
 // Swagger setup
 app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
