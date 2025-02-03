@@ -1,5 +1,6 @@
 require('dotenv').config();
 import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from './swaggerConfig';
@@ -10,6 +11,8 @@ import adminChallengesRoutes from './routes/admin/challengesRoutes';
 import participantChallengeRoutes from './routes/participant/challengesRoutes';
 import expressWinston from 'express-winston';
 import logger from './config/logger';
+import helmet from 'helmet';
+
 
 // Import the cron job file
 require(path.join(__dirname, 'cronjobs', 'schedules'));
@@ -19,10 +22,9 @@ connectDB();
 
 const app = express();
 app.use(express.json());
-app.use(expressWinston.logger({
-    winstonInstance: logger,
-    statusLevels: true,
-}));
+app.use(cors());
+app.use(helmet());
+app.use(expressWinston.logger({ winstonInstance: logger, statusLevels: true }));
 // admin routes
 app.use("/api/skills", skillsRoutes);
 app.use("/api/challenge", adminChallengesRoutes);
