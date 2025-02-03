@@ -26,14 +26,14 @@ export const joinProgram = async (req: Request, res: Response): Promise<Response
         logger.warn('Validation error in joinProgram', { errors });
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Validation Error", errors));
     }
-    
+
     try {
         const SECRET_KEY = process.env.TOKEN_SECRET;
         if (!SECRET_KEY) {
             logger.error('Token secret is not defined');
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Token secret is not defined"));
         }
-        const token = jwt.sign(value, SECRET_KEY, { algorithm: 'HS256' });
+        const token = jwt.sign(value, SECRET_KEY, { expiresIn: '1d', algorithm: 'HS256' });
 
         let user;
         if (value.userRole === 'admin') user = mockAdminUser("679f2df529592efbf6df223a");
