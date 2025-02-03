@@ -6,15 +6,29 @@ import { StatusCodes } from "http-status-codes";
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
+    const { page = 1, limit = 10 } = req.query;
+    const pageNumber = parseInt(page as string, 10);
+    const limitNumber = parseInt(limit as string, 10);
+
     try {
         const totalChallenges = await Challenge.countDocuments();
         const totalCompletedChallenges = await Challenge.countDocuments({ status: 'completed' });
         const totalOpenChallenges = await Challenge.countDocuments({ status: 'open' });
         const totalOngoingChallenges = await Challenge.countDocuments({ status: 'ongoing' });
-        const challenges = await Challenge.find().sort({ createdAt: -1 });
+        const challenges = await Challenge.find()
+            .sort({ createdAt: -1 })
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber);
+
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges fetched successfully', {
             aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
-            challenges
+            challenges,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalChallenges / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalChallenges
+            }
         }));
     } catch (error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenges', error));
