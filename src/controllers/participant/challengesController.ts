@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
 import { formatResponse } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
-const JoinDTO = require('../../dtos/joinDTO');
+const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
 
 // Participate join the challenge api
 export const joinChallenge = async (req: Request, res: Response): Promise<Response> => {
-    const { errors, value } = JoinDTO.validate(req.body);
+    const { errors, value } = JoinChallengeDTO.validate(req.body);
     if (errors) {
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }

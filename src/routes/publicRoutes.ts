@@ -50,7 +50,9 @@ publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
  *                       type: string
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyUm9sZSI6ImFkbWluIiwiaWF0IjoxNzM4NDI1MTEwfQ.2uAiaLiaZByNdnPP6s5Vjzvg30cqaBIVPN7xtSpsXz4"
  */
-publicRoutes.post('/join', publicController.joinChallenge);
+publicRoutes.post('/join', publicController.joinProgram);
+
+publicRoutes.post('/join/whatspp/community', publicController.joinWhatsAppCommunity);
 
 
 export default publicRoutes;

@@ -1,23 +1,23 @@
 import Joi from 'joi';
 
-class JoinDTO {
-    participant: string;
+class JoinCommunityDTO {
+    phoneNumber: string;
 
-    constructor(participant: string) {
-        this.participant = participant;
+    constructor(phoneNumber: string) {
+        this.phoneNumber = phoneNumber;
     }
 
     // Add a method to validate the data using Joi
-    static validate(data: { participant: string }) {
+    static validate(data: { phoneNumber: string }) {
         const schema = Joi.object({
-            participant: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required()
+            phoneNumber: Joi.string().regex(/^2507\d{8}$/).required()
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });
 
         if (error) {
             return {
-                errors: JoinDTO.formatValidationErrors(error.details)
+                errors: JoinCommunityDTO.formatValidationErrors(error.details)
             };
         }
         return { value };
@@ -33,4 +33,4 @@ class JoinDTO {
     }
 }
 
-module.exports = JoinDTO;
+module.exports = JoinCommunityDTO;

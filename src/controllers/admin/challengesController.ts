@@ -52,7 +52,7 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
 
         // Fetch participant data manually
         const participants = challenge.participants.map(participant => mockParticipanteUser(participant));
- 
+
         // Add participants data to the challenge object
         const challengeWithParticipants = {
             ...challenge.toObject(),

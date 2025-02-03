@@ -62,3 +62,6 @@ build/
 
 # TypeScript cache
 *.tsbuildinfo
+
+# whatsapp
+.wwebjs*
