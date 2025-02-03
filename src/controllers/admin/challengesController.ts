@@ -7,8 +7,15 @@ import { StatusCodes } from "http-status-codes";
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
     try {
+        const totalChallenges = await Challenge.countDocuments();
+        const totalCompletedChallenges = await Challenge.countDocuments({ status: 'completed' });
+        const totalOpenChallenges = await Challenge.countDocuments({ status: 'open' });
+        const totalOngoingChallenges = await Challenge.countDocuments({ status: 'ongoing' });
         const challenges = await Challenge.find().sort({ createdAt: -1 });
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges fetched successfully', challenges));
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges fetched successfully', {
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            challenges
+        }));
     } catch (error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenges', error));
     }
