@@ -3,24 +3,24 @@ import { UserRole, UserPayload } from "../types";
 
 export function mockAdminUser(id: string) {
     const mockAdminUser: UserPayload[] = [
-        { id: "679f2df529592efbf6df223a", username: 'adminUser1', names: 'Admin User 1', userRole: UserRole.Admin, profile_url: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' },
-        { id: "679f2df529592efbf6df223b", username: 'adminUser2', names: 'Admin User 2', userRole: UserRole.Admin, profile_url: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' }
+        { id: "679f2df529592efbf6df223a", username: 'adminUser1', names: 'Admin User 1', email: "admin1@gmail.com", userRole: UserRole.Admin, profile_url: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' },
+        { id: "679f2df529592efbf6df223b", username: 'adminUser2', names: 'Admin User 2', email: "admin2@gmail.com", userRole: UserRole.Admin, profile_url: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' }
     ];
     return mockAdminUser.find(user => user.id === id);
 }
 
 export function mockParticipanteUser(id: string) {
     const mockParticipanteUser: UserPayload[] = [
-        { id: "679f2df529592efbf6df223c", username: 'participantUser1', names: 'Participant User 1', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223d", username: 'participantUser2', names: 'Participant User 2', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223e", username: 'participantUser3', names: 'Participant User 3', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223f", username: 'participantUser4', names: 'Participant User 4', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223g", username: 'participantUser5', names: 'Participant User 5', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223h", username: 'participantUser6', names: 'Participant User 6', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223i", username: 'participantUser7', names: 'Participant User 7', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223j", username: 'participantUser8', names: 'Participant User 8', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223k", username: 'participantUser9', names: 'Participant User 9', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
-        { id: "679f2df529592efbf6df223l", username: 'participantUser10', names: 'Participant User 10', userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223c", username: 'participantUser1', names: 'Participant User 1', email: "talent1@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223d", username: 'participantUser2', names: 'Participant User 2', email: "talent2@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223e", username: 'participantUser3', names: 'Participant User 3', email: "talent3@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223f", username: 'participantUser4', names: 'Participant User 4', email: "talent4@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223g", username: 'participantUser5', names: 'Participant User 5', email: "talent5@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223h", username: 'participantUser6', names: 'Participant User 6', email: "talent6@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223i", username: 'participantUser7', names: 'Participant User 7', email: "talent7@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223j", username: 'participantUser8', names: 'Participant User 8', email: "talent8@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223k", username: 'participantUser9', names: 'Participant User 9', email: "talent9@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
+        { id: "679f2df529592efbf6df223l", username: 'participantUser10', names: 'Participant User 10', email: "talent10@gmail.com", userRole: UserRole.Participant, profile_url: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png' },
     ];
     return mockParticipanteUser.find(user => user.id === id);
 };

@@ -1,6 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
 import { ChallengeCategory } from '../types';
-import { string } from 'joi';
 
 interface IChallenge extends Document {
     challengeName: string;
@@ -12,7 +11,7 @@ interface IChallenge extends Document {
     projectDescription: string;
     projectBrief: string;
     projectTasks: string;
-    participants: Array<{ participant: string, joinedAt: Date }>;
+    participants: Array<string>;
     skills: Array<ChallengeCategory>;
     levels: Array<string>;
     status: 'open' | 'ongoing' | 'completed';
@@ -58,9 +57,7 @@ const ChallengeSchema: Schema = new Schema({
         required: true
     },
     participants: {
-        type: [{
-            participant: String
-        }],
+        type: [String],
         default: []
     },
     skills: {

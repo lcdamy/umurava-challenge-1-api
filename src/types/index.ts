@@ -7,6 +7,7 @@ export interface UserPayload {
   id: string;
   username: string;
   names: string;
+  email: string;
   userRole: UserRole;
   profile_url: string;
 }

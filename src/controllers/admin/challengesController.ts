@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
 const ChallengeDTO = require('../../dtos/challengesDTO');
-import { convertToISO, formatResponse, getStartDate } from '../../utils/helper';
+import { convertToISO, formatResponse, getStartDate, mockParticipanteUser } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 
 // Get all challenges
@@ -49,7 +49,17 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
         if (!challenge) {
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challenge));
+
+        // Fetch participant data manually
+        const participants = challenge.participants.map(participant => mockParticipanteUser(participant));
+ 
+        // Add participants data to the challenge object
+        const challengeWithParticipants = {
+            ...challenge.toObject(),
+            participants
+        };
+
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challengeWithParticipants));
     } catch (error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge', error));
     }
