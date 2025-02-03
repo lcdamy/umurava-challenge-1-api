@@ -1,16 +1,16 @@
 import Joi from 'joi';
 
 class JoinDTO {
-    userRole: 'admin' | 'participant';
+    participant: string;
 
-    constructor(userRole: 'admin' | 'participant') {
-        this.userRole = userRole;
+    constructor(participant: string) {
+        this.participant = participant;
     }
 
     // Add a method to validate the data using Joi
-    static validate(data: { userRole: 'admin' | 'participant' }) {
+    static validate(data: { participant: string }) {
         const schema = Joi.object({
-            userRole: Joi.string().required().valid('admin', 'participant')
+            participant: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required()
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });

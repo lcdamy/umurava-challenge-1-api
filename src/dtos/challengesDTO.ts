@@ -11,8 +11,8 @@ class ChallengesDTO {
     projectDescription: string | undefined;
     projectBrief: string | undefined;
     projectTasks: string | undefined;
-    challengeCategory!: ChallengeCategory;
     status: 'open' | 'ongoing' | 'completed' | undefined;
+    skills: Array<ChallengeCategory> | undefined;
 
     constructor(
         id: string | undefined,
@@ -24,8 +24,8 @@ class ChallengesDTO {
         projectDescription: string | undefined,
         projectBrief: string | undefined,
         projectTasks: string | undefined,
-        challengeCategory: ChallengeCategory,
-        status: 'open' | 'ongoing' | 'completed' | undefined
+        status: 'open' | 'ongoing' | 'completed' | undefined,
+        skills: Array<ChallengeCategory> | undefined
     ) {
         this.id = id;
         this.challengeName = challengeName;
@@ -36,8 +36,8 @@ class ChallengesDTO {
         this.projectDescription = projectDescription;
         this.projectBrief = projectBrief;
         this.projectTasks = projectTasks;
-        this.challengeCategory = challengeCategory;
         this.status = status;
+        this.skills = skills;
     }
 
     // Add a method to validate the data using Joi
@@ -51,10 +51,10 @@ class ChallengesDTO {
         projectDescription: string;
         projectBrief: string;
         projectTasks: string;
-        challengeCategory: ChallengeCategory;
+        skills: Array<ChallengeCategory>;
     }) {
         const schema = Joi.object({
-            challengeName: Joi.string().required(),
+            challengeName: Joi.string().trim().required(),
             endDate: Joi.string().required(),
             duration: Joi.number().required(),
             moneyPrize: Joi.string().required(),
@@ -62,46 +62,46 @@ class ChallengesDTO {
             projectDescription: Joi.string().required(),
             projectBrief: Joi.string().required(),
             projectTasks: Joi.string().required(),
-            challengeCategory: Joi.string().valid(
-                'Web Design',
-                'UI/UX',
-                'Frontend',
-                'Backend',
-                'Fullstack',
-                'Mobile',
-                'Data Science',
-                'Cybersecurity',
-                'Cloud Computing',
-                'DevOps',
-                'AI/ML',
-                'IoT',
-                'Blockchain',
-                'AR/VR',
-                'Game Development',
-                'Robotics',
-                'Digital Marketing',
-                'Content Writing',
-                'Graphic Design',
-                'Video Editing',
-                'Animation',
-                'Music Production',
-                'Photography',
-                '3D Modelling',
-                'CAD Design',
-                'Interior Design',
-                'Fashion Design',
-                'Product Design',
-                'Architecture',
-                'Civil Engineering',
-                'Mechanical Engineering',
-                'Electrical Engineering',
-                'Aerospace Engineering',
-                'Automotive Engineering',
-                'Bioinformatics',
-                'Quantum Computing',
-                'Network Engineering',
-                'Systems Engineering'
-            ).required()
+            skills: Joi.array().items(Joi.string().valid(
+            'Web Design',
+            'UI/UX',
+            'Frontend',
+            'Backend',
+            'Fullstack',
+            'Mobile',
+            'Data Science',
+            'Cybersecurity',
+            'Cloud Computing',
+            'DevOps',
+            'AI/ML',
+            'IoT',
+            'Blockchain',
+            'AR/VR',
+            'Game Development',
+            'Robotics',
+            'Digital Marketing',
+            'Content Writing',
+            'Graphic Design',
+            'Video Editing',
+            'Animation',
+            'Music Production',
+            'Photography',
+            '3D Modelling',
+            'CAD Design',
+            'Interior Design',
+            'Fashion Design',
+            'Product Design',
+            'Architecture',
+            'Civil Engineering',
+            'Mechanical Engineering',
+            'Electrical Engineering',
+            'Aerospace Engineering',
+            'Automotive Engineering',
+            'Bioinformatics',
+            'Quantum Computing',
+            'Network Engineering',
+            'Systems Engineering'
+            )).required()
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });

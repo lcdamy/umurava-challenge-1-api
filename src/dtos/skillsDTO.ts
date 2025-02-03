@@ -12,13 +12,28 @@ class SkillsDTO {
     }
 
     // Add a method to validate the data using Joi
-    static validate(data: { skillName: string; status: 'active' | 'inactive' }) {
+    static validate(data: { skillName: string }) {
         const schema = Joi.object({
-            skillName: Joi.string().required(),
-            status: Joi.string().valid('active', 'inactive')
+            skillName: Joi.string().required()
         });
 
-        return schema.validate(data, { abortEarly: false });
+        const { error, value } = schema.validate(data, { abortEarly: false });
+
+        if (error) {
+            return {
+                errors: SkillsDTO.formatValidationErrors(error.details)
+            };
+        }
+        return { value };
+    }
+
+    // Helper method to format Joi validation errors
+    static formatValidationErrors(errorDetails: Joi.ValidationErrorItem[]) {
+        return errorDetails.map((error) => ({
+            field: error.context?.key,
+            type: error.type,
+            message: error.message
+        }));
     }
 }
 

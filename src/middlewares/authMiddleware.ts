@@ -24,26 +24,6 @@ exports.identifier = (req: Request, res: Response, next: NextFunction) => {
     });
 }
 
-exports.mockAdminUser = (req: Request, res: Response, next: NextFunction) => {
-    const mockUser: UserPayload = {
-        id: 1,
-        username: 'adminUser',
-        userRole: UserRole.Admin
-    };
-    req.user = mockUser;
-    next();
-};
-
-exports.mockParticipanteUser = (req: Request, res: Response, next: NextFunction) => {
-    const mockUser: UserPayload = {
-        id: 2,
-        username: 'participantUser',
-        userRole: UserRole.Participant
-    };
-    req.user = mockUser;
-    next();
-};
-
 // Middleware to check user if is Admin
 exports.AdminAuthorized = () => {
     return (req: Request, res: Response, next: NextFunction) => {

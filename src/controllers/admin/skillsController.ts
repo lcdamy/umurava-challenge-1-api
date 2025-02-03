@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import Skill from '../../models/skillsModel';
-const SkillDTO = require('../../dtos/skillsDTO');
 import { formatResponse } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
+const SkillDTO = require('../../dtos/skillsDTO');
 
 // Get all skills
 export const getSkills = async (req: Request, res: Response): Promise<Response> => {
@@ -29,13 +29,12 @@ export const getSkillById = async (req: Request, res: Response): Promise<Respons
 
 // Create a new skill
 export const createSkill = async (req: Request, res: Response): Promise<Response> => {
-    const validationErrors = SkillDTO.validate(req.body);
-    if (validationErrors.error) {
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation error', validationErrors));
+    const { errors, value } = SkillDTO.validate(req.body);
+    if (errors) {
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
-
     try {
-        const newSkill = new Skill(req.body);
+        const newSkill = new Skill(value);
         const savedSkill = await newSkill.save();
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Skill created successfully', savedSkill));
     } catch (error) {
@@ -45,12 +44,12 @@ export const createSkill = async (req: Request, res: Response): Promise<Response
 
 // Update an existing skill
 export const updateSkill = async (req: Request, res: Response): Promise<Response> => {
-    const validationErrors = SkillDTO.validate(req.body);
-    if (validationErrors) {
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation error', validationErrors));
+    const { errors, value } = SkillDTO.validate(req.body);
+    if (errors) {
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
     try {
-        const updatedSkill = await Skill.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedSkill = await Skill.findByIdAndUpdate(req.params.id, value, { new: true });
         if (!updatedSkill) {
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Skill not found'));
         }

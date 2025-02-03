@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from "jsonwebtoken";
-import { formatResponse } from '../../utils/helper';
+import { formatResponse, mockAdminUser, mockParticipanteUser } from '../../utils/helper';
+import { UserPayload } from '../../types';
 const JoinDTO = require('../../dtos/joinDTO');
 
 
@@ -13,12 +14,11 @@ export const getWelcomeMessage = async (req: Request, res: Response): Promise<Re
     }
 };
 
-
 // Join the program
 export const joinChallenge = async (req: Request, res: Response): Promise<Response> => {
-    const { errors, value } = JoinDTO.validate(req.body);
-    if (errors) {
-        return res.status(400).json(formatResponse("error", "Validation Error", errors));
+    const { error, value } = JoinDTO.validate(req.body);
+    if (error) {
+        return res.status(400).json(formatResponse("error", "Validation Error", error.details));
     }
 
     try {
@@ -26,11 +26,16 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
         if (!SECRET_KEY) {
             return res.status(500).json(formatResponse("error", "Token secret is not defined"));
         }
-        const token = jwt.sign(req.body, SECRET_KEY, { algorithm: 'HS256' });
-        return res.status(201).json(formatResponse('success', 'Token for entering the program created', { token }));
+        const token = jwt.sign(value, SECRET_KEY, { algorithm: 'HS256' });
+
+        let user;
+        if (value.userRole === 'admin') user = mockAdminUser("679f2df529592efbf6df223a");
+        if (value.userRole === 'participant') user = mockParticipanteUser("679f2df529592efbf6df223c");
+
+        return res.status(201).json(formatResponse('success', 'Token for entering the program created', { user, token }));
 
     } catch (error) {
-        return res.status(500).json(formatResponse("error", "Token secret not created", error));
+        return res.status(500).json(formatResponse("error", "Error creating token", error));
     }
 };
 
