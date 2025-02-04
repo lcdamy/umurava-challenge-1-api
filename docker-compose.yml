@@ -17,3 +17,8 @@ services:
     ports:
       - "27017:27017"
     
+  
+  frontend:
+    image: florienwaka/umurava-skills-challenge-fe:1.0
+    ports:
+     - "3000:3000"
