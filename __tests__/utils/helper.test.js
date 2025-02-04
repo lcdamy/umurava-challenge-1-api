@@ -1,41 +1,6 @@
-const { mockAdminUser, mockParticipanteUser, formatResponse,convertToISO, getStartDate} = require('../../src/utils/helper');
+const { formatResponse, convertToISO, getStartDate } = require('../../src/utils/helper');
 
 describe('helper functions', () => {
-    describe('mockAdminUser', () => {
-        it('should return a user payload for a given id', () => {
-            const user = mockAdminUser('679f2df529592efbf6df223a');
-            expect(user).toEqual({
-                id: '679f2df529592efbf6df223a',
-                username: 'johnDoeAdmin',
-                names: 'Johnathan Doe',
-                email: 'john.doe.admin@gmail.com',
-                userRole: 'admin',
-                profile_url: 'https://randomuser.me/api/portraits/men/1.jpg'
-            });
-        });
-
-        it('should return undefined if the id does not exist', () => {
-            expect(mockAdminUser('1234567890')).toBeUndefined();
-        });
-    });
-
-    describe('mockParticipanteUser', () => {
-        it('should return a user payload for a given id', () => {
-            const user = mockParticipanteUser('679f2df529592efbf6df223c');
-            expect(user).toEqual({
-                id: '679f2df529592efbf6df223c',
-                username: 'johnDoeParticipant',
-                names: 'Johnny Doe',
-                email: 'john.doe.participant@gmail.com',
-                userRole: 'participant',
-                profile_url: 'https://randomuser.me/api/portraits/men/2.jpg'
-            });
-        });
-
-        it('should return undefined if the id does not exist', () => {
-            expect(mockParticipanteUser('1234567890')).toBeUndefined();
-        });
-    });
 
     describe('formatResponse', () => {
         it('should return a formatted response object', () => {
