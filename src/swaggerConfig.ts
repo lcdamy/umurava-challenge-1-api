@@ -1,13 +1,13 @@
 import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
+// import swaggerUi from 'swagger-ui-express';
 
 const options: swaggerJsdoc.Options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Express API with Swagger',
+            title: 'Umurava Skills Challenge API',
             version: '1.0.0',
-            description: 'A simple Express API application documented with Swagger',
+            description: 'API documentation for the Umurava Skills Challenge',
         },
         servers: [
             {
@@ -15,7 +15,11 @@ const options: swaggerJsdoc.Options = {
             },
         ],
     },
-    apis: ['./src/routes/*.ts', './src/models/*.ts'], // Path to the API docs
+    apis: [
+        './src/routes/*.ts',
+        './src/routes/admin/*.ts',
+        './src/routes/participant/*.ts'
+    ], // Path to the API docs
 };
 
 const specs = swaggerJsdoc(options);
