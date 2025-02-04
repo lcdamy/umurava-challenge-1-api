@@ -23,18 +23,18 @@ To start the server in development mode, run:
 npm run dev
 ```
 
-## Running Migrations
-
-To run database migrations, use:
-```bash
-npm run migrate:up
-```
-
 ## Building for Production
 
 To build the project for production, run:
 ```bash
 npm run build
+```
+
+## Running Migrations
+
+To run database migrations, use:
+```bash
+npm run migrate:up
 ```
 
 The built files will be in the `dist` directory.
