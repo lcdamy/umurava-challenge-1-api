@@ -3,6 +3,11 @@
 
 This is an API for Challenge-1 for Umurava, written in TypeScript.
 
+## Prerequisite installation 
+ 
+ -nodejs v18.18.0
+ -mongo v8.0.4
+
 ## Installation
 
 1. Clone the repository:
