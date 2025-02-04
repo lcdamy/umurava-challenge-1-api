@@ -149,9 +149,9 @@ publicRoutes.post('/enter', publicController.joinProgram);
  *           schema:
  *             type: object
  *             properties:
- *               userRole:
+ *               phoneNumber:
  *                 type: string
- *                 example: "admin"
+ *                 example: "250781234567"
  *     responses:
  *       200:
  *         description: Successfully posted to join the WhatsApp community
