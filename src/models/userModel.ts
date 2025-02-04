@@ -6,6 +6,7 @@ export interface IUser extends Document {
     email: string;
     userRole: string;
     profile_url: string;
+    phoneNumber: string;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -31,7 +32,12 @@ const UserSchema = new Schema<IUser>({
     profile_url: {
         type: String,
         default: ''
-    }
+    },
+    phoneNumber: {
+        type: String,
+        required: true,
+        unique: true
+    },
 });
 
 const User = model<IUser>('User', UserSchema);

@@ -5,6 +5,7 @@ import { convertToISO, formatResponse, getStartDate } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import User from '../../models/userModel';
+import { log } from 'console';
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -56,10 +57,10 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
             logger.warn('Challenge not found', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
-
         // Fetch participant data manually
-        const participants = challenge.participants.map(participant => User.findById(participant));
-
+        const participants = challenge.participants.map(async (participant) => {
+            return await User.findById(participant);
+        });
         // Add participants data to the challenge object
         const challengeWithParticipants = {
             ...challenge.toObject(),
