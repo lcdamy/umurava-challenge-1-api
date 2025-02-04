@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
 const ChallengeDTO = require('../../dtos/challengesDTO');
-import { convertToISO, formatResponse, getStartDate, mockParticipanteUser } from '../../utils/helper';
+import { convertToISO, formatResponse, getStartDate } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
+import User from '../../models/userModel';
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -57,7 +58,7 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
         }
 
         // Fetch participant data manually
-        const participants = challenge.participants.map(participant => mockParticipanteUser(participant));
+        const participants = challenge.participants.map(participant => User.findById(participant));
 
         // Add participants data to the challenge object
         const challengeWithParticipants = {

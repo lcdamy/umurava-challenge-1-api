@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import jwt from "jsonwebtoken";
-import { formatResponse, mockAdminUser, mockParticipanteUser } from '../../utils/helper';
+import { formatResponse, } from '../../utils/helper';
 import { Client, LocalAuth } from 'whatsapp-web.js';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
+import User from '../../models/userModel';
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
 const qrcode = require("qrcode-terminal");
@@ -36,8 +37,8 @@ export const joinProgram = async (req: Request, res: Response): Promise<Response
         const token = jwt.sign(value, SECRET_KEY, { expiresIn: '1d', algorithm: 'HS256' });
 
         let user;
-        if (value.userRole === 'admin') user = mockAdminUser("679f2df529592efbf6df223a");
-        if (value.userRole === 'participant') user = mockParticipanteUser("679f2df529592efbf6df223c");
+        if (value.userRole === 'admin') user = await User.findOne({ userRole: value.userRole });
+        if (value.userRole === 'participant') user = await User.findOne({ userRole: value.userRole });
 
         logger.info('Token created successfully', { user, token });
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Token for entering the program created', { user, token }));

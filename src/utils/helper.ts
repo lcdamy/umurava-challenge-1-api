@@ -1,15 +1,15 @@
 import { parse, format } from 'date-fns';
 import { UserRole, UserPayload } from "../types";
 
-export function mockAdminUser(id: string) {
+export function mockAdminUser() {
     const mockAdminUser: UserPayload[] = [
         { id: "679f2df529592efbf6df223a", username: 'johnDoeAdmin', names: 'Johnathan Doe', email: "john.doe.admin@gmail.com", userRole: UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/men/1.jpg' },
         { id: "679f2df529592efbf6df223b", username: 'janeSmithAdmin', names: 'Janet Smith', email: "jane.smith.admin@gmail.com", userRole: UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/women/1.jpg' }
     ];
-    return mockAdminUser.find(user => user.id === id);
+    return mockAdminUser;
 }
 
-export function mockParticipanteUser(id: string) {
+export function mockParticipanteUser() {
     const mockParticipanteUser: UserPayload[] = [
         { id: "679f2df529592efbf6df223c", username: 'johnDoeParticipant', names: 'Johnny Doe', email: "john.doe.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/2.jpg' },
         { id: "679f2df529592efbf6df223d", username: 'janeSmithParticipant', names: 'Janelle Smith', email: "jane.smith.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/2.jpg' },
@@ -22,7 +22,7 @@ export function mockParticipanteUser(id: string) {
         { id: "679f2df529592efbf6df223k", username: 'danielMooreParticipant', names: 'Daniel Moore', email: "daniel.moore.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/6.jpg' },
         { id: "679f2df529592efbf6df223l", username: 'miaWhiteParticipant', names: 'Mia White', email: "mia.white.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/6.jpg' },
     ];
-    return mockParticipanteUser.find(user => user.id === id);
+    return mockParticipanteUser;
 };
 
 
