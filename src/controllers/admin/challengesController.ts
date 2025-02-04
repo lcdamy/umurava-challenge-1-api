@@ -60,17 +60,6 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
         // Fetch participant data manually
         const participants = await User.find({ _id: { $in: challenge.participants } });
 
-
-        // const participants = [];
-        // for (const participantId of challenge.participants) {
-        //     const participant = {
-        //         id: participantId,
-        //         joined: await User.findById(participantId),
-        //     };
-        //     participants.push(participant);
-        // }
-        console.log(participants);
-        // Add participants data to the challenge object
         const challengeWithParticipants = {
             ...challenge.toObject(),
             participants
