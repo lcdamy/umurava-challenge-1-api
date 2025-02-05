@@ -10,8 +10,25 @@ module.exports = {
       "Javascript",
       "Python",
       "Java",
-      "C++",
-      "C#"
+      "PHP",
+      "Ruby",
+      "Go",
+      "Rust",
+      "Swift",
+      "Kotlin",
+      "TypeScript",
+      "SQL",
+      "NoSQL",
+      "Web Development",
+      "Mobile Development",
+      "Backend Development",
+      "Frontend Development",
+      "UI/UX",
+      "Data Science",
+      "Machine Learning",
+      "Artificial Intelligence",
+      "Computer Vision"
+
     ].map(skillName => ({
       skillName,
       status: "active",
