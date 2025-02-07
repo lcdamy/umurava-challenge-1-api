@@ -1,11 +1,10 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
 const ChallengeDTO = require('../../dtos/challengesDTO');
-import { convertToISO, formatResponse, getStartDate } from '../../utils/helper';
+import { convertToISO, formatResponse, getDuration } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import User from '../../models/userModel';
-import { log } from 'console';
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -81,13 +80,22 @@ export const createChallenge = async (req: Request, res: Response): Promise<Resp
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
     try {
+        const startDate = convertToISO(value.startDate);
         const endDate = convertToISO(value.endDate);
-        const startDate = getStartDate(endDate, value.duration);
-        if (new Date(startDate) < new Date()) {
-            logger.warn('Invalid duration for challenge', { startDate, endDate });
-            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Invalid duration'));
+
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+
+        const now = new Date();
+        if (startDateObj < now || endDateObj < now || endDateObj <= startDateObj) {
+            return res.status(StatusCodes.BAD_REQUEST).json(
+                formatResponse('error', 'Invalid duration: start date must be in the future and end date must be after start date')
+            );
         }
-        const newChallenge = new Challenge({ ...value, endDate, startDate });
+
+        const duration = getDuration(endDate, startDate);
+
+        const newChallenge = new Challenge({ ...value, endDate, startDate, duration });
         const savedChallenge = await newChallenge.save();
         logger.info('Challenge created successfully', { id: savedChallenge._id });
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Challenge created successfully', savedChallenge));
@@ -106,11 +114,18 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
     }
     try {
         logger.info('Updating challenge', { id: req.params.id });
-        const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, value, { new: true });
-        if (!updatedChallenge) {
+        const challenge = await Challenge.findById(req.params.id);
+        if (!challenge) {
             logger.warn('Challenge not found for update', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
+        
+        if (challenge.status === 'completed') {
+            logger.warn('Attempted to update a completed challenge', { id: req.params.id });
+            return res.status(StatusCodes.FORBIDDEN).json(formatResponse('error', 'Cannot update a completed challenge'));
+        }
+        
+        const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, value, { new: true });
         logger.info('Challenge updated successfully', { id: req.params.id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge updated successfully', updatedChallenge));
     } catch (error) {

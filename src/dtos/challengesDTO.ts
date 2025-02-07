@@ -5,6 +5,7 @@ class ChallengesDTO {
     id: string | undefined;
     challengeName: string | undefined;
     endDate: string | undefined;
+    startDate: string | undefined;
     duration: number | undefined;
     moneyPrize: string | undefined;
     contactEmail!: string;
@@ -12,12 +13,14 @@ class ChallengesDTO {
     projectBrief: string | undefined;
     projectTasks: string | undefined;
     status: 'open' | 'ongoing' | 'completed' | undefined;
+    levels: Array<string> | undefined;
     skills: Array<ChallengeCategory> | undefined;
 
     constructor(
         id: string | undefined,
         challengeName: string | undefined,
         endDate: string | undefined,
+        starDate: string | undefined,
         duration: number | undefined,
         moneyPrize: string | undefined,
         contactEmail: string,
@@ -25,11 +28,13 @@ class ChallengesDTO {
         projectBrief: string | undefined,
         projectTasks: string | undefined,
         status: 'open' | 'ongoing' | 'completed' | undefined,
+        levels: Array<string> | undefined,
         skills: Array<ChallengeCategory> | undefined
     ) {
         this.id = id;
         this.challengeName = challengeName;
         this.endDate = endDate;
+        this.startDate = starDate;
         this.duration = duration;
         this.moneyPrize = moneyPrize;
         this.contactEmail = contactEmail;
@@ -37,6 +42,7 @@ class ChallengesDTO {
         this.projectBrief = projectBrief;
         this.projectTasks = projectTasks;
         this.status = status;
+        this.levels = levels;
         this.skills = skills;
     }
 
@@ -45,60 +51,40 @@ class ChallengesDTO {
         id: string;
         challengeName: string;
         endDate: string;
-        duration: number;
+        startDate: string;
         moneyPrize: string;
         contactEmail: string;
         projectDescription: string;
         projectBrief: string;
         projectTasks: string;
+        levels: Array<string>;
         skills: Array<ChallengeCategory>;
     }) {
         const schema = Joi.object({
             challengeName: Joi.string().trim().required(),
             endDate: Joi.string().required(),
-            duration: Joi.number().required(),
+            startDate: Joi.string().required(),
             moneyPrize: Joi.string().required(),
             contactEmail: Joi.string().email().required(),
             projectDescription: Joi.string().required(),
             projectBrief: Joi.string().required(),
             projectTasks: Joi.string().required(),
+            levels:Joi.array().items(Joi.string().valid("Junior", "Intermediate", "Senior")).required(),
             skills: Joi.array().items(Joi.string().valid(
             'Web Design',
             'UI/UX',
             'Frontend',
             'Backend',
             'Fullstack',
-            'Mobile',
-            'Data Science',
+            'Mobile Development',
             'Cybersecurity',
             'Cloud Computing',
             'DevOps',
             'AI/ML',
-            'IoT',
-            'Blockchain',
-            'AR/VR',
             'Game Development',
-            'Robotics',
-            'Digital Marketing',
-            'Content Writing',
             'Graphic Design',
-            'Video Editing',
             'Animation',
-            'Music Production',
-            'Photography',
-            '3D Modelling',
-            'CAD Design',
-            'Interior Design',
-            'Fashion Design',
             'Product Design',
-            'Architecture',
-            'Civil Engineering',
-            'Mechanical Engineering',
-            'Electrical Engineering',
-            'Aerospace Engineering',
-            'Automotive Engineering',
-            'Bioinformatics',
-            'Quantum Computing',
             'Network Engineering',
             'Systems Engineering'
             )).required()

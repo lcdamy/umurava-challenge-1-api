@@ -57,4 +57,14 @@ export function getStartDate(endDate: string, duration: number): string {
     return format(startDate, 'yyyy-MM-dd');
 }
 
+export function getDuration(endDate: string, startDate: string): number {
+    const parsedEndDate = parse(endDate, 'yyyy-MM-dd', new Date());
+    const parsedStartDate = parse(startDate, 'yyyy-MM-dd', new Date());
+    if (isNaN(parsedEndDate.getTime()) || isNaN(parsedStartDate.getTime())) {
+        throw new Error('Invalid date format');
+    }
+    const duration = parsedEndDate.getTime() - parsedStartDate.getTime();
+    return Math.ceil(duration / (1000 * 60 * 60 * 24));
+}
+
 export const formatResponse = (status: 'success' | 'error', message: string, data?: any) => ({ status, message, data });
