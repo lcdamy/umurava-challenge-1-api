@@ -32,7 +32,7 @@ app.use("/public/api", publicRoutes);
 // participant routes
 app.use("/api/participant", participantChallengeRoutes);
 // Swagger setup
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
