@@ -8,15 +8,17 @@ RUN apk update && \
 # Container directory
 WORKDIR /app
 
-#  Copy my file to Container
+# Copy all necessary files
 COPY . .
+
+# Make wait-for-it.sh executable
+RUN chmod +x wait-for-it.sh
 
 # Install packages
 RUN npm install
 
-# container port
+# Container port
 EXPOSE 3001
 
-# last command to run the project
+# Last command to run the project
 CMD ["sh", "-c", "./wait-for-it.sh mongo:27017 -- npm run migrate:up && npm run dev"]
-
