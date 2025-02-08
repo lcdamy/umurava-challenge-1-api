@@ -14,8 +14,9 @@ COPY package*.json ./
 # Install packages
 RUN npm install
 
-# Create the wait-for-it.sh script
+# Create the wait-for-it.sh script with debug statements
 RUN echo '#!/usr/bin/env bash\n\
+echo "Starting wait-for-it.sh script"\n\
 # Usage: wait-for-it.sh host:port [-t timeout] [-- command args]\n\
 #  -h HOST | --host=HOST     Host or IP under test\n\
 #  -p PORT | --port=PORT     TCP port under test\n\
@@ -111,6 +112,8 @@ if [[ "$HOST" == "" || "$PORT" == "" ]]; then\n\
 fi\n\
 \n\
 wait_for\n\
+\n\
+echo "wait-for-it.sh script completed"\n\
 \n\
 exec "$@"\n' > /app/wait-for-it.sh
 
