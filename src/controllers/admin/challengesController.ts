@@ -113,19 +113,34 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
     try {
+        const startDate = convertToISO(value.startDate);
+        const endDate = convertToISO(value.endDate);
+
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+
+        const now = new Date();
+        if (startDateObj < now || endDateObj < now || endDateObj <= startDateObj) {
+            return res.status(StatusCodes.BAD_REQUEST).json(
+                formatResponse('error', 'Invalid duration: start date must be in the future and end date must be after start date')
+            );
+        }
+
+        const duration = getDuration(endDate, startDate);
+
         logger.info('Updating challenge', { id: req.params.id });
         const challenge = await Challenge.findById(req.params.id);
         if (!challenge) {
             logger.warn('Challenge not found for update', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
-        
+
         if (challenge.status === 'completed') {
             logger.warn('Attempted to update a completed challenge', { id: req.params.id });
             return res.status(StatusCodes.FORBIDDEN).json(formatResponse('error', 'Cannot update a completed challenge'));
         }
-        
-        const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, value, { new: true });
+
+        const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, { ...value, endDate, startDate, duration }, { new: true });
         logger.info('Challenge updated successfully', { id: req.params.id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge updated successfully', updatedChallenge));
     } catch (error) {

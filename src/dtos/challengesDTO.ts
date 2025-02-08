@@ -69,25 +69,8 @@ class ChallengesDTO {
             projectDescription: Joi.string().required(),
             projectBrief: Joi.string().required(),
             projectTasks: Joi.string().required(),
-            levels:Joi.array().items(Joi.string().valid("Junior", "Intermediate", "Senior")).required(),
-            skills: Joi.array().items(Joi.string().valid(
-            'Web Design',
-            'UI/UX',
-            'Frontend',
-            'Backend',
-            'Fullstack',
-            'Mobile Development',
-            'Cybersecurity',
-            'Cloud Computing',
-            'DevOps',
-            'AI/ML',
-            'Game Development',
-            'Graphic Design',
-            'Animation',
-            'Product Design',
-            'Network Engineering',
-            'Systems Engineering'
-            )).required()
+            levels: Joi.array().items(Joi.string().valid("Junior", "Intermediate", "Senior")).required(),
+            skills: Joi.array().required()
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });
