@@ -9,6 +9,7 @@ services:
     depends_on:
       - mongo
     environment:
+      - PORT=3001
       - MONGO_URI=mongodb://mongo:27017/umurava-challenge-db
       - TOKEN_SECRET=HFKJDSHFKJHSJKD5654FDSJBFHDSHFSDFSD45646FSDBFHDSBFHDSF
       - COMMUNITY_INVITE_LINK=https://chat.whatsapp.com/GihQ5kUcxL0KcwEjz9rTJf
