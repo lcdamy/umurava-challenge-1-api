@@ -14,6 +14,7 @@ services:
       - TOKEN_SECRET=HFKJDSHFKJHSJKD5654FDSJBFHDSHFSDFSD45646FSDBFHDSBFHDSF
       - COMMUNITY_INVITE_LINK=https://chat.whatsapp.com/GihQ5kUcxL0KcwEjz9rTJf
 
+
   mongo:
     image: mongo
     platform: linux/x86_64

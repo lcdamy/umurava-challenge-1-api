@@ -1,6 +1,10 @@
 # Project env
 FROM node:18.0.0-alpine3.15
 
+# Install MongoDB client tools
+RUN apt-get update && \
+    apt-get install -y mongodb-clients
+
 # Container directory
 WORKDIR /app
 

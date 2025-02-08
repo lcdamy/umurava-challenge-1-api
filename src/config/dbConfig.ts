@@ -2,10 +2,10 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI || 'your_default_mongo_uri', {});
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/umurava-challenge-db', {});
     } catch (error) {
         if (error instanceof Error) {
-            console.error(`Error: ${error.message}`);
+            console.error(`Error during database connection: ${JSON.stringify(error) || error}`);
         } else {
             console.error('An unknown error occurred');
         }
