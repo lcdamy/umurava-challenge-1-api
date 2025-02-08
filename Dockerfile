@@ -1,4 +1,4 @@
-# Project env
+# Project environment
 FROM node:18.0.0-alpine3.15
 
 # Install MongoDB client tools
@@ -8,14 +8,20 @@ RUN apk update && \
 # Container directory
 WORKDIR /app
 
-# Copy all necessary files
-COPY . .
+# Copy package.json and package-lock.json files
+COPY package*.json ./
+
+# Install packages
+RUN npm install
+
+# Copy the wait-for-it.sh script
+COPY wait-for-it.sh .
 
 # Make wait-for-it.sh executable
 RUN chmod +x wait-for-it.sh
 
-# Install packages
-RUN npm install
+# Copy the rest of the application files
+COPY . .
 
 # Container port
 EXPOSE 3001
