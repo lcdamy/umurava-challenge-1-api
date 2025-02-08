@@ -2,8 +2,8 @@
 FROM node:18.0.0-alpine3.15
 
 # Install MongoDB client tools
-RUN apt-get update && \
-    apt-get install -y mongodb-clients
+RUN apt-get update && apt-get install -y --no-install-recommends mongodb-clients && \
+    rm -rf /var/lib/apt/lists/*
 
 # Container directory
 WORKDIR /app
