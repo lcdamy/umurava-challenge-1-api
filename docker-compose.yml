@@ -14,7 +14,7 @@ services:
       - TOKEN_SECRET=HFKJDSHFKJHSJKD5654FDSJBFHDSHFSDFSD45646FSDBFHDSBFHDSF
       - COMMUNITY_INVITE_LINK=https://chat.whatsapp.com/GihQ5kUcxL0KcwEjz9rTJf
     command: >
-      sh -c "npm run migrate:up && npm start"
+      sh -c "./wait-for-it.sh mongo:27017 -- npm run migrate:up && npm start"
 
   mongo:
     image: mongo

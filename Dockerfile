@@ -18,5 +18,5 @@ RUN npm install
 EXPOSE 3001
 
 # last command to run the project
-CMD ["npm","run", "dev"]
+CMD ["sh", "-c", "./wait-for-it.sh mongo:27017 -- npm run migrate:up && npm run dev"]
 
