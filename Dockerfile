@@ -8,17 +8,17 @@ RUN apk update && \
 # Container directory
 WORKDIR /app
 
+# Copy the wait-for-it.sh script explicitly
+COPY wait-for-it.sh /app/wait-for-it.sh
+
+# Make wait-for-it.sh executable
+RUN chmod +x /app/wait-for-it.sh
+
 # Copy package.json and package-lock.json files
 COPY package*.json ./
 
 # Install packages
 RUN npm install
-
-# Copy the wait-for-it.sh script
-COPY wait-for-it.sh .
-
-# Make wait-for-it.sh executable
-RUN chmod +x wait-for-it.sh
 
 # Copy the rest of the application files
 COPY . .
@@ -27,4 +27,4 @@ COPY . .
 EXPOSE 3001
 
 # Last command to run the project
-CMD ["sh", "-c", "./wait-for-it.sh mongo:27017 -- npm run migrate:up && npm run dev"]
+CMD ["sh", "-c", "/app/wait-for-it.sh mongo:27017 -- npm run migrate:up && npm run dev"]
