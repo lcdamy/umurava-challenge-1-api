@@ -31,7 +31,6 @@ coverage/
 bower_components/
 
 # Compiled source
-dist/
 build/
 
 # Misc

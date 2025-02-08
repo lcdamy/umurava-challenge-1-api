@@ -6,7 +6,7 @@ const config = {
     url: "mongodb://localhost:27017",
 
     // TODO Change this to your database name:
-    databaseName: "umurava-challenge-db",
+    databaseName: "umurava-challenge-db-api",
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting
