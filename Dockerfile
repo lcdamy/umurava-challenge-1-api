@@ -8,17 +8,17 @@ RUN apk update && \
 # Container directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json files
-COPY package*.json ./
-
-# Install packages
-RUN npm install
-
 # Copy the wait-for-it.sh script explicitly
 COPY wait-for-it.sh /app/wait-for-it.sh
 
 # Make wait-for-it.sh executable
 RUN chmod +x /app/wait-for-it.sh
+
+# Copy package.json and package-lock.json files
+COPY package*.json ./
+
+# Install packages
+RUN npm install
 
 # Copy the rest of the application files
 COPY . .
