@@ -13,6 +13,8 @@ import expressWinston from 'express-winston';
 import logger from './config/logger';
 import helmet from 'helmet';
 
+const port = process.env.PORT || 4000;
+
 
 // Import the cron job file
 require(path.join(__dirname, 'cronjobs', 'schedules'));
@@ -34,7 +36,7 @@ app.use("/api/participant", participantChallengeRoutes);
 // Swagger setup
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on http://localhost:${process.env.PORT}`);
-    console.log(`Swagger UI is available at http://localhost:${process.env.PORT}/api-docs`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Swagger UI is available at http://localhost:${port}/api-docs`);
 });
