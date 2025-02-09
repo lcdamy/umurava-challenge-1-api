@@ -13,7 +13,7 @@ import expressWinston from 'express-winston';
 import logger from './config/logger';
 import helmet from 'helmet';
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 10001;
 
 
 // Import the cron job file
