@@ -6,12 +6,12 @@ const { AdminAuthorized, identifier } = require('../../middlewares/authMiddlewar
 adminChallengesRoutes.use(identifier);
 adminChallengesRoutes.use(AdminAuthorized());
 
-
 /**
  *  @swagger
  *  /api/challenge:
  *   post:
  *     summary: Create a new challenge
+ *     tags: [challenge]
  *     requestBody:
  *       required: true
  *       content:
@@ -61,6 +61,7 @@ adminChallengesRoutes.post('/', challengesController.createChallenge);
  * /api/challenge/{id}:
  *   put:
  *     summary: Update a challenge by id
+ *     tags: [challenge]
  *     parameters:
  *       - in: path
  *         name: id
@@ -112,6 +113,7 @@ adminChallengesRoutes.put('/:id', challengesController.updateChallenge);
  * /api/challenge/{id}:
  *   delete:
  *     summary: Delete a challenge by id
+ *     tags: [challenge]
  *     parameters:
  *       - in: path
  *         name: id
@@ -127,6 +129,7 @@ adminChallengesRoutes.delete('/:id', challengesController.deleteChallenge);
  * /api/challenge/{id}:
  *   get:
  *     summary: Get a challenge by id
+ *     tags: [challenge]
  *     parameters:
  *       - in: path
  *         name: id
