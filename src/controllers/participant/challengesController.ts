@@ -50,4 +50,5 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
         logger.error('Error joining the challenge', error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error joining the challenge', error));
     }
+    
 };
