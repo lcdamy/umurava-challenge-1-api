@@ -40,4 +40,4 @@ jobs:
           github_deployment: true
           deployment_environment: 'production'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          clean_cache: false
+          clear_cache: false
