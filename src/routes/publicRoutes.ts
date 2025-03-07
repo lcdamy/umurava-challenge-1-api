@@ -8,7 +8,8 @@ const publicController = require('../controllers/public/publicController');
  * @swagger
  * /public/api/skills:
  *   get:
- *     summary: Get all skills  
+ *     summary: Get all skills
+ *     tags: [public]
  *     responses:
  *       200:
  *         description: Returns all skills
@@ -35,7 +36,8 @@ publicRoutes.get('/skills', skillsController.getSkills);
  * @swagger
  * /public/api/challenges:
  *   get:
- *     summary: Get all challenges  
+ *     summary: Get all challenges
+ *     tags: [public]
  *     responses:
  *       200:
  *         description: Returns all challenges
@@ -66,6 +68,7 @@ publicRoutes.get('/challenges', challengesController.getChallenges);
  * /public/api/challenges/{id}:
  *   get:
  *     summary: Get a challenge by id
+ *     tags: [public]
  *     parameters:
  *       - in: path
  *         name: id
@@ -103,6 +106,7 @@ publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
  * /public/api/join:
  *   post:
  *     summary: Post to join the program
+ *     tags: [public]
  *     requestBody:
  *       description: Data to post to join the program
  *       required: true
@@ -136,11 +140,13 @@ publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyUm9sZSI6ImFkbWluIiwiaWF0IjoxNzM4NDI1MTEwfQ.2uAiaLiaZByNdnPP6s5Vjzvg30cqaBIVPN7xtSpsXz4"
  */
 publicRoutes.post('/enter', publicController.joinProgram);
+
 /**
  * @swagger
  * /public/api/join/whatsapp/community:
  *   post:
  *     summary: Post to join the WhatsApp community
+ *     tags: [public]
  *     requestBody:
  *       description: Data to post to join the WhatsApp community
  *       required: true
@@ -157,6 +163,5 @@ publicRoutes.post('/enter', publicController.joinProgram);
  *         description: Successfully posted to join the WhatsApp community
  */
 publicRoutes.post('/join/whatsapp/community', publicController.joinWhatsAppCommunity);
-
 
 export default publicRoutes;

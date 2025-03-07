@@ -7,11 +7,14 @@ const { AdminAuthorized, identifier } = require('../../middlewares/authMiddlewar
 
 skillsRoutes.use(identifier);
 skillsRoutes.use(AdminAuthorized());
+
 /**
  * @swagger
  * /api/skills/{id}:
  *   get:
  *     summary: Get a skill by ID
+ *     tags:
+ *       - skills
  *     parameters:
  *       - in: path
  *         name: id
@@ -43,6 +46,8 @@ skillsRoutes.put('/:id', validateRequest(SkillDTO), skillsController.updateSkill
  * /api/skills/{id}:
  *   delete:
  *     summary: Delete a skill by ID
+ *     tags:
+ *       - skills
  *     parameters:
  *       - in: path
  *         name: id

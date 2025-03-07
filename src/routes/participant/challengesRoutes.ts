@@ -11,6 +11,8 @@ participantChallengeRoutes.use(ParticipantAuthorized());
  * /api/challenge/join/{id}:
  *   post:
  *     summary: Join a challenge
+ *     tags:
+ *       - participant
  *     parameters:
  *       - in: path
  *         name: id
