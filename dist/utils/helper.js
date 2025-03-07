@@ -10,14 +10,14 @@ const date_fns_1 = require("date-fns");
 const types_1 = require("../types");
 function mockAdminUser() {
     const mockAdminUser = [
-        { phoneNumber: "250785485001", username: 'johnDoeAdmin', names: 'Johnathan Doe', email: "john.doe.admin@gmail.com", userRole: types_1.UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/men/1.jpg' },
-        { phoneNumber: "250785485102", username: 'janeSmithAdmin', names: 'Janet Smith', email: "jane.smith.admin@gmail.com", userRole: types_1.UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/women/1.jpg' }
+        { phoneNumber: "250785485001", username: 'peter', names: 'Peter Damien', email: "zudanga@gmail.com", userRole: types_1.UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/men/1.jpg' },
+        { phoneNumber: "250785485102", username: 'janeSmithAdmin', names: 'Janet Smith', email: "waka.florien45@gmail.com", userRole: types_1.UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/women/1.jpg' }
     ];
     return mockAdminUser;
 }
 function mockParticipanteUser() {
     const mockParticipanteUser = [
-        { phoneNumber: "250786461106", username: 'johnDoeParticipant', names: 'Johnny Doe', email: "john.doe.participant@gmail.com", userRole: types_1.UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/2.jpg' },
+        { phoneNumber: "250786461106", username: 'waka', names: 'Waka Florien', email: "waka.florien45@gmail.com", userRole: types_1.UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/2.jpg' },
         { phoneNumber: "250785485203", username: 'janeSmithParticipant', names: 'Janelle Smith', email: "jane.smith.participant@gmail.com", userRole: types_1.UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/2.jpg' },
         { phoneNumber: "250785485304", username: 'michaelBrownParticipant', names: 'Michael Brown', email: "michael.brown.participant@gmail.com", userRole: types_1.UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/3.jpg' },
         { phoneNumber: "250785485405", username: 'emilyClarkParticipant', names: 'Emily Clark', email: "emily.clark.participant@gmail.com", userRole: types_1.UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/3.jpg' },
