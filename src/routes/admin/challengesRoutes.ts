@@ -2,6 +2,7 @@ const express = require('express');
 const adminChallengesRoutes = express.Router();
 const challengesController = require('../../controllers/admin/challengesController');
 const { AdminAuthorized, identifier } = require('../../middlewares/authMiddleware');
+
 adminChallengesRoutes.use(identifier);
 adminChallengesRoutes.use(AdminAuthorized());
 
