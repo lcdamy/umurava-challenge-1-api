@@ -8,7 +8,7 @@ import { sendEmail } from "../../utils/emailService";
 
 // Participate join the challenge api
 export const joinChallenge = async (req: Request, res: Response): Promise<Response> => {
-    logger.info('joinChallenge API called');
+    logger.info('joinChallenge API called!');
     const { errors, value } = JoinChallengeDTO.validate(req.body);
     if (errors) {
         logger.error('Validation Error', errors);
@@ -21,7 +21,7 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
         challenge.joinChallenge(value.participant);
-        logger.info(`Participant joined the challenge successfully: ${challenge.challengeName}`);
+        logger.info(`Participant joined the challenge successfully:: ${challenge.challengeName}`);
 
         const context = {
             year: new Date().getFullYear(),
@@ -50,5 +50,5 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
         logger.error('Error joining the challenge', error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error joining the challenge', error));
     }
-    
+
 };
