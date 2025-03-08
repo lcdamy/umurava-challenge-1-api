@@ -29,8 +29,8 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             subject: 'Participant Joined Challenge',
             name: 'admin',
             message: '',
-            link: '',
-            link_label: ''
+            link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard',
+            link_label: 'Login Now'
         };
         const sendWelcomeEmail = async (message: string, linkLabel: string) => {
             context.message = message;
