@@ -200,7 +200,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
 
     try {
         // Extract values from the request body
-        const { email, token, newPassword } = value;
+        const { token, newPassword } = value;
 
         // Verify the token
         const decodedToken = verifyToken(token);
@@ -215,10 +215,12 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
             return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Invalid or expired token'));
         }
 
+
+
         // Find the user by email
         const user = await User.findOne({ email: decodedToken.email });
         if (!user) {
-            logger.warn('Password reset failed: user not found', { email });
+            logger.warn('Password reset failed: user not found');
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
         }
 
