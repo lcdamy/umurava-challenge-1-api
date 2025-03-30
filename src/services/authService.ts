@@ -1,9 +1,7 @@
 
-import  User  from "../models/userModel";
+
 import bcrypt from "bcryptjs";
-import { generateToken, verifyToken } from "../utils/helper";
-import { sendEmail } from "../utils/emailService";
-import logger from '../config/logger';
+
 
 
 export class AuthService {
