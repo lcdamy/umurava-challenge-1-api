@@ -1,12 +1,4 @@
-const express = require('express');
-const skillsRoutes = express.Router();
-const skillsController = require('../../controllers/admin/skillsController');
-const validateRequest = require('../../middlewares/validateRequest');
-const SkillDTO = require('../../dtos/skillsDTO');
-const { AdminAuthorized, identifier } = require('../../middlewares/authMiddleware');
 
-skillsRoutes.use(identifier);
-skillsRoutes.use(AdminAuthorized());
 
 /**
  * @swagger
@@ -39,7 +31,7 @@ skillsRoutes.use(AdminAuthorized());
  *       404:
  *         description: Skill not found
  */
-skillsRoutes.put('/:id', validateRequest(SkillDTO), skillsController.updateSkill);
+
 
 /**
  * @swagger
@@ -56,6 +48,18 @@ skillsRoutes.put('/:id', validateRequest(SkillDTO), skillsController.updateSkill
  *           type: string
  *         description: The ID of the skill to delete   
  */
-skillsRoutes.delete('/:id', skillsController.deleteSkill);
+
+const express = require('express');
+const skillsRoutes = express.Router();
+const skillsController = require('../../../controllers/admin/skillsController');
+const validateRequest = require('../../../middlewares/validateRequest');
+const SkillDTO = require('../../../dtos/skillsDTO');
+const { AdminAuthorized, identifier } = require('../../../middlewares/authMiddleware');
+
+skillsRoutes.use(identifier);
+skillsRoutes.use(AdminAuthorized());
+
+skillsRoutes.put('/skills/:id', validateRequest(SkillDTO), skillsController.updateSkill);
+skillsRoutes.delete('/skills/:id', skillsController.deleteSkill);
 
 export default skillsRoutes;

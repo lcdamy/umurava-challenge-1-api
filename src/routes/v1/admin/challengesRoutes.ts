@@ -1,10 +1,4 @@
-const express = require('express');
-const adminChallengesRoutes = express.Router();
-const challengesController = require('../../controllers/admin/challengesController');
-const { AdminAuthorized, identifier } = require('../../middlewares/authMiddleware');
 
-adminChallengesRoutes.use(identifier);
-adminChallengesRoutes.use(AdminAuthorized());
 
 /**
  *  @swagger
@@ -54,7 +48,7 @@ adminChallengesRoutes.use(AdminAuthorized());
  *       400:
  *         description: Bad request
  */
-adminChallengesRoutes.post('/', challengesController.createChallenge);
+
 
 /**
  * @swagger
@@ -106,7 +100,7 @@ adminChallengesRoutes.post('/', challengesController.createChallenge);
  *                   type: string
  *                   example: "Frontend"
  */
-adminChallengesRoutes.put('/:id', challengesController.updateChallenge);
+
 
 /**
  * @swagger
@@ -122,7 +116,7 @@ adminChallengesRoutes.put('/:id', challengesController.updateChallenge);
  *           type: string
  *         description: The challenge id
  */
-adminChallengesRoutes.delete('/:id', challengesController.deleteChallenge);
+
 
 /**
  * @swagger
@@ -146,6 +140,20 @@ adminChallengesRoutes.delete('/:id', challengesController.deleteChallenge);
  *               type: object
  *               properties:
  */
-adminChallengesRoutes.get('/statistics', challengesController.getChallengesStatistics);
+
+const express = require('express');
+const adminChallengesRoutes = express.Router();
+const challengesController = require('../../../controllers/admin/challengesController');
+
+const { AdminAuthorized, identifier } = require('../../../middlewares/authMiddleware');
+
+adminChallengesRoutes.use(identifier);
+
+adminChallengesRoutes.use(AdminAuthorized());
+
+adminChallengesRoutes.post('/challenge', challengesController.createChallenge);
+adminChallengesRoutes.put('/challenge/:id', challengesController.updateChallenge);
+adminChallengesRoutes.delete('/challenge/:id', challengesController.deleteChallenge);
+adminChallengesRoutes.get('/challenge/statistics', challengesController.getChallengesStatistics);
 
 export default adminChallengesRoutes;

@@ -1,10 +1,4 @@
-const express = require('express');
-const participantChallengeRoutes = express.Router();
-const challengesController = require('../../controllers/participant/challengesController');
-const { ParticipantAuthorized, identifier } = require('../../middlewares/authMiddleware');
 
-participantChallengeRoutes.use(identifier);
-participantChallengeRoutes.use(ParticipantAuthorized());
 
 /**
  * @swagger
@@ -24,6 +18,15 @@ participantChallengeRoutes.use(ParticipantAuthorized());
  *       200:
  *         description: Returns the challenge with the specified ID
  */
+
+const express = require('express');
+const participantChallengeRoutes = express.Router();
+const challengesController = require('../../../controllers/participant/challengesController');
+const { ParticipantAuthorized, identifier } = require('../../../middlewares/authMiddleware');
+
+participantChallengeRoutes.use(identifier);
+participantChallengeRoutes.use(ParticipantAuthorized());
+
 participantChallengeRoutes.post('/join/challenge/:id', challengesController.joinChallenge);
 
 

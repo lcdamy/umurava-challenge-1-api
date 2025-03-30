@@ -1,8 +1,4 @@
-const express = require('express');
-const publicRoutes = express.Router();
-const skillsController = require('../controllers/admin/skillsController');
-const challengesController = require('../controllers/admin/challengesController');
-const publicController = require('../controllers/public/publicController');
+
 
 /**
  * @swagger
@@ -30,7 +26,7 @@ const publicController = require('../controllers/public/publicController');
  *                     type: string
  *                     example: "Skill Description"
  */
-publicRoutes.get('/skills', skillsController.getSkills);
+
 
 /**
  * @swagger
@@ -61,7 +57,7 @@ publicRoutes.get('/skills', skillsController.getSkills);
  *                     type: string
  *                     example: "Easy"
  */
-publicRoutes.get('/challenges', challengesController.getChallenges);
+
 
 /**
  * @swagger
@@ -99,7 +95,7 @@ publicRoutes.get('/challenges', challengesController.getChallenges);
  *       404:
  *         description: Challenge not found
  */
-publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
+
 
 /**
  * @swagger
@@ -139,7 +135,6 @@ publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
  *                       type: string
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyUm9sZSI6ImFkbWluIiwiaWF0IjoxNzM4NDI1MTEwfQ.2uAiaLiaZByNdnPP6s5Vjzvg30cqaBIVPN7xtSpsXz4"
  */
-publicRoutes.post('/enter', publicController.joinProgram);
 
 /**
  * @swagger
@@ -162,6 +157,17 @@ publicRoutes.post('/enter', publicController.joinProgram);
  *       200:
  *         description: Successfully posted to join the WhatsApp community
  */
+
+const express = require('express');
+const publicRoutes = express.Router();
+const skillsController = require('../../../controllers/admin/skillsController'); 
+const challengesController = require('../../../controllers/admin/challengesController');
+const publicController = require('../../../controllers/public/publicController');
+
+publicRoutes.get('/skills', skillsController.getSkills);
+publicRoutes.get('/challenges', challengesController.getChallenges);
+publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
+publicRoutes.post('/enter', publicController.joinProgram);
 publicRoutes.post('/join/whatsapp/community', publicController.joinWhatsAppCommunity);
 
 export default publicRoutes;
