@@ -1,32 +1,27 @@
 import Joi from 'joi';
 
-export class LoginUserDTO {
+export class ForgetUserDTO {
     email: string;
-    password: string;
 
     constructor(
-        email: string,
-        password: string,
+        email: string
     ) {
         this.email = email;
-        this.password = password;
     }
 
     // Add a method to validate the data using Joi
     static validate(data: {
         email: string;
-        password: string;
     }) {
         const schema = Joi.object({
             email: Joi.string().email().required(),
-            password: Joi.string().min(8).required(),
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });
 
         if (error) {
             return {
-                errors: LoginUserDTO.formatValidationErrors(error.details)
+                errors: ForgetUserDTO.formatValidationErrors(error.details)
             };
         }
         return { value };

@@ -5,7 +5,10 @@ import { formatResponse, generateToken, verifyToken } from '../../utils/helper';
 import User from '../../models/userModel';
 import { sendEmail } from '../../utils/emailService';
 import { CreateUserDTO } from '../../dtos/createUserDTO';
-import { LogoginUserDTO } from '../../dtos/loginUserDTO';
+import { LoginUserDTO } from '../../dtos/loginUserDTO';
+import { ForgetUserDTO } from '../../dtos/forgetUserDTO';
+import { ResetUserDTO } from '../../dtos/resetUserDTO';
+import { CreateUserSocialDTO } from '../../dtos/createUserSocialDTO';
 import { AuthService } from '../../services/authService';
 import bcrypt from "bcryptjs";
 
@@ -68,7 +71,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
 // Controller function for user login
 export const login = async (req: Request, res: Response): Promise<Response> => {
-    const { errors, value } = LogoginUserDTO.validate(req.body);
+    const { errors, value } = LoginUserDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during user login', { errors });
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
@@ -102,7 +105,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         }
 
         // Generate token
-        const token = generateToken({ id: user._id, email: user.email }, 86400); // 1 day expiration
+        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url }, 86400); // 1 day expiration
         logger.info('User logged in successfully', { id: user._id });
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'User logged in successfully', { token }));
@@ -143,83 +146,125 @@ export const verifyEmail = async (req: Request, res: Response): Promise<Response
     }
 };
 
-// Controller function for refreshing access token
-// export const refreshToken = async (req: Request, res: Response): Promise<Response> => {
-//     const { refreshToken } = req.body;
-//     try {
-//         // Logic for refreshing access token
-//         const newToken = refreshAccessToken(refreshToken);
-//         logger.info('Access token refreshed successfully');
-//         return res.status(StatusCodes.OK).json(formatResponse('success', 'Access token refreshed successfully', { token: newToken }));
-//     } catch (error) {
-//         logger.error('Error refreshing access token', { error });
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error refreshing access token', error));
-//     }
-// };
-
 // Controller function for password reset request
-// export const forgetPassword = async (req: Request, res: Response): Promise<Response> => {
-//     const { email } = req.body;
-//     try {
-//         // Logic for handling password reset request
-//         const resetToken = await generatePasswordResetToken(email);
-//         logger.info('Password reset request successful', { email });
-//         return res.status(StatusCodes.OK).json(formatResponse('success', 'Password reset request successful', { resetToken }));
-//     } catch (error) {
-//         logger.error('Error processing password reset request', { error });
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error processing password reset request', error));
-//     }
-// };
+export const forgetPassword = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = ForgetUserDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error during password reset request', { errors });
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+    }
+    const { email } = value;
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            logger.warn('Password reset request failed: user not found', { email });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No account found with the provided email address'));
+        }
+        //change the status of the user to inactive
+        user.status = 'inactive';
+        await user.save();
+
+        // Generate a token for password reset
+        const token = generateToken({ email: user.email }, 3600); // 1 hour expiration
+
+        // Prepare email context
+        const context = {
+            year: new Date().getFullYear(),
+            logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
+            subject: 'Password Reset Request',
+            name: user.names,
+            message: `You requested a password reset. Click the link below to reset your password.`,
+            link: `${FRONTEND_URL}/reset-password?token=${token}`,
+            link_label: 'Reset your password'
+        };
+
+        // Send password reset email
+        await sendEmail('send_notification', 'Password Reset Request', user.email, context);
+
+        logger.info('Password reset request successful', { email });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Password reset request successful', { email }));
+    } catch (error) {
+        logger.error('Error processing password reset request', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error processing password reset request', error));
+    }
+};
 
 // Controller function for password reset
-// export const resetPassword = async (req: Request, res: Response): Promise<Response> => {
-//     const { token, newPassword } = req.body;
-//     try {
-//         // Logic for resetting password
-//         await resetUserPassword(token, newPassword);
-//         logger.info('Password reset successfully');
-//         return res.status(StatusCodes.OK).json(formatResponse('success', 'Password reset successfully'));
-//     } catch (error) {
-//         logger.error('Error resetting password', { error });
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error resetting password', error));
-//     }
-// };
+export const resetPassword = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = ResetUserDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error during password reset', { errors });
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+    }
 
-// Controller function for password change
-// export const changePassword = async (req: Request, res: Response): Promise<Response> => {
-//     const { currentPassword, newPassword } = req.body;
-//     try {
-//         // Logic for changing password
-//         const user = await User.findById(req.user.id);
-//         if (!user || !(await user.comparePassword(currentPassword))) {
-//             logger.warn('Invalid password change attempt', { id: req.user.id });
-//             return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Invalid current password'));
-//         }
-//         user.password = newPassword;
-//         await user.save();
-//         logger.info('Password changed successfully', { id: user._id });
-//         return res.status(StatusCodes.OK).json(formatResponse('success', 'Password changed successfully'));
-//     } catch (error) {
-//         logger.error('Error changing password', { error });
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error changing password', error));
-//     }
-// };
+    try {
+        // Extract values from the request body
+        const { email, token, newPassword } = value;
+
+        // Verify the token
+        const decodedToken = verifyToken(token);
+        if (!decodedToken) {
+            logger.warn('Invalid or expired token', { token });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Invalid or expired token'));
+        }
+
+        // Ensure the token contains the email
+        if (typeof decodedToken !== 'object' || !('email' in decodedToken)) {
+            logger.warn('Invalid or expired token', { token });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Invalid or expired token'));
+        }
+
+        // Find the user by email
+        const user = await User.findOne({ email: decodedToken.email });
+        if (!user) {
+            logger.warn('Password reset failed: user not found', { email });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password and status
+        user.password = hashedPassword;
+        user.status = 'active'; // Set status to active after password reset
+        await user.save();
+
+        logger.info('Password reset successfully', { email: user.email });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Password reset successfully'));
+    } catch (error) {
+        logger.error('Error resetting password', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error resetting password', error));
+    }
+};
 
 // Controller function for social login
-// export const getTokenByEmail = async (req: Request, res: Response): Promise<Response> => {
-//     const { email } = req.body;
-//     try {
-//         // Logic for handling social login
-//         const user = await User.findOne({ email });
-//         if (!user) {
-//             logger.warn('Social login failed: user not found', { email });
-//             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
-//         }
-//         const token = generateToken(user);
-//         logger.info('Social login successful', { id: user._id });
-//         return res.status(StatusCodes.OK).json(formatResponse('success', 'Social login successful', { token }));
-//     } catch (error) {
-//         logger.error('Error processing social login', { error });
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error processing social login', error));
-//     }
-// };
+export const getTokenByEmail = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = CreateUserSocialDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error during social login', { errors });
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+    }
+
+    const { names, email, profile_url } = value;
+
+    try {
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create a new user if not found
+            user = new User({ names, email, profile_url, status: 'active' });
+            await user.save();
+            logger.info('New user created for social login', { id: user._id });
+        }
+
+        // Generate token for the user
+        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url }, 86400); // 1 day expiration
+        logger.info('Social login successful', { id: user._id });
+
+        return res.status(user.isNew ? StatusCodes.CREATED : StatusCodes.OK).json(formatResponse('success', 'Social login successful', { token }));
+    } catch (error) {
+        logger.error('Error processing social login', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error processing social login', error));
+    }
+};

@@ -1,32 +1,37 @@
 import Joi from 'joi';
 
-export class LoginUserDTO {
+export class CreateUserSocialDTO {
+    names: string;
     email: string;
-    password: string;
+    profile_url: string;
 
     constructor(
+        names: string,
         email: string,
-        password: string,
+        profile_url: string,
     ) {
+        this.names = names;
         this.email = email;
-        this.password = password;
+        this.profile_url = profile_url;
     }
 
     // Add a method to validate the data using Joi
     static validate(data: {
+        names: string;
         email: string;
-        password: string;
+        profile_url: string;
     }) {
         const schema = Joi.object({
+            names: Joi.string().trim().required(),
             email: Joi.string().email().required(),
-            password: Joi.string().min(8).required(),
+            profile_url: Joi.string().uri().required(),
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });
 
         if (error) {
             return {
-                errors: LoginUserDTO.formatValidationErrors(error.details)
+                errors: CreateUserSocialDTO.formatValidationErrors(error.details)
             };
         }
         return { value };

@@ -1,32 +1,43 @@
 import Joi from 'joi';
 
-export class LoginUserDTO {
+export class ResetUserDTO {
     email: string;
-    password: string;
+    newPassword: string;
+    token: string;
 
     constructor(
         email: string,
-        password: string,
+        newPassword: string,
+        token: string,
     ) {
         this.email = email;
-        this.password = password;
+        this.newPassword = newPassword;
+        this.token = token;
     }
 
     // Add a method to validate the data using Joi
     static validate(data: {
         email: string;
-        password: string;
+        newPassword: string;
+        token: string;
     }) {
         const schema = Joi.object({
             email: Joi.string().email().required(),
-            password: Joi.string().min(8).required(),
+            newPassword: Joi.string().min(8).required()
+                .messages({
+                    "string.min": "Password must be at least 8 characters long."
+                }),
+            token: Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/).required()
+            .messages({
+                "string.pattern.base": "Token must be a valid JWT."
+            }),
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });
 
         if (error) {
             return {
-                errors: LoginUserDTO.formatValidationErrors(error.details)
+                errors: ResetUserDTO.formatValidationErrors(error.details)
             };
         }
         return { value };

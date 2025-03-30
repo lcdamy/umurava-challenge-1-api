@@ -3,11 +3,9 @@ const {
     register,
     login,
     verifyEmail,
-    // forgetPassword,
-    // resetPassword,
-    // refreshToken,
-    // getTokenByEmail,
-    // changePassword
+    forgetPassword,
+    resetPassword,
+    getTokenByEmail,
 } = require('../../../controllers/auth/authController');
 
 const router = Router();
@@ -21,19 +19,13 @@ router.post('/login', login);
 // Route for verifying email (if applicable)
 router.get('/verify-email/:token', verifyEmail);
 
-// // Route for refreshing access token
-// router.post('/refresh-token', refreshToken);
+// Route for password reset request
+router.post('/forget-password', forgetPassword);
 
-// // Route for password reset request
-// router.post('/forget-password', forgetPassword);
+// Route for password reset
+router.post('/reset-password', resetPassword);
 
-// // Route for password reset
-// router.post('/reset-password', resetPassword);
-
-// // Route for password change
-// router.post('/change-password', changePassword);
-
-// // Route for social login (Google, Facebook, etc.)
-// router.post('/social-login', getTokenByEmail);
+// Route for social login (Google, Facebook, etc.)
+router.post('/social-login', getTokenByEmail);
 
 export default router;
