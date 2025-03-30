@@ -10,7 +10,6 @@ exports.identifier = (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
         return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'No token provided'));
     }
-
     const secret = process.env.TOKEN_SECRET;
     if (!secret) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Token secret is not defined'));
