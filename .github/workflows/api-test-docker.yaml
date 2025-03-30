@@ -20,6 +20,9 @@ jobs:
       - name: install packages
         run: npm install
 
+      - name: clean npm cache
+        run: npm cache clean --force
+
       - name: build TypeScript
         run: npm run build
 
@@ -45,4 +48,3 @@ jobs:
           deployment_environment: 'production'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           clear_cache: true
-
