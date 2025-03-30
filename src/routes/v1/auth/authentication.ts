@@ -2,6 +2,7 @@ import { Router } from 'express';
 const {
     register,
     login,
+    verifyEmail,
     // forgetPassword,
     // resetPassword,
     // refreshToken,
@@ -16,6 +17,9 @@ router.post('/register', register);
 
 // Route for user login
 router.post('/login', login);
+
+// Route for verifying email (if applicable)
+router.get('/verify-email/:token', verifyEmail);
 
 // // Route for refreshing access token
 // router.post('/refresh-token', refreshToken);

@@ -112,6 +112,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     }
 };
 
+// Controller function for email verification
 export const verifyEmail = async (req: Request, res: Response): Promise<Response> => {
     const { token } = req.params;
     try {
