@@ -1,10 +1,10 @@
-import e, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
-const ChallengeDTO = require('../../dtos/challengesDTO');
 import { convertToISO, formatResponse, getDuration } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import User from '../../models/userModel';
+const ChallengeDTO = require('../../dtos/challengesDTO');
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {

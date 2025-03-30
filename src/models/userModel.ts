@@ -1,20 +1,15 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface IUser extends Document {
-    username: string;
     names: string;
     email: string;
-    userRole: string;
+    userRole: 'admin' | 'participant';
     profile_url: string;
-    phoneNumber: string;
+    password: string;
+    status: 'active' | 'inactive';
 }
 
 const UserSchema = new Schema<IUser>({
-    username: {
-        type: String,
-        required: true,
-        unique: true
-    },
     names: {
         type: String,
         required: true
@@ -31,13 +26,19 @@ const UserSchema = new Schema<IUser>({
     },
     profile_url: {
         type: String,
-        default: ''
+        default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
     },
-    phoneNumber: {
+    password: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'inactive'
+    },
+
+
 });
 
 const User = model<IUser>('User', UserSchema);

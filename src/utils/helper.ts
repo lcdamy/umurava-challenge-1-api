@@ -1,30 +1,5 @@
 import { parse, format } from 'date-fns';
-import { UserRole, UserPayload } from "../types";
-
-export function mockAdminUser() {
-    const mockAdminUser: UserPayload[] = [
-        { phoneNumber: "250785485001", username: 'johnDoeAdmin', names: 'Johnathan Doe', email: "john.doe.admin@gmail.com", userRole: UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/men/1.jpg' },
-        { phoneNumber: "250785485102", username: 'janeSmithAdmin', names: 'Janet Smith', email: "jane.smith.admin@gmail.com", userRole: UserRole.Admin, profile_url: 'https://randomuser.me/api/portraits/women/1.jpg' }
-    ];
-    return mockAdminUser;
-}
-
-export function mockParticipanteUser() {
-    const mockParticipanteUser: UserPayload[] = [
-        { phoneNumber: "250786461106", username: 'johnDoeParticipant', names: 'Johnny Doe', email: "john.doe.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/2.jpg' },
-        { phoneNumber: "250785485203", username: 'janeSmithParticipant', names: 'Janelle Smith', email: "jane.smith.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/2.jpg' },
-        { phoneNumber: "250785485304", username: 'michaelBrownParticipant', names: 'Michael Brown', email: "michael.brown.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/3.jpg' },
-        { phoneNumber: "250785485405", username: 'emilyClarkParticipant', names: 'Emily Clark', email: "emily.clark.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/3.jpg' },
-        { phoneNumber: "250785485506", username: 'williamJohnsonParticipant', names: 'William Johnson', email: "william.johnson.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/4.jpg' },
-        { phoneNumber: "250785485607", username: 'oliviaMartinezParticipant', names: 'Olivia Martinez', email: "olivia.martinez.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/4.jpg' },
-        { phoneNumber: "250785485708", username: 'jamesAndersonParticipant', names: 'James Anderson', email: "james.anderson.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/5.jpg' },
-        { phoneNumber: "250785485809", username: 'sophiaTaylorParticipant', names: 'Sophia Taylor', email: "sophia.taylor.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/5.jpg' },
-        { phoneNumber: "250785485910", username: 'danielMooreParticipant', names: 'Daniel Moore', email: "daniel.moore.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/men/6.jpg' },
-        { phoneNumber: "250785485101", username: 'miaWhiteParticipant', names: 'Mia White', email: "mia.white.participant@gmail.com", userRole: UserRole.Participant, profile_url: 'https://randomuser.me/api/portraits/women/6.jpg' },
-    ];
-    return mockParticipanteUser;
-};
-
+import jwt from "jsonwebtoken"
 
 export function convertToISO(date: string): string {
     const formats = ['dd/MM/yyyy', 'dd-MM-yyyy', 'MM/dd/yyyy', 'MM-dd-yyyy', 'yyyy-MM-dd', 'yyyy/MM/dd'];
@@ -68,3 +43,34 @@ export function getDuration(endDate: string, startDate: string): number {
 }
 
 export const formatResponse = (status: 'success' | 'error', message: string, data?: any) => ({ status, message, data });
+
+export const generateToken = (payload: object, expiresIn: number) => {
+    if (!process.env.TOKEN_SECRET) {
+        throw new Error("TOKEN_SECRET is not defined");
+    }
+    return jwt.sign(payload, process.env.TOKEN_SECRET, { expiresIn });
+};
+
+export const verifyToken = (token: string) => {
+    if (!process.env.TOKEN_SECRET) {
+        throw new Error("TOKEN_SECRET is not defined");
+    }
+    try {
+        return jwt.verify(token, process.env.TOKEN_SECRET);
+    } catch (error) {
+        throw new Error("Invalid token");
+    }
+};
+
+export const generateRandomPassword = (length: number) => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+};
+
+export const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
