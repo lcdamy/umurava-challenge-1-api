@@ -20,6 +20,9 @@ jobs:
       - name: install packages
         run: npm install
 
+      - name: run seed
+        run: npm run seed:all
+
       - name: clean npm cache
         run: npm cache clean --force
 
