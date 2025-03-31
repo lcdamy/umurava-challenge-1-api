@@ -19,7 +19,7 @@ dotenv_1.default.config();
 const seedseedChallengeCategorys = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Connect to your MongoDB database
-        yield mongoose_1.default.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/umurava-challenge-db-api');
+        yield mongoose_1.default.connect(process.env.MONGO_URI || 'mongodb+srv://zudanga:a15LoLgUAHKn9Tfv@cluster0.djtfu.mongodb.net/umurava-challenge-db-api?retryWrites=true&w=majority&appName=Cluster0');
         console.log('Connected to the database.');
         // Define the challengeCategory to seed
         const challengeCategory = [

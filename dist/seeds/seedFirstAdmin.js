@@ -23,7 +23,7 @@ const { FRONTEND_URL } = process.env;
 const seedFirstAdmin = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Connect to the database
-        yield mongoose_1.default.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/umurava-challenge-db-api');
+        yield mongoose_1.default.connect(process.env.MONGO_URI || 'mongodb+srv://zudanga:a15LoLgUAHKn9Tfv@cluster0.djtfu.mongodb.net/umurava-challenge-db-api?retryWrites=true&w=majority&appName=Cluster0');
         // Check if an admin already exists
         const existingAdmin = yield userModel_1.default.findOne({ userRole: 'admin' });
         if (existingAdmin) {
