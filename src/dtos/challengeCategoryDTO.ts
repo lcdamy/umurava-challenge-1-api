@@ -14,7 +14,8 @@ class ChallengeCategoryDTO {
     // Add a method to validate the data using Joi
     static validate(data: { challengeCategoryName: string }) {
         const schema = Joi.object({
-            challengeCategoryName: Joi.string().required()
+            challengeCategoryName: Joi.string().required(),
+            description: Joi.string().optional()
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });

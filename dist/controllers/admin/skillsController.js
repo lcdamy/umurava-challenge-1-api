@@ -57,9 +57,9 @@ const createSkill = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     try {
         // Check if the skill already exists
-        const existingSkill = yield skillsModel_1.default.findOne({ name: value.name });
+        const existingSkill = yield skillsModel_1.default.findOne({ skillName: value.skillName });
         if (existingSkill) {
-            logger_1.default.warn(`Skill with name "${value.name}" already exists`);
+            logger_1.default.warn(`Skill with skillName "${value.skillName}" already exists`);
             return res.status(http_status_codes_1.StatusCodes.CONFLICT).json((0, helper_1.formatResponse)('error', 'Skill already exists'));
         }
         const newSkill = new skillsModel_1.default(value);

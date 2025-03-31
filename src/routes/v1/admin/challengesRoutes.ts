@@ -143,6 +143,7 @@
 
 const express = require('express');
 const adminChallengesRoutes = express.Router();
+
 const challengesController = require('../../../controllers/admin/challengesController');
 
 const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
@@ -153,6 +154,7 @@ adminChallengesRoutes.put('/challenge/:id', authenticationMiddleware(), authoriz
 adminChallengesRoutes.delete('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.deleteChallenge);
 adminChallengesRoutes.get('/challenge/statistics', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengesStatistics);
 adminChallengesRoutes.post('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createChallengeCategory);
-adminChallengesRoutes.get('/challenge-categories', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeCategories);
+adminChallengesRoutes.get('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeCategories);
+adminChallengesRoutes.get( '/prize-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getPrizeCategories);
 
 export default adminChallengesRoutes;

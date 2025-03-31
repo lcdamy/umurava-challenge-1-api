@@ -1,18 +1,16 @@
 import { Schema, model, Document } from 'mongoose';
-import { ChallengeCategory } from '../types';
 
 interface IChallenge extends Document {
     challengeName: string;
+    challengeCategory: string;
     startDate: Date;
     endDate: Date;
     duration: number;
-    moneyPrize: string;
+    moneyPrize: Array<{ categoryPrize: string; prize: number }>;
     contactEmail: string;
     projectDescription: string;
-    projectBrief: string;
-    projectTasks: string;
     participants: Array<string>;
-    skills: Array<ChallengeCategory>;
+    skills: Array<string>;
     levels: Array<string>;
     status: 'open' | 'ongoing' | 'completed';
     joinChallenge(participant: any): void;
@@ -23,6 +21,10 @@ const ChallengeSchema: Schema = new Schema({
         type: String,
         required: true,
         unique: true
+    },
+    challengeCategory: {
+        type: String,
+        required: true
     },
     startDate: {
         type: Date,
@@ -37,7 +39,12 @@ const ChallengeSchema: Schema = new Schema({
         required: true
     },
     moneyPrize: {
-        type: String,
+        type: [
+            {
+                categoryPrize: { type: String, required: true },
+                prize: { type: Number, required: true }
+            }
+        ],
         required: true
     },
     contactEmail: {
@@ -45,14 +52,6 @@ const ChallengeSchema: Schema = new Schema({
         required: true
     },
     projectDescription: {
-        type: String,
-        required: true
-    },
-    projectBrief: {
-        type: String,
-        required: true
-    },
-    projectTasks: {
         type: String,
         required: true
     },

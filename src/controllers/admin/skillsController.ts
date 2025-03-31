@@ -42,9 +42,9 @@ export const createSkill = async (req: Request, res: Response): Promise<Response
     }
     try {
         // Check if the skill already exists
-        const existingSkill = await Skill.findOne({ name: value.name });
+        const existingSkill = await Skill.findOne({ skillName: value.skillName });
         if (existingSkill) {
-            logger.warn(`Skill with name "${value.name}" already exists`);
+            logger.warn(`Skill with skillName "${value.skillName}" already exists`);
             return res.status(StatusCodes.CONFLICT).json(formatResponse('error', 'Skill already exists'));
         }
 

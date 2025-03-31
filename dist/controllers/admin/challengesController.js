@@ -12,15 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChallengeCategories = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
+exports.getPrizeCategories = exports.getChallengeCategories = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
-const challengeModel_2 = __importDefault(require("../../models/challengeModel"));
+const challengeCategoryModel_1 = __importDefault(require("../../models/challengeCategoryModel"));
+const prizesModel_1 = __importDefault(require("../../models/prizesModel"));
 const helper_1 = require("../../utils/helper");
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
 const userModel_1 = __importDefault(require("../../models/userModel"));
 const ChallengeDTO = require('../../dtos/challengesDTO');
-const ChallengeCategoryDTO = require('../../dtos/challengesDTO');
+const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
 // Get all challenges
 const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
@@ -90,6 +91,12 @@ const createChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
         return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
     }
     try {
+        // check if the challenge already exists
+        const existingChallenge = yield challengeModel_1.default.findOne({ challengeName: value.challengeName });
+        if (existingChallenge) {
+            logger_1.default.warn('Challenge already exists', { challengeName: value.challengeName });
+            return res.status(http_status_codes_1.StatusCodes.CONFLICT).json((0, helper_1.formatResponse)('error', 'Challenge already exists'));
+        }
         const startDate = (0, helper_1.convertToISO)(value.startDate);
         const endDate = (0, helper_1.convertToISO)(value.endDate);
         const startDateObj = new Date(startDate);
@@ -225,10 +232,16 @@ const createChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, 
         return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
     }
     try {
-        const newCategory = new challengeModel_2.default(value);
-        const savedCategory = yield newCategory.save();
-        logger_1.default.info('Challenge category created successfully', { id: savedCategory._id });
-        return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Challenge category created successfully', savedCategory));
+        // check if the challenge category already exists
+        const existingCategory = yield challengeCategoryModel_1.default.findOne({ challengeCategoryName: value.challengeCategoryName });
+        if (existingCategory) {
+            logger_1.default.warn('Challenge category already exists', { challengeCategoryName: value.challengeCategoryName });
+            return res.status(http_status_codes_1.StatusCodes.CONFLICT).json((0, helper_1.formatResponse)('error', 'Challenge category already exists'));
+        }
+        const newChallengeCategory = new challengeCategoryModel_1.default(value);
+        const savedChallengeCategory = yield newChallengeCategory.save();
+        logger_1.default.info('Challenge category created successfully', { id: savedChallengeCategory._id });
+        return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Challenge category created successfully', savedChallengeCategory));
     }
     catch (error) {
         logger_1.default.error('Error creating challenge category', { error });
@@ -240,7 +253,7 @@ exports.createChallengeCategory = createChallengeCategory;
 const getChallengeCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         logger_1.default.info('Fetching challenge categories');
-        const categories = yield challengeModel_2.default.find({});
+        const categories = yield challengeCategoryModel_1.default.find({});
         logger_1.default.info('Challenge categories fetched successfully');
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge categories fetched successfully', categories));
     }
@@ -250,3 +263,17 @@ const getChallengeCategories = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.getChallengeCategories = getChallengeCategories;
+// Get all prize categories
+const getPrizeCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        logger_1.default.info('Fetching prize categories');
+        const categories = yield prizesModel_1.default.find({});
+        logger_1.default.info('Prize categories fetched successfully');
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Prize categories fetched successfully', categories));
+    }
+    catch (error) {
+        logger_1.default.error('Error fetching prize categories', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error fetching prize categories', error));
+    }
+});
+exports.getPrizeCategories = getPrizeCategories;

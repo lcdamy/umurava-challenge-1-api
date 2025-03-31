@@ -1,46 +1,42 @@
 import Joi from 'joi';
-import { ChallengeCategory } from '../types';
 
 class ChallengesDTO {
     id: string | undefined;
     challengeName: string | undefined;
+    challengeCategory: string | undefined;
     endDate: string | undefined;
     startDate: string | undefined;
     duration: number | undefined;
-    moneyPrize: string | undefined;
+    moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined;
     contactEmail!: string;
     projectDescription: string | undefined;
-    projectBrief: string | undefined;
-    projectTasks: string | undefined;
     status: 'open' | 'ongoing' | 'completed' | undefined;
     levels: Array<string> | undefined;
-    skills: Array<ChallengeCategory> | undefined;
+    skills: Array<string> | undefined;
 
     constructor(
         id: string | undefined,
         challengeName: string | undefined,
+        challengeCategory: string | undefined,
         endDate: string | undefined,
         starDate: string | undefined,
         duration: number | undefined,
-        moneyPrize: string | undefined,
+        moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined,
         contactEmail: string,
         projectDescription: string | undefined,
-        projectBrief: string | undefined,
-        projectTasks: string | undefined,
         status: 'open' | 'ongoing' | 'completed' | undefined,
         levels: Array<string> | undefined,
-        skills: Array<ChallengeCategory> | undefined
+        skills: Array<string> | undefined
     ) {
         this.id = id;
         this.challengeName = challengeName;
+        this.challengeCategory = challengeCategory;
         this.endDate = endDate;
         this.startDate = starDate;
         this.duration = duration;
         this.moneyPrize = moneyPrize;
         this.contactEmail = contactEmail;
         this.projectDescription = projectDescription;
-        this.projectBrief = projectBrief;
-        this.projectTasks = projectTasks;
         this.status = status;
         this.levels = levels;
         this.skills = skills;
@@ -50,27 +46,32 @@ class ChallengesDTO {
     static validate(data: {
         id: string;
         challengeName: string;
+        challengeCategory: string;
         endDate: string;
         startDate: string;
-        moneyPrize: string;
+        moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined;
         contactEmail: string;
         projectDescription: string;
-        projectBrief: string;
-        projectTasks: string;
         levels: Array<string>;
-        skills: Array<ChallengeCategory>;
+        skills: Array<string>;
     }) {
         const schema = Joi.object({
             challengeName: Joi.string().trim().required(),
+            challengeCategory: Joi.string().trim().required(),
             endDate: Joi.string().required(),
             startDate: Joi.string().required(),
-            moneyPrize: Joi.string().required(),
+            moneyPrize: Joi.array()
+                .items(
+                    Joi.object({
+                        categoryPrize: Joi.string().required(),
+                        prize: Joi.number().positive().required()
+                    })
+                )
+                .required(),
             contactEmail: Joi.string().email().required(),
             projectDescription: Joi.string().required(),
-            projectBrief: Joi.string().required(),
-            projectTasks: Joi.string().required(),
             levels: Joi.array().items(Joi.string().valid("Junior", "Intermediate", "Senior")).required(),
-            skills: Joi.array().required()
+            skills: Joi.array().items(Joi.string()).required()
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });
