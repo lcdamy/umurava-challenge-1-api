@@ -1,6 +1,7 @@
 import { Router } from 'express';
 const {
     register,
+    registerAdmin,
     login,
     verifyEmail,
     forgetPassword,
@@ -12,6 +13,9 @@ const router = Router();
 
 // Route for user registration
 router.post('/register', register);
+
+// Route for admin registration
+router.post('/register-admin', registerAdmin);
 
 // Route for user login
 router.post('/login', login);

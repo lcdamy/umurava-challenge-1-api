@@ -10,7 +10,15 @@
     "dev": "nodemon src/app.ts",
     "migrate:up": "migrate-mongo up",
     "migrate:down": "migrate-mongo down",
-    "migrate:create": "migrate-mongo create"
+    "migrate:create": "migrate-mongo create",
+    "seed:countries": "ts-node src/seeds/seedCountries.ts",
+    "seed:expertises": "ts-node src/seeds/seedExpertises.ts",
+    "seed:expertiseLevel": "ts-node src/seeds/seedExpertiseLevel.ts",
+    "seed:educationLevel": "ts-node src/seeds/seedEducationLevel.ts",
+    "seed:areaOfInterest": "ts-node src/seeds/seedAreaOfInterest.ts",
+    "seed:skills": "ts-node src/seeds/seedSkills.ts",
+    "seed:admin": "ts-node src/seeds/seedFirstAdmin.ts",
+    "seed:all": "npm run seed:skills && npm run seed:admin"
   },
   "author": "lcdamy",
   "license": "ISC",

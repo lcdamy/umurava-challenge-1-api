@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import handlebars from 'handlebars';
 import logger from '../config/logger';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const { GMAIL_EMAIL, GMAIL_PASSWORD } = process.env;
 

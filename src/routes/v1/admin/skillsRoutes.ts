@@ -52,14 +52,13 @@
 const express = require('express');
 const skillsRoutes = express.Router();
 const skillsController = require('../../../controllers/admin/skillsController');
-const validateRequest = require('../../../middlewares/validateRequest');
-const SkillDTO = require('../../../dtos/skillsDTO');
-const { AdminAuthorized, identifier } = require('../../../middlewares/authMiddleware');
 
-skillsRoutes.use(identifier);
-skillsRoutes.use(AdminAuthorized());
+const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
+const { authorizationMiddleware } = require("../../../middlewares/authorizationMiddleware");
 
-skillsRoutes.put('/skills/:id', validateRequest(SkillDTO), skillsController.updateSkill);
-skillsRoutes.delete('/skills/:id', skillsController.deleteSkill);
+skillsRoutes.put('/skills/:id', authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.updateSkill);
+skillsRoutes.delete('/skills/:id',authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.deleteSkill);
+skillsRoutes.post('/skills', authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.createSkill);
+
 
 export default skillsRoutes;

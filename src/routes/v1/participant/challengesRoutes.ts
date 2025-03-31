@@ -22,12 +22,11 @@
 const express = require('express');
 const participantChallengeRoutes = express.Router();
 const challengesController = require('../../../controllers/participant/challengesController');
-const { ParticipantAuthorized, identifier } = require('../../../middlewares/authMiddleware');
 
-participantChallengeRoutes.use(identifier);
-participantChallengeRoutes.use(ParticipantAuthorized());
+const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
+const { authorizationMiddleware } = require("../../../middlewares/authorizationMiddleware");
 
-participantChallengeRoutes.post('/join/challenge/:id', challengesController.joinChallenge);
+participantChallengeRoutes.post('/join/challenge/:id', authenticationMiddleware(), authorizationMiddleware("participant"), challengesController.joinChallenge);
 
 
 export default participantChallengeRoutes;

@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
-import { formatResponse, generateToken, verifyToken } from '../../utils/helper';
+import { formatResponse, generateRandomPassword, generateToken, verifyToken } from '../../utils/helper';
 import User from '../../models/userModel';
 import { sendEmail } from '../../utils/emailService';
 import { CreateUserDTO } from '../../dtos/createUserDTO';
+import { createAdminDTO } from '../../dtos/createAdminDTO';
 import { LoginUserDTO } from '../../dtos/loginUserDTO';
 import { ForgetUserDTO } from '../../dtos/forgetUserDTO';
 import { ResetUserDTO } from '../../dtos/resetUserDTO';
@@ -69,6 +70,58 @@ export const register = async (req: Request, res: Response): Promise<Response> =
     }
 };
 
+// controller function for admin registration
+export const registerAdmin = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = createAdminDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error during user registration', { errors });
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+    }
+
+    try {
+        // Check if the user already exists
+        const existingUser = await User.findOne({ email: value.email });
+        if (existingUser) {
+            logger.warn('User already exists', { email: value.email });
+            return res.status(StatusCodes.CONFLICT).json(formatResponse('error', 'User already exists'));
+        }
+
+        const adminPassword = generateRandomPassword(12); // Generate a random password for the admin
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+        // Create and save the new user
+        const newUser = new User({ ...value, password: hashedPassword, userRole: 'admin', status: 'active' });
+        const savedUser = await newUser.save();
+
+        if (!savedUser) {
+            logger.error('Error saving user to database', { user: value });
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error saving user to database'));
+        }
+
+
+        // Prepare email context
+        const context = {
+            year: new Date().getFullYear(),
+            logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
+            subject: 'Welcome to Umurava Skills Challenge Platform',
+            name: value.names,
+            message: `Congratulations on being added as an Admin to the Umurava Skills Challenge Platform! Your temporary password is: ${adminPassword}. Please click the link below to activate your account, and start managing the platform.`,
+            link: `${FRONTEND_URL}/admin/login`,
+            link_label: 'Log in to your account'
+        };
+
+        // Send welcome email
+        await sendEmail('send_notification', 'Welcome to Our Platform', value.email, context);
+
+        logger.info('User registered successfully', { id: savedUser._id });
+        return res.status(StatusCodes.CREATED).json(formatResponse('success', 'User registered successfully', { id: savedUser._id }));
+    } catch (error) {
+        logger.error('Error registering user', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error registering user', error));
+    }
+};
+
 // Controller function for user login
 export const login = async (req: Request, res: Response): Promise<Response> => {
     const { errors, value } = LoginUserDTO.validate(req.body);
@@ -105,7 +158,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         }
 
         // Generate token
-        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url }, 86400); // 1 day expiration
+        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger.info('User logged in successfully', { id: user._id });
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'User logged in successfully', { token }));
@@ -261,7 +314,7 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
         }
 
         // Generate token for the user
-        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url }, 86400); // 1 day expiration
+        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger.info('Social login successful', { id: user._id });
 
         return res.status(user.isNew ? StatusCodes.CREATED : StatusCodes.OK).json(formatResponse('success', 'Social login successful', { token }));

@@ -145,15 +145,12 @@ const express = require('express');
 const adminChallengesRoutes = express.Router();
 const challengesController = require('../../../controllers/admin/challengesController');
 
-const { AdminAuthorized, identifier } = require('../../../middlewares/authMiddleware');
+const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
+const { authorizationMiddleware } = require("../../../middlewares/authorizationMiddleware");
 
-adminChallengesRoutes.use(identifier);
-
-adminChallengesRoutes.use(AdminAuthorized());
-
-adminChallengesRoutes.post('/challenge', challengesController.createChallenge);
-adminChallengesRoutes.put('/challenge/:id', challengesController.updateChallenge);
-adminChallengesRoutes.delete('/challenge/:id', challengesController.deleteChallenge);
-adminChallengesRoutes.get('/challenge/statistics', challengesController.getChallengesStatistics);
+adminChallengesRoutes.post('/challenge', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createChallenge);
+adminChallengesRoutes.put('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateChallenge);
+adminChallengesRoutes.delete('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.deleteChallenge);
+adminChallengesRoutes.get('/challenge/statistics', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengesStatistics);
 
 export default adminChallengesRoutes;
