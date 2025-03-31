@@ -106,7 +106,7 @@ export const registerAdmin = async (req: Request, res: Response): Promise<Respon
             logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
             subject: 'Welcome to Umurava Skills Challenge Platform',
             name: value.names,
-            message: `Congratulations on being added as an Admin to the Umurava Skills Challenge Platform! Your temporary password is: ${adminPassword}. Please click the link below to activate your account, and start managing the platform.`,
+            message: `Congratulations on being added as an Admin to the Umurava Skills Challenge Platform! Your temporary password is: ${adminPassword}. Please click the link below to login to your account, and start managing the platform.`,
             link: `${FRONTEND_URL}/admin/login`,
             link_label: 'Log in to your account'
         };

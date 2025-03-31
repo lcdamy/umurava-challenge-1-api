@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
+import ChallengeCategory from '../../models/challengeModel';
 import { convertToISO, formatResponse, getDuration } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import User from '../../models/userModel';
 const ChallengeDTO = require('../../dtos/challengesDTO');
+const ChallengeCategoryDTO = require('../../dtos/challengesDTO');
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -219,3 +221,34 @@ export const getChallengesStatistics = async (req: Request, res: Response): Prom
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenges statistics', error));
     }
 };
+
+// create challenge category
+export const createChallengeCategory = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = ChallengeCategoryDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error creating challenge category', { errors });
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+    }
+    try {
+        const newCategory = new ChallengeCategory(value);
+        const savedCategory = await newCategory.save();
+        logger.info('Challenge category created successfully', { id: savedCategory._id });
+        return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Challenge category created successfully', savedCategory));
+    } catch (error) {
+        logger.error('Error creating challenge category', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error creating challenge category', error));
+    }
+}
+// Get all challenge categories
+export const getChallengeCategories = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        logger.info('Fetching challenge categories');
+        const categories = await ChallengeCategory.find({});
+        logger.info('Challenge categories fetched successfully');
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge categories fetched successfully', categories));
+    } catch (error) {
+        logger.error('Error fetching challenge categories', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge categories', error));
+    }
+}
+

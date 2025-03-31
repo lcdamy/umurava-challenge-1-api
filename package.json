@@ -17,8 +17,9 @@
     "seed:educationLevel": "ts-node src/seeds/seedEducationLevel.ts",
     "seed:areaOfInterest": "ts-node src/seeds/seedAreaOfInterest.ts",
     "seed:skills": "ts-node src/seeds/seedSkills.ts",
+    "seed:challengeCategory": "ts-node src/seeds/seedChallengeCategory.ts",
     "seed:admin": "ts-node src/seeds/seedFirstAdmin.ts",
-    "seed:all": "npm run seed:skills && npm run seed:admin"
+    "seed:all": "npm run seed:skills && npm run seed:challengeCategory && npm run seed:admin"
   },
   "author": "lcdamy",
   "license": "ISC",

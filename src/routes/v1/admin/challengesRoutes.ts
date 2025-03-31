@@ -152,5 +152,7 @@ adminChallengesRoutes.post('/challenge', authenticationMiddleware(), authorizati
 adminChallengesRoutes.put('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateChallenge);
 adminChallengesRoutes.delete('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.deleteChallenge);
 adminChallengesRoutes.get('/challenge/statistics', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengesStatistics);
+adminChallengesRoutes.post('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createChallengeCategory);
+adminChallengesRoutes.get('/challenge-categories', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeCategories);
 
 export default adminChallengesRoutes;

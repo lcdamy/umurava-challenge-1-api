@@ -41,6 +41,13 @@ export const createSkill = async (req: Request, res: Response): Promise<Response
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
     }
     try {
+        // Check if the skill already exists
+        const existingSkill = await Skill.findOne({ name: value.name });
+        if (existingSkill) {
+            logger.warn(`Skill with name "${value.name}" already exists`);
+            return res.status(StatusCodes.CONFLICT).json(formatResponse('error', 'Skill already exists'));
+        }
+
         const newSkill = new Skill(value);
         const savedSkill = await newSkill.save();
         logger.info('Skill created successfully');
