@@ -11,7 +11,7 @@ const { FRONTEND_URL } = process.env;
 const seedFirstAdmin = async () => {
     try {
         // Connect to the database
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/umurava-challenge-db-api');
+          await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://zudanga:a15LoLgUAHKn9Tfv@cluster0.djtfu.mongodb.net/umurava-challenge-db-api?retryWrites=true&w=majority&appName=Cluster0');
 
         // Check if an admin already exists
         const existingAdmin = await User.findOne({ userRole: 'admin' });
