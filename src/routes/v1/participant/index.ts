@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Dynamically load all route files in the current directory
 fs.readdirSync(__dirname)
-    .filter(file => file !== 'index.ts' && file.endsWith('.ts'))
+    .filter(file => file !== 'index.js' && (file.endsWith('.ts') || file.endsWith('.js')))
     .forEach(file => {
         const route = require(path.join(__dirname, file));
         if (route.default) {
