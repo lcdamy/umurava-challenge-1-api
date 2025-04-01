@@ -22,7 +22,8 @@ export const register = async (req: Request, res: Response): Promise<Response> =
     const { errors, value } = CreateUserDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during user registration', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
 
     try {
@@ -75,7 +76,8 @@ export const registerAdmin = async (req: Request, res: Response): Promise<Respon
     const { errors, value } = createAdminDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during user registration', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
 
     try {
@@ -127,7 +129,8 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const { errors, value } = LoginUserDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during user login', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
     const { email, password } = value;
 
@@ -158,7 +161,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         }
 
         // Generate token
-        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
+        const token = generateToken({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger.info('User logged in successfully', { id: user._id });
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'User logged in successfully', { token }));
@@ -204,7 +207,8 @@ export const forgetPassword = async (req: Request, res: Response): Promise<Respo
     const { errors, value } = ForgetUserDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during password reset request', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
     const { email } = value;
     try {
@@ -248,7 +252,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
     const { errors, value } = ResetUserDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during password reset', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
 
     try {
@@ -298,7 +303,8 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
     const { errors, value } = CreateUserSocialDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error during social login', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
 
     const { names, email, profile_url } = value;
@@ -308,13 +314,14 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
 
         if (!user) {
             // Create a new user if not found
-            user = new User({ names, email, profile_url, status: 'active' });
+            const randomPassword = generateRandomPassword(12); // Generate a random password
+            user = new User({ names, email, profile_url, status: 'active', password: randomPassword, userRole: 'participant' });
             await user.save();
             logger.info('New user created for social login', { id: user._id });
         }
-
+        console.log("lime 321", user);
         // Generate token for the user
-        const token = generateToken({ id: user._id, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
+        const token = generateToken({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger.info('Social login successful', { id: user._id });
 
         return res.status(user.isNew ? StatusCodes.CREATED : StatusCodes.OK).json(formatResponse('success', 'Social login successful', { token }));

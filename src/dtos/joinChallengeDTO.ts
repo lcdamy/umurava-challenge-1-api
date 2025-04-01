@@ -1,16 +1,33 @@
 import Joi from 'joi';
 
 class JoinChallengeDTO {
-    participant: string;
+    participants: {
+        team_lead: string;
+        members: Array<string>;
+    };
 
-    constructor(participant: string) {
-        this.participant = participant;
+    constructor(participants: { team_lead: string; members: Array<string> }) {
+        this.participants = participants;
     }
 
     // Add a method to validate the data using Joi
-    static validate(data: { participant: string }) {
+    static validate(data: { participants: { team_lead: string; members: Array<string> } }) {
         const schema = Joi.object({
-            participant: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required()
+            participants: Joi.object({
+                team_lead: Joi.string().required().messages({
+                    'string.empty': 'Team lead is required',
+                    'any.required': 'Team lead is required'
+                }),
+                members: Joi.array()
+                    .items(Joi.string())
+                    .min(1)
+                    .required()
+                    .messages({
+                        'array.base': 'Members must be an array of strings',
+                        'array.min': 'At least one member is required',
+                        'any.required': 'Members are required'
+                    })
+            })
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });

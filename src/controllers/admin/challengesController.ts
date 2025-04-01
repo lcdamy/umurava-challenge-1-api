@@ -80,7 +80,8 @@ export const createChallenge = async (req: Request, res: Response): Promise<Resp
     const { errors, value } = ChallengeDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error creating challenge', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
     try {
         // check if the challenge already exists
@@ -120,7 +121,8 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
     const { errors, value } = ChallengeDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error updating challenge', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
     try {
         const startDate = convertToISO(value.startDate);
@@ -235,7 +237,8 @@ export const createChallengeCategory = async (req: Request, res: Response): Prom
     const { errors, value } = ChallengeCategoryDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error creating challenge category', { errors });
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
     try {
         // check if the challenge category already exists

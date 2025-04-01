@@ -10,6 +10,7 @@ interface IChallenge extends Document {
     contactEmail: string;
     projectDescription: string;
     participants: Array<string>;
+    teamSize: number;
     skills: Array<string>;
     levels: Array<string>;
     status: 'open' | 'ongoing' | 'completed';
@@ -58,6 +59,11 @@ const ChallengeSchema: Schema = new Schema({
     participants: {
         type: [String],
         default: []
+    },
+    teamSize: {
+        type: Number,
+        required: true,
+        min: 1
     },
     skills: {
         type: [String],

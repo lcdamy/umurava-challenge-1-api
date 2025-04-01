@@ -16,16 +16,17 @@ exports.joinChallenge = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const helper_1 = require("../../utils/helper");
 const http_status_codes_1 = require("http-status-codes");
-const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 const logger_1 = __importDefault(require("../../config/logger"));
 const emailService_1 = require("../../utils/emailService");
+const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 // Participate join the challenge api
 const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info('joinChallenge API called!');
     const { errors, value } = JoinChallengeDTO.validate(req.body);
     if (errors) {
         logger_1.default.error('Validation Error', errors);
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.details.map((error) => error.message);
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         const challenge = yield challengeModel_1.default.findById(req.params.id);

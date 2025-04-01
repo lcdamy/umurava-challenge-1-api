@@ -13,6 +13,7 @@ class ChallengesDTO {
     status: 'open' | 'ongoing' | 'completed' | undefined;
     levels: Array<string> | undefined;
     skills: Array<string> | undefined;
+    teamSize: number | undefined;
 
     constructor(
         id: string | undefined,
@@ -26,7 +27,9 @@ class ChallengesDTO {
         projectDescription: string | undefined,
         status: 'open' | 'ongoing' | 'completed' | undefined,
         levels: Array<string> | undefined,
-        skills: Array<string> | undefined
+        skills: Array<string> | undefined,
+        teamSize: number | undefined
+
     ) {
         this.id = id;
         this.challengeName = challengeName;
@@ -40,6 +43,7 @@ class ChallengesDTO {
         this.status = status;
         this.levels = levels;
         this.skills = skills;
+        this.teamSize = teamSize;
     }
 
     // Add a method to validate the data using Joi
@@ -54,6 +58,7 @@ class ChallengesDTO {
         projectDescription: string;
         levels: Array<string>;
         skills: Array<string>;
+        teamSize: number;
     }) {
         const schema = Joi.object({
             challengeName: Joi.string().trim().required(),
@@ -71,7 +76,8 @@ class ChallengesDTO {
             contactEmail: Joi.string().email().required(),
             projectDescription: Joi.string().required(),
             levels: Joi.array().items(Joi.string().valid("Junior", "Intermediate", "Senior")).required(),
-            skills: Joi.array().items(Joi.string()).required()
+            skills: Joi.array().items(Joi.string()).required(),
+            teamSize: Joi.number().integer().positive().required(),
         });
 
         const { error, value } = schema.validate(data, { abortEarly: false });

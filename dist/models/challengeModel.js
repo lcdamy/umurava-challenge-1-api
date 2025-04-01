@@ -44,6 +44,11 @@ const ChallengeSchema = new mongoose_1.Schema({
         type: [String],
         default: []
     },
+    teamSize: {
+        type: Number,
+        required: true,
+        min: 1
+    },
     skills: {
         type: [String],
         default: []

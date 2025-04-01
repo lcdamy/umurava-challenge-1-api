@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
 import { formatResponse } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
-const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 import logger from '../../config/logger';
 import { sendEmail } from "../../utils/emailService";
+const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
 // Participate join the challenge api
 export const joinChallenge = async (req: Request, res: Response): Promise<Response> => {
@@ -12,7 +12,8 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
     const { errors, value } = JoinChallengeDTO.validate(req.body);
     if (errors) {
         logger.error('Validation Error', errors);
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Validation Error', errors));
+        const errorMessages = errors.details.map((error: any) => error.message);
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
     try {
         const challenge = await Challenge.findById(req.params.id);
@@ -20,6 +21,9 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             logger.warn(`Challenge not found with id: ${req.params.id}`);
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
+
+
+
         challenge.joinChallenge(value.participant);
         logger.info(`Participant joined the challenge successfully:: ${challenge.challengeName}`);
 

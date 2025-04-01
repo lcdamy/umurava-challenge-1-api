@@ -88,7 +88,8 @@ const createChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
     const { errors, value } = ChallengeDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error creating challenge', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         // check if the challenge already exists
@@ -122,7 +123,8 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
     const { errors, value } = ChallengeDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error updating challenge', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         const startDate = (0, helper_1.convertToISO)(value.startDate);
@@ -229,7 +231,8 @@ const createChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, 
     const { errors, value } = ChallengeCategoryDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error creating challenge category', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         // check if the challenge category already exists

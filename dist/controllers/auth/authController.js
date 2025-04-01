@@ -33,7 +33,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { errors, value } = createUserDTO_1.CreateUserDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error during user registration', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         // Check if the user already exists
@@ -79,7 +80,8 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { errors, value } = createAdminDTO_1.createAdminDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error during user registration', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         // Check if the user already exists
@@ -124,7 +126,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { errors, value } = loginUserDTO_1.LoginUserDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error during user login', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     const { email, password } = value;
     if (!email || !password) {
@@ -150,7 +153,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Invalid email or password'));
         }
         // Generate token
-        const token = (0, helper_1.generateToken)({ id: user._id, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
+        const token = (0, helper_1.generateToken)({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger_1.default.info('User logged in successfully', { id: user._id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User logged in successfully', { token }));
     }
@@ -194,7 +197,8 @@ const forgetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
     const { errors, value } = forgetUserDTO_1.ForgetUserDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error during password reset request', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     const { email } = value;
     try {
@@ -235,7 +239,8 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { errors, value } = resetUserDTO_1.ResetUserDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error during password reset', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     try {
         // Extract values from the request body
@@ -277,19 +282,22 @@ const getTokenByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function
     const { errors, value } = createUserSocialDTO_1.CreateUserSocialDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error during social login', { errors });
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Validation Error', errors));
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     const { names, email, profile_url } = value;
     try {
         let user = yield userModel_1.default.findOne({ email });
         if (!user) {
             // Create a new user if not found
-            user = new userModel_1.default({ names, email, profile_url, status: 'active' });
+            const randomPassword = (0, helper_1.generateRandomPassword)(12); // Generate a random password
+            user = new userModel_1.default({ names, email, profile_url, status: 'active', password: randomPassword, userRole: 'participant' });
             yield user.save();
             logger_1.default.info('New user created for social login', { id: user._id });
         }
+        console.log("lime 321", user);
         // Generate token for the user
-        const token = (0, helper_1.generateToken)({ id: user._id, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
+        const token = (0, helper_1.generateToken)({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger_1.default.info('Social login successful', { id: user._id });
         return res.status(user.isNew ? http_status_codes_1.StatusCodes.CREATED : http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Social login successful', { token }));
     }

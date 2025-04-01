@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const joi_1 = __importDefault(require("joi"));
 class ChallengesDTO {
-    constructor(id, challengeName, challengeCategory, endDate, starDate, duration, moneyPrize, contactEmail, projectDescription, status, levels, skills) {
+    constructor(id, challengeName, challengeCategory, endDate, starDate, duration, moneyPrize, contactEmail, projectDescription, status, levels, skills, teamSize) {
         this.id = id;
         this.challengeName = challengeName;
         this.challengeCategory = challengeCategory;
@@ -18,6 +18,7 @@ class ChallengesDTO {
         this.status = status;
         this.levels = levels;
         this.skills = skills;
+        this.teamSize = teamSize;
     }
     // Add a method to validate the data using Joi
     static validate(data) {
@@ -35,7 +36,8 @@ class ChallengesDTO {
             contactEmail: joi_1.default.string().email().required(),
             projectDescription: joi_1.default.string().required(),
             levels: joi_1.default.array().items(joi_1.default.string().valid("Junior", "Intermediate", "Senior")).required(),
-            skills: joi_1.default.array().items(joi_1.default.string()).required()
+            skills: joi_1.default.array().items(joi_1.default.string()).required(),
+            teamSize: joi_1.default.number().integer().positive().required(),
         });
         const { error, value } = schema.validate(data, { abortEarly: false });
         if (error) {

@@ -5,13 +5,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const joi_1 = __importDefault(require("joi"));
 class JoinChallengeDTO {
-    constructor(participant) {
-        this.participant = participant;
+    constructor(participants) {
+        this.participants = participants;
     }
     // Add a method to validate the data using Joi
     static validate(data) {
         const schema = joi_1.default.object({
-            participant: joi_1.default.string().regex(/^[0-9a-fA-F]{24}$/).required()
+            participants: joi_1.default.object({
+                team_lead: joi_1.default.string().required().messages({
+                    'string.empty': 'Team lead is required',
+                    'any.required': 'Team lead is required'
+                }),
+                members: joi_1.default.array()
+                    .items(joi_1.default.string())
+                    .min(1)
+                    .required()
+                    .messages({
+                    'array.base': 'Members must be an array of strings',
+                    'array.min': 'At least one member is required',
+                    'any.required': 'Members are required'
+                })
+            })
         });
         const { error, value } = schema.validate(data, { abortEarly: false });
         if (error) {
