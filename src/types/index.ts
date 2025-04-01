@@ -1,3 +1,4 @@
+
 export enum UserRole {
   Admin = 'admin',
   Participant = 'participant'
@@ -17,5 +18,16 @@ export interface UserPayload {
 declare module 'express-serve-static-core' {
   interface Request {
     user?: UserPayload;
+  }
+}
+
+declare global {
+  namespace Express {
+      interface Request {
+          user?: {
+              email: string;
+              [key: string]: any; // Add other properties if needed
+          };
+      }
   }
 }

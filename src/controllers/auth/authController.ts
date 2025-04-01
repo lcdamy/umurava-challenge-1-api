@@ -55,7 +55,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
             subject: 'Welcome to Our Platform',
             name: value.names,
             message: `Welcome to Umurava Skills Challenge Platform. Click the link below to activate your account.`,
-            link: `${FRONTEND_URL}/login?token=${token}`,
+            link: `${FRONTEND_URL}/verify-email?token=${token}`,
             link_label: 'Verify your account'
         };
 

@@ -60,7 +60,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             subject: 'Welcome to Our Platform',
             name: value.names,
             message: `Welcome to Umurava Skills Challenge Platform. Click the link below to activate your account.`,
-            link: `${FRONTEND_URL}/login?token=${token}`,
+            link: `${FRONTEND_URL}/verify-email?token=${token}`,
             link_label: 'Verify your account'
         };
         // Send welcome email

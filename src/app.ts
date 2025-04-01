@@ -9,25 +9,43 @@ import expressWinston from 'express-winston';
 import logger from './config/logger';
 import helmet from 'helmet';
 import routes from './routes';
+import { auditLogger } from './middlewares/auditLogger';
 
 
 const port = process.env.PORT || 4000;
 
-// Import the cron job file
-require(path.join(__dirname, 'cronjobs', 'schedules'));
-
-// Connect to MongoDB
-connectDB();
-
 const app = express();
-app.use(express.json());
-app.use(cors());
-app.use(helmet());
-app.use(expressWinston.logger({ winstonInstance: logger, statusLevels: true }));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-app.use('/api', routes);
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-    console.log(`Swagger UI is available at http://localhost:${port}/api-docs`);
-});
+const startServer = async () => {
+
+    try {
+        // Import the cron job file
+        require(path.join(__dirname, 'cronjobs', 'schedules'));
+
+        // Connect to MongoDB
+        await connectDB();
+
+        app.use(express.json());
+        app.use(cors());
+        app.use(helmet());
+        app.use(expressWinston.logger({ winstonInstance: logger, statusLevels: true }));
+
+        app.use('/api', routes);
+
+        app.use(auditLogger);
+
+        app.set('trust proxy', true);
+
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
+        app.listen(port, () => {
+            console.log(`Server is running on http://localhost:${port}`);
+            console.log(`Swagger UI is available at http://localhost:${port}/api-docs`);
+        });
+
+    } catch (error) {
+        console.error('Error starting the server:', error);
+    }
+};
+
+startServer();
