@@ -291,11 +291,11 @@ const getTokenByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!user) {
             // Create a new user if not found
             const randomPassword = (0, helper_1.generateRandomPassword)(12); // Generate a random password
-            user = new userModel_1.default({ names, email, profile_url, status: 'active', password: randomPassword, userRole: 'participant' });
+            const hashedPassword = yield bcryptjs_1.default.hash(randomPassword, 10); // Hash the password
+            user = new userModel_1.default({ names, email, profile_url, status: 'active', password: hashedPassword, userRole: 'participant' });
             yield user.save();
             logger_1.default.info('New user created for social login', { id: user._id });
         }
-        console.log("lime 321", user);
         // Generate token for the user
         const token = (0, helper_1.generateToken)({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger_1.default.info('Social login successful', { id: user._id });
