@@ -315,11 +315,11 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
         if (!user) {
             // Create a new user if not found
             const randomPassword = generateRandomPassword(12); // Generate a random password
-            user = new User({ names, email, profile_url, status: 'active', password: randomPassword, userRole: 'participant' });
+            const hashedPassword = await bcrypt.hash(randomPassword, 10); // Hash the password
+            user = new User({ names, email, profile_url, status: 'active', password: hashedPassword, userRole: 'participant' });
             await user.save();
             logger.info('New user created for social login', { id: user._id });
         }
-        console.log("lime 321", user);
         // Generate token for the user
         const token = generateToken({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger.info('Social login successful', { id: user._id });
