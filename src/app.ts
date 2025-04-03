@@ -10,11 +10,11 @@ import logger from './config/logger';
 import helmet from 'helmet';
 import routes from './routes';
 import { auditLogger } from './middlewares/auditLogger';
-
+import './types/index'; // Import the custom types for Express
 
 const port = process.env.PORT || 4000;
-
 const app = express();
+
 
 const startServer = async () => {
 

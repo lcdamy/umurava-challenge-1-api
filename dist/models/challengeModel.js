@@ -59,8 +59,8 @@ const ChallengeSchema = new mongoose_1.Schema({
     },
     status: {
         type: String,
-        enum: ['open', 'ongoing', 'completed'],
-        default: 'open'
+        enum: ['draft', 'open', 'ongoing', 'completed'],
+        default: 'draft'
     }
 }, {
     timestamps: true

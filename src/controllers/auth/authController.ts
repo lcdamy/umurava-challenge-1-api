@@ -10,6 +10,8 @@ import { LoginUserDTO } from '../../dtos/loginUserDTO';
 import { ForgetUserDTO } from '../../dtos/forgetUserDTO';
 import { ResetUserDTO } from '../../dtos/resetUserDTO';
 import { CreateUserSocialDTO } from '../../dtos/createUserSocialDTO';
+import { UpdateUserDTO } from '../../dtos/updateUserDTO';
+import { UpdateUserPasswordDTO } from '../../dtos/updateUserPasswordDTO';
 import { AuthService } from '../../services/authService';
 import bcrypt from "bcryptjs";
 
@@ -328,5 +330,161 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
     } catch (error) {
         logger.error('Error processing social login', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error processing social login', error));
+    }
+};
+
+// Controller function to get user profile
+export const getProfile = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        // Get user_id from the request object
+        if (!req.user) {
+            logger.warn('Unauthorized access attempt');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Unauthorized access'));
+        }
+
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+
+        if (!userId) {
+            logger.warn('User ID not found in request object');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'User ID not found'));
+        }
+        const user = await User.findById(userId).select('-password'); // Exclude password from the response
+        if (!user) {
+            logger.warn('User not found', { id: userId })// Exclude password from the response });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        logger.info('User profile retrieved successfully', { id: user._id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'User profile retrieved successfully', req.user));
+    } catch (error) {
+        logger.error('Error retrieving user profile', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error retrieving user profile', error));
+    }
+};
+
+// Controller function to update user profile
+export const updateProfile = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        //Get user_id from the request object
+        if (!req.user) {
+            logger.warn('Unauthorized access attempt');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+
+        if (!userId) {
+            logger.warn('User ID not found in request object');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'User ID not found'));
+        }
+
+        const { errors, value } = UpdateUserDTO.validate(req.body);
+        if (errors) {
+            logger.warn('Validation error during user profile update', { errors });
+            const errorMessages = errors.map((error: any) => error.message).join(', ');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+        }
+        // Find the user by ID
+        const updatedUser = await User.findByIdAndUpdate(userId, value, { new: true });
+        if (!updatedUser) {
+            logger.warn('User not found for update', { id: userId });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        logger.info('User profile updated successfully', { id: updatedUser._id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'User profile updated successfully', updatedUser));
+    } catch (error) {
+        logger.error('Error updating user profile', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error updating user profile', error));
+    }
+};
+
+// Controller function to delete user profile
+export const deleteProfile = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        //Get user_id from the request object
+        if (!req.user) {
+            logger.warn('Unauthorized access attempt');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+
+        if (!userId) {
+            logger.warn('User ID not found in request object');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'User ID not found'));
+        }
+        // Find the user by ID and delete
+        const deletedUser = await User.findByIdAndDelete(userId);
+        if (!deletedUser) {
+            logger.warn('User not found for deletion', { id: userId });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        logger.info('User profile deleted successfully', { id: deletedUser._id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'User profile deleted successfully'));
+    } catch (error) {
+        logger.error('Error deleting user profile', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deleting user profile', error));
+    }
+};
+
+// Controller function to change user password
+export const changePassword = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = UpdateUserPasswordDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error during password change', { errors });
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+    }
+    //Get user_id from the request object
+    const { currentPassword, newPassword } = value;
+    try {
+        //Get user_id from the request object
+        if (!req.user) {
+            logger.warn('Unauthorized access attempt');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+
+        if (!userId) {
+            logger.warn('User ID not found in request object');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'User ID not found'));
+        }
+        const user = await User.findById(userId).select('+password');
+        if (!user) {
+            logger.warn('User not found for password change', { id: userId });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        const isPasswordValid = await authService.comparePassword(currentPassword, user.password);
+        if (!isPasswordValid) {
+            logger.warn('Invalid current password', { id: userId });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Invalid current password'));
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        logger.info('Password changed successfully', { id: user._id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Password changed successfully'));
+    } catch (error) {
+        logger.error('Error changing password', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error changing password', error));
+    }
+};
+
+// Controller function to get all users
+export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        //
+        const users = await User.find().select('-password');
+        logger.info('All users retrieved successfully', { count: users.length });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'All users retrieved successfully', users));
+    } catch (error) {
+        logger.error('Error retrieving all users', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error retrieving all users', error));
     }
 };

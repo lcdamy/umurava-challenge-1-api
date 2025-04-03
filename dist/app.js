@@ -24,6 +24,7 @@ const logger_1 = __importDefault(require("./config/logger"));
 const helmet_1 = __importDefault(require("helmet"));
 const routes_1 = __importDefault(require("./routes"));
 const auditLogger_1 = require("./middlewares/auditLogger");
+require("./types/index"); // Import the custom types for Express
 const port = process.env.PORT || 4000;
 const app = (0, express_1.default)();
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {

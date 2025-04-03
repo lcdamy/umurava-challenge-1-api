@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTokenByEmail = exports.resetPassword = exports.forgetPassword = exports.verifyEmail = exports.login = exports.registerAdmin = exports.register = void 0;
+exports.getAllUsers = exports.changePassword = exports.deleteProfile = exports.updateProfile = exports.getProfile = exports.getTokenByEmail = exports.resetPassword = exports.forgetPassword = exports.verifyEmail = exports.login = exports.registerAdmin = exports.register = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
 const helper_1 = require("../../utils/helper");
@@ -24,6 +24,8 @@ const loginUserDTO_1 = require("../../dtos/loginUserDTO");
 const forgetUserDTO_1 = require("../../dtos/forgetUserDTO");
 const resetUserDTO_1 = require("../../dtos/resetUserDTO");
 const createUserSocialDTO_1 = require("../../dtos/createUserSocialDTO");
+const updateUserDTO_1 = require("../../dtos/updateUserDTO");
+const updateUserPasswordDTO_1 = require("../../dtos/updateUserPasswordDTO");
 const authService_1 = require("../../services/authService");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const { FRONTEND_URL } = process.env;
@@ -307,3 +309,152 @@ const getTokenByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getTokenByEmail = getTokenByEmail;
+// Controller function to get user profile
+const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Get user_id from the request object
+        if (!req.user) {
+            logger_1.default.warn('Unauthorized access attempt');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request object');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'User ID not found'));
+        }
+        const user = yield userModel_1.default.findById(userId).select('-password'); // Exclude password from the response
+        if (!user) {
+            logger_1.default.warn('User not found', { id: userId }); // Exclude password from the response });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
+        }
+        logger_1.default.info('User profile retrieved successfully', { id: user._id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User profile retrieved successfully', req.user));
+    }
+    catch (error) {
+        logger_1.default.error('Error retrieving user profile', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error retrieving user profile', error));
+    }
+});
+exports.getProfile = getProfile;
+// Controller function to update user profile
+const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        //Get user_id from the request object
+        if (!req.user) {
+            logger_1.default.warn('Unauthorized access attempt');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request object');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'User ID not found'));
+        }
+        const { errors, value } = updateUserDTO_1.UpdateUserDTO.validate(req.body);
+        if (errors) {
+            logger_1.default.warn('Validation error during user profile update', { errors });
+            const errorMessages = errors.map((error) => error.message).join(', ');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+        }
+        // Find the user by ID
+        const updatedUser = yield userModel_1.default.findByIdAndUpdate(userId, value, { new: true });
+        if (!updatedUser) {
+            logger_1.default.warn('User not found for update', { id: userId });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
+        }
+        logger_1.default.info('User profile updated successfully', { id: updatedUser._id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User profile updated successfully', updatedUser));
+    }
+    catch (error) {
+        logger_1.default.error('Error updating user profile', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error updating user profile', error));
+    }
+});
+exports.updateProfile = updateProfile;
+// Controller function to delete user profile
+const deleteProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        //Get user_id from the request object
+        if (!req.user) {
+            logger_1.default.warn('Unauthorized access attempt');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request object');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'User ID not found'));
+        }
+        // Find the user by ID and delete
+        const deletedUser = yield userModel_1.default.findByIdAndDelete(userId);
+        if (!deletedUser) {
+            logger_1.default.warn('User not found for deletion', { id: userId });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
+        }
+        logger_1.default.info('User profile deleted successfully', { id: deletedUser._id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User profile deleted successfully'));
+    }
+    catch (error) {
+        logger_1.default.error('Error deleting user profile', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error deleting user profile', error));
+    }
+});
+exports.deleteProfile = deleteProfile;
+// Controller function to change user password
+const changePassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { errors, value } = updateUserPasswordDTO_1.UpdateUserPasswordDTO.validate(req.body);
+    if (errors) {
+        logger_1.default.warn('Validation error during password change', { errors });
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+    }
+    //Get user_id from the request object
+    const { currentPassword, newPassword } = value;
+    try {
+        //Get user_id from the request object
+        if (!req.user) {
+            logger_1.default.warn('Unauthorized access attempt');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Unauthorized access'));
+        }
+        // Find the user by ID
+        const userId = (req.user && 'id' in req.user) ? req.user.id : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request object');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'User ID not found'));
+        }
+        const user = yield userModel_1.default.findById(userId).select('+password');
+        if (!user) {
+            logger_1.default.warn('User not found for password change', { id: userId });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
+        }
+        const isPasswordValid = yield authService.comparePassword(currentPassword, user.password);
+        if (!isPasswordValid) {
+            logger_1.default.warn('Invalid current password', { id: userId });
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Invalid current password'));
+        }
+        user.password = yield bcryptjs_1.default.hash(newPassword, 10);
+        yield user.save();
+        logger_1.default.info('Password changed successfully', { id: user._id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Password changed successfully'));
+    }
+    catch (error) {
+        logger_1.default.error('Error changing password', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error changing password', error));
+    }
+});
+exports.changePassword = changePassword;
+// Controller function to get all users
+const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        //
+        const users = yield userModel_1.default.find().select('-password');
+        logger_1.default.info('All users retrieved successfully', { count: users.length });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All users retrieved successfully', users));
+    }
+    catch (error) {
+        logger_1.default.error('Error retrieving all users', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error retrieving all users', error));
+    }
+});
+exports.getAllUsers = getAllUsers;

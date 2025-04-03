@@ -1,12 +1,21 @@
+// src/types/express.d.ts
 import * as express from 'express';
 
 declare global {
-    namespace Express {
-        interface Request {
-            user?: {
-                email: string;
-                [key: string]: any; // Add other properties if needed
-            };
-        }
+  namespace Express {
+    interface User {
+      id: string;
+      email: string;
+      names?: string;
+      profile_url?: string;
+      userRole?: string;
     }
+
+    interface Request {
+      user?: User;
+    }
+  }
 }
+
+// Required to make the file a module
+export {};
