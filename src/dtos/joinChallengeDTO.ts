@@ -2,30 +2,24 @@ import Joi from 'joi';
 
 class JoinChallengeDTO {
     participants: {
-        team_lead: string;
         members: Array<string>;
     };
 
-    constructor(participants: { team_lead: string; members: Array<string> }) {
+    constructor(participants: { members: Array<string> }) {
         this.participants = participants;
     }
 
     // Add a method to validate the data using Joi
-    static validate(data: { participants: { team_lead: string; members: Array<string> } }) {
+    static validate(data: { participants: { members: Array<string> } }) {
         const schema = Joi.object({
             participants: Joi.object({
-                team_lead: Joi.string().required().messages({
-                    'string.empty': 'Team lead is required',
-                    'any.required': 'Team lead is required'
-                }),
                 members: Joi.array()
-                    .items(Joi.string())
-                    .min(1)
-                    .required()
+                    .items(Joi.string().email().messages({
+                        'string.email': 'Each member must be a valid email'
+                    }))
+                    .min(0) // Allow an empty array
                     .messages({
-                        'array.base': 'Members must be an array of strings',
-                        'array.min': 'At least one member is required',
-                        'any.required': 'Members are required'
+                        'array.base': 'Members must be an array of valid emails'
                     })
             })
         });
@@ -34,7 +28,7 @@ class JoinChallengeDTO {
 
         if (error) {
             return {
-                errors: JoinChallengeDTO.formatValidationErrors(error.details)
+                errors: error.details ? JoinChallengeDTO.formatValidationErrors(error.details) : []
             };
         }
         return { value };

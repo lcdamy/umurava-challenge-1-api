@@ -40,10 +40,6 @@ const ChallengeSchema = new mongoose_1.Schema({
         type: String,
         required: true
     },
-    participants: {
-        type: [String],
-        default: []
-    },
     teamSize: {
         type: Number,
         required: true,
@@ -65,11 +61,5 @@ const ChallengeSchema = new mongoose_1.Schema({
 }, {
     timestamps: true
 });
-ChallengeSchema.methods.joinChallenge = function (participant) {
-    if (!this.participants.includes(participant)) {
-        this.participants.push(participant);
-        this.save();
-    }
-};
 const Challenge = (0, mongoose_1.model)('Challenge', ChallengeSchema);
 exports.default = Challenge;

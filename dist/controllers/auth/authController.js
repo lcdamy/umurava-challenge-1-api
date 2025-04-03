@@ -386,13 +386,13 @@ const deleteProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             logger_1.default.warn('User ID not found in request object');
             return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'User ID not found'));
         }
-        // Find the user by ID and delete
-        const deletedUser = yield userModel_1.default.findByIdAndDelete(userId);
-        if (!deletedUser) {
-            logger_1.default.warn('User not found for deletion', { id: userId });
+        // Find the user by ID and update the status to 'slept'
+        const updatedUser = yield userModel_1.default.findByIdAndUpdate(userId, { status: 'slept' }, { new: true });
+        if (!updatedUser) {
+            logger_1.default.warn('User not found for status update', { id: userId });
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
         }
-        logger_1.default.info('User profile deleted successfully', { id: deletedUser._id });
+        logger_1.default.info('User profile deleted successfully', { id: updatedUser._id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User profile deleted successfully'));
     }
     catch (error) {
@@ -447,8 +447,21 @@ exports.changePassword = changePassword;
 // Controller function to get all users
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        //
-        const users = yield userModel_1.default.find().select('-password');
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search ? req.query.search.toString().toLowerCase() : '';
+        // Extract filters from query parameters
+        const filters = {};
+        Object.keys(req.query).forEach((key) => {
+            if (!['page', 'limit', 'search'].includes(key)) {
+                filters[key] = req.query[key];
+            }
+        });
+        const query = Object.assign(Object.assign(Object.assign(Object.assign({}, filters), (search && { $or: [{ names: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] })), (req.query.status && { status: req.query.status })), (req.query.userRole && { userRole: req.query.userRole }));
+        const users = yield userModel_1.default.find(query)
+            .select('-password')
+            .skip((page - 1) * limit)
+            .limit(limit);
         logger_1.default.info('All users retrieved successfully', { count: users.length });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All users retrieved successfully', users));
     }

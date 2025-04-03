@@ -9,12 +9,11 @@ interface IChallenge extends Document {
     moneyPrize: Array<{ categoryPrize: string; prize: number }>;
     contactEmail: string;
     projectDescription: string;
-    participants: Array<string>;
     teamSize: number;
     skills: Array<string>;
     levels: Array<string>;
     status: 'open' | 'ongoing' | 'completed';
-    joinChallenge(participant: any): void;
+
 }
 
 const ChallengeSchema: Schema = new Schema({
@@ -56,10 +55,6 @@ const ChallengeSchema: Schema = new Schema({
         type: String,
         required: true
     },
-    participants: {
-        type: [String],
-        default: []
-    },
     teamSize: {
         type: Number,
         required: true,
@@ -82,12 +77,6 @@ const ChallengeSchema: Schema = new Schema({
     timestamps: true
 });
 
-ChallengeSchema.methods.joinChallenge = function (participant: string): void {
-    if (!this.participants.includes(participant)) {
-        this.participants.push(participant);
-        this.save();
-    }
-};
 
 const Challenge = model<IChallenge>('Challenge', ChallengeSchema);
 

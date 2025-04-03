@@ -60,11 +60,9 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
         // Fetch participant data manually
-        const participants = await User.find({ _id: { $in: challenge.participants } });
 
         const challengeWithParticipants = {
-            ...challenge.toObject(),
-            participants
+            ...challenge.toObject()
         };
 
         logger.info('Challenge fetched successfully', { id: req.params.id });

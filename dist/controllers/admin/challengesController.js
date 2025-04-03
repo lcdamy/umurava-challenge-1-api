@@ -19,7 +19,6 @@ const prizesModel_1 = __importDefault(require("../../models/prizesModel"));
 const helper_1 = require("../../utils/helper");
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
-const userModel_1 = __importDefault(require("../../models/userModel"));
 const ChallengeDTO = require('../../dtos/challengesDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
 // Get all challenges
@@ -72,8 +71,7 @@ const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
         }
         // Fetch participant data manually
-        const participants = yield userModel_1.default.find({ _id: { $in: challenge.participants } });
-        const challengeWithParticipants = Object.assign(Object.assign({}, challenge.toObject()), { participants });
+        const challengeWithParticipants = Object.assign({}, challenge.toObject());
         logger_1.default.info('Challenge fetched successfully', { id: req.params.id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeWithParticipants));
     }

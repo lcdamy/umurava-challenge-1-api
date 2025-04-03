@@ -34,7 +34,7 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         // Connect to MongoDB
         yield (0, dbConfig_1.default)();
         app.use(express_1.default.json());
-        app.use((0, cors_1.default)());
+        app.use((0, cors_1.default)({ origin: '*' }));
         app.use((0, helmet_1.default)());
         app.use(express_winston_1.default.logger({ winstonInstance: logger_1.default, statusLevels: true }));
         app.use(auditLogger_1.auditLogger);

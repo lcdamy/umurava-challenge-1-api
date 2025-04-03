@@ -12,25 +12,20 @@ class JoinChallengeDTO {
     static validate(data) {
         const schema = joi_1.default.object({
             participants: joi_1.default.object({
-                team_lead: joi_1.default.string().required().messages({
-                    'string.empty': 'Team lead is required',
-                    'any.required': 'Team lead is required'
-                }),
                 members: joi_1.default.array()
-                    .items(joi_1.default.string())
-                    .min(1)
-                    .required()
+                    .items(joi_1.default.string().email().messages({
+                    'string.email': 'Each member must be a valid email'
+                }))
+                    .min(0) // Allow an empty array
                     .messages({
-                    'array.base': 'Members must be an array of strings',
-                    'array.min': 'At least one member is required',
-                    'any.required': 'Members are required'
+                    'array.base': 'Members must be an array of valid emails'
                 })
             })
         });
         const { error, value } = schema.validate(data, { abortEarly: false });
         if (error) {
             return {
-                errors: JoinChallengeDTO.formatValidationErrors(error.details)
+                errors: error.details ? JoinChallengeDTO.formatValidationErrors(error.details) : []
             };
         }
         return { value };
