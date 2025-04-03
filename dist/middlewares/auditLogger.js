@@ -44,7 +44,7 @@ const auditLogger = (req, res, next) => {
         auditLog.details = responseBody.message || 'unknown';
         auditLog.status = responseBody.status || 'unknown';
         // Check if the user is authenticated and get the email
-        auditLog.doneBy = 'unknown';
+        auditLog.doneBy = req.user ? req.user.email : 'unknown';
         // Save the audit log to the database
         yield auditLog.save().catch((err) => {
             console.error('Error saving audit log:', err);

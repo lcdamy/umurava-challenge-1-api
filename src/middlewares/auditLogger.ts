@@ -33,7 +33,7 @@ export const auditLogger = (req: Request, res: Response, next: NextFunction) => 
         auditLog.status = responseBody.status || 'unknown';
 
         // Check if the user is authenticated and get the email
-        auditLog.doneBy = 'unknown';
+        auditLog.doneBy = req.user ? req.user.email : 'unknown';
 
         // Save the audit log to the database
         await auditLog.save().catch((err) => {

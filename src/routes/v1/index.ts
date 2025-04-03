@@ -4,6 +4,7 @@ import participantRoutes from './participant';
 import publicRoutes from './public';
 import auth from './auth';
 
+
 const router = express.Router();
 
 router.use('/admin', adminRoutes);

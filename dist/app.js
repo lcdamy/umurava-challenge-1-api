@@ -37,8 +37,8 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         app.use((0, cors_1.default)());
         app.use((0, helmet_1.default)());
         app.use(express_winston_1.default.logger({ winstonInstance: logger_1.default, statusLevels: true }));
-        app.use('/api', routes_1.default);
         app.use(auditLogger_1.auditLogger);
+        app.use('/api', routes_1.default);
         app.set('trust proxy', true);
         app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerConfig_1.default));
         app.listen(port, () => {

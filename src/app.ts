@@ -15,7 +15,6 @@ import './types/index'; // Import the custom types for Express
 const port = process.env.PORT || 4000;
 const app = express();
 
-
 const startServer = async () => {
 
     try {
@@ -29,10 +28,11 @@ const startServer = async () => {
         app.use(cors());
         app.use(helmet());
         app.use(expressWinston.logger({ winstonInstance: logger, statusLevels: true }));
+        
+        app.use(auditLogger);
 
         app.use('/api', routes);
 
-        app.use(auditLogger);
 
         app.set('trust proxy', true);
 
