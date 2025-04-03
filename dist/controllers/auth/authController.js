@@ -446,24 +446,32 @@ const changePassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.changePassword = changePassword;
 // Controller function to get all users
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const search = req.query.search ? req.query.search.toString().toLowerCase() : '';
-        // Extract filters from query parameters
-        const filters = {};
-        Object.keys(req.query).forEach((key) => {
-            if (!['page', 'limit', 'search'].includes(key)) {
-                filters[key] = req.query[key];
-            }
-        });
-        const query = Object.assign(Object.assign(Object.assign(Object.assign({}, filters), (search && { $or: [{ names: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] })), (req.query.status && { status: req.query.status })), (req.query.userRole && { userRole: req.query.userRole }));
-        const users = yield userModel_1.default.find(query)
-            .select('-password')
-            .skip((page - 1) * limit)
-            .limit(limit);
+        const page = Math.max(1, parseInt(req.query.page) || 1); // Ensure page is at least 1
+        const limit = Math.max(1, parseInt(req.query.limit) || 10); // Ensure limit is at least 1
+        const search = ((_a = req.query.search) === null || _a === void 0 ? void 0 : _a.toString().trim().toLowerCase()) || '';
+        // Extract filters from query parameters, excluding pagination and search
+        const filters = Object.entries(req.query)
+            .filter(([key]) => !['page', 'limit', 'search'].includes(key))
+            .reduce((acc, [key, value]) => (Object.assign(Object.assign({}, acc), { [key]: value })), {});
+        const query = Object.assign(Object.assign({}, filters), (search && { $or: [{ names: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] }));
+        const [users, total] = yield Promise.all([
+            userModel_1.default.find(query)
+                .select('-password') // Exclude password field
+                .skip((page - 1) * limit)
+                .limit(limit),
+            userModel_1.default.countDocuments(query),
+        ]);
+        const paginatedData = {
+            page,
+            limit,
+            total,
+            lastPage: Math.ceil(total / limit),
+            data: users,
+        };
         logger_1.default.info('All users retrieved successfully', { count: users.length });
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All users retrieved successfully', users));
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All users retrieved successfully', paginatedData));
     }
     catch (error) {
         logger_1.default.error('Error retrieving all users', { error });

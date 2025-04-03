@@ -14,6 +14,7 @@ import { UpdateUserDTO } from '../../dtos/updateUserDTO';
 import { UpdateUserPasswordDTO } from '../../dtos/updateUserPasswordDTO';
 import { AuthService } from '../../services/authService';
 import bcrypt from "bcryptjs";
+import { lastDayOfDecade } from 'date-fns';
 
 const { FRONTEND_URL } = process.env;
 
@@ -479,31 +480,38 @@ export const changePassword = async (req: Request, res: Response): Promise<Respo
 // Controller function to get all users
 export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const search = req.query.search ? req.query.search.toString().toLowerCase() : '';
+        const page = Math.max(1, parseInt(req.query.page as string) || 1); // Ensure page is at least 1
+        const limit = Math.max(1, parseInt(req.query.limit as string) || 10); // Ensure limit is at least 1
+        const search = req.query.search?.toString().trim().toLowerCase() || '';
 
-        // Extract filters from query parameters
-        const filters: Record<string, any> = {};
-        Object.keys(req.query).forEach((key) => {
-            if (!['page', 'limit', 'search'].includes(key)) {
-                filters[key] = req.query[key];
-            }
-        });
+        // Extract filters from query parameters, excluding pagination and search
+        const filters = Object.entries(req.query)
+            .filter(([key]) => !['page', 'limit', 'search'].includes(key))
+            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
         const query = {
             ...filters,
             ...(search && { $or: [{ names: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] }),
-            ...(req.query.status && { status: req.query.status }),
-            ...(req.query.userRole && { userRole: req.query.userRole }),
         };
 
-        const users = await User.find(query)
-            .select('-password')
-            .skip((page - 1) * limit)
-            .limit(limit);
+        const [users, total] = await Promise.all([
+            User.find(query)
+                .select('-password') // Exclude password field
+                .skip((page - 1) * limit)
+                .limit(limit),
+            User.countDocuments(query),
+        ]);
+
+        const paginatedData = {
+            page,
+            limit,
+            total,
+            lastPage: Math.ceil(total / limit),
+            data: users,
+        };
+
         logger.info('All users retrieved successfully', { count: users.length });
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'All users retrieved successfully', users));
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'All users retrieved successfully', paginatedData));
     } catch (error) {
         logger.error('Error retrieving all users', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error retrieving all users', error));
