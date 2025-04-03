@@ -415,14 +415,14 @@ export const deleteProfile = async (req: Request, res: Response): Promise<Respon
             logger.warn('User ID not found in request object');
             return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'User ID not found'));
         }
-        // Find the user by ID and delete
-        const deletedUser = await User.findByIdAndDelete(userId);
-        if (!deletedUser) {
-            logger.warn('User not found for deletion', { id: userId });
+        // Find the user by ID and update the status to 'slept'
+        const updatedUser = await User.findByIdAndUpdate(userId, { status: 'slept' }, { new: true });
+        if (!updatedUser) {
+            logger.warn('User not found for status update', { id: userId });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
         }
 
-        logger.info('User profile deleted successfully', { id: deletedUser._id });
+        logger.info('User profile deleted successfully', { id: updatedUser._id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'User profile deleted successfully'));
     } catch (error) {
         logger.error('Error deleting user profile', { error });
@@ -479,8 +479,29 @@ export const changePassword = async (req: Request, res: Response): Promise<Respo
 // Controller function to get all users
 export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
     try {
-        //
-        const users = await User.find().select('-password');
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = req.query.search ? req.query.search.toString().toLowerCase() : '';
+
+        // Extract filters from query parameters
+        const filters: Record<string, any> = {};
+        Object.keys(req.query).forEach((key) => {
+            if (!['page', 'limit', 'search'].includes(key)) {
+                filters[key] = req.query[key];
+            }
+        });
+
+        const query = {
+            ...filters,
+            ...(search && { $or: [{ names: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] }),
+            ...(req.query.status && { status: req.query.status }),
+            ...(req.query.userRole && { userRole: req.query.userRole }),
+        };
+
+        const users = await User.find(query)
+            .select('-password')
+            .skip((page - 1) * limit)
+            .limit(limit);
         logger.info('All users retrieved successfully', { count: users.length });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'All users retrieved successfully', users));
     } catch (error) {

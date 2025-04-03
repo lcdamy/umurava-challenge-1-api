@@ -34,7 +34,7 @@ const UserSchema = new Schema<IUser>({
     },
     status: {
         type: String,
-        enum: ['active', 'inactive'],
+        enum: ['active', 'inactive', 'slept'],
         default: 'inactive'
     },
 

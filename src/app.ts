@@ -25,7 +25,7 @@ const startServer = async () => {
         await connectDB();
 
         app.use(express.json());
-        app.use(cors());
+        app.use(cors({ origin: '*' }));
         app.use(helmet());
         app.use(expressWinston.logger({ winstonInstance: logger, statusLevels: true }));
         
