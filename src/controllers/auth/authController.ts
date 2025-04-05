@@ -15,6 +15,7 @@ import { UpdateUserPasswordDTO } from '../../dtos/updateUserPasswordDTO';
 import { AuthService } from '../../services/authService';
 import { NoticationSercice } from '../../services/notificationService';
 import bcrypt from "bcryptjs";
+import Joi from 'joi';
 
 const { FRONTEND_URL } = process.env;
 
@@ -596,3 +597,48 @@ export const deactivateAccount = async (req: Request, res: Response): Promise<Re
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deactivating account', error));
     }
 }
+
+//import expert user using multer and xlsx
+export const uploadProfilePicture = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        // Validate the file type and size using Joi
+        const schema = Joi.object({
+            file: Joi.object().required(),
+        });
+        const { error } = schema.validate({ file: req.file });
+        if (error) {
+            logger.warn('Validation error during file upload', { error });
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Invalid file type or size'));
+        }
+
+        // Check if the file is provided
+        if (!req.file) {
+            logger.warn('No file uploaded');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'No file uploaded'));
+        }
+
+        // Check if the user is authenticated
+        if (!req.user || !('id' in req.user)) {
+            logger.warn('Unauthorized access attempt');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Unauthorized access'));
+        }
+
+        const userId = req.user.id;
+
+        // Upload the file using the authService
+        const fileUrl = await authService.uploadFile(req.file);
+
+        // Update the user's profile_url with the uploaded file URL
+        const updatedUser = await User.findByIdAndUpdate(userId, { profile_url: fileUrl }, { new: true });
+        if (!updatedUser) {
+            logger.warn('User not found for profile picture update', { id: userId });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        logger.info('Profile picture uploaded successfully', { file_url: fileUrl });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Profile picture uploaded successfully', { file_url: fileUrl }));
+    } catch (error) {
+        logger.error('Error uploading profile picture', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error uploading profile picture', error));
+    }
+};
