@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPrizeCategories = exports.getChallengeCategories = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
+exports.updateGracePeriod = exports.updateChallengeStatus = exports.getPrizeCategories = exports.getChallengeCategories = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const challengeCategoryModel_1 = __importDefault(require("../../models/challengeCategoryModel"));
 const prizesModel_1 = __importDefault(require("../../models/prizesModel"));
@@ -20,7 +20,10 @@ const helper_1 = require("../../utils/helper");
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
 const ChallengeDTO = require('../../dtos/challengesDTO');
+const UpdateChallengeDTO = require('../../dtos/updateChallengeDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
+const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
+const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
 // Get all challenges
 const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
@@ -118,7 +121,7 @@ const createChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.createChallenge = createChallenge;
 // Update an existing challenge
 const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { errors, value } = ChallengeDTO.validate(req.body);
+    const { errors, value } = UpdateChallengeDTO.validate(req.body);
     if (errors) {
         logger_1.default.warn('Validation error updating challenge', { errors });
         const errorMessages = errors.map((error) => error.message).join(', ');
@@ -278,3 +281,76 @@ const getPrizeCategories = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getPrizeCategories = getPrizeCategories;
+// update challenge status
+const updateChallengeStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { errors, value } = UpdateChallengeStatusDTO.validate(req.body);
+    if (errors) {
+        logger_1.default.warn('Validation error updating challenge status', { errors });
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+    }
+    try {
+        const { id } = req.params;
+        const { status } = value;
+        logger_1.default.info('Fetching challenge for status update', { id });
+        const challenge = yield challengeModel_1.default.findById(id);
+        if (!challenge) {
+            logger_1.default.warn('Challenge not found for status update', { id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
+        }
+        if (challenge.status === 'completed') {
+            logger_1.default.warn('Attempted to update status of a completed challenge', { id });
+            return res.status(http_status_codes_1.StatusCodes.FORBIDDEN).json((0, helper_1.formatResponse)('error', 'Cannot update status of a completed challenge'));
+        }
+        if (challenge.status === status) {
+            logger_1.default.warn('Attempted to update status to the same value', { id, status });
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Status is already set to this value'));
+        }
+        logger_1.default.info('Updating challenge status', { id: req.params.id });
+        const updatedChallenge = yield challengeModel_1.default.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        if (!updatedChallenge) {
+            logger_1.default.warn('Challenge not found for status update', { id: req.params.id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
+        }
+        logger_1.default.info('Challenge status updated successfully', { id: req.params.id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge status updated successfully', updatedChallenge));
+    }
+    catch (error) {
+        logger_1.default.error('Error updating challenge status', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error updating challenge status', error));
+    }
+});
+exports.updateChallengeStatus = updateChallengeStatus;
+// update grace period
+const updateGracePeriod = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { errors, value } = UpdateChallengeSubmissionDateDTO.validate(req.body);
+    if (errors) {
+        logger_1.default.warn('Validation error updating challenge grace period', { errors });
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+    }
+    try {
+        const { id } = req.params;
+        const { new_submissionDate } = value;
+        logger_1.default.info('Fetching challenge for grace period update', { id });
+        const challenge = yield challengeModel_1.default.findById(id);
+        if (!challenge) {
+            logger_1.default.warn('Challenge not found for grace period update', { id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
+        }
+        if (new Date(new_submissionDate) <= new Date(challenge.endDate)) {
+            logger_1.default.warn('Invalid grace period: must be after the challenge end date', { id, new_submissionDate });
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Invalid grace period: must be after the challenge end date'));
+        }
+        challenge.submissionDate = new Date(new_submissionDate);
+        const updatedChallenge = yield challenge.save();
+        logger_1.default.info('Challenge grace period updated successfully', { id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge grace period updated successfully', updatedChallenge));
+    }
+    catch (error) {
+        console.error(error);
+        logger_1.default.error('Error updating challenge grace period', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error updating challenge grace period', error));
+    }
+});
+exports.updateGracePeriod = updateGracePeriod;

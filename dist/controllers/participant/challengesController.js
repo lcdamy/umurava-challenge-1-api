@@ -39,10 +39,26 @@ const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             logger_1.default.warn(`Challenge not found with id: ${req.params.id}`);
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
         }
+        //allow only to join the challenge before the start date and if the challenge is only open for registration
+        const currentDate = new Date();
+        const startDate = challenge.startDate ? new Date(challenge.startDate) : null;
+        const endDate = challenge.endDate ? new Date(challenge.endDate) : null;
+        if (startDate && currentDate > startDate) {
+            logger_1.default.warn('Challenge has already started or ended');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Challenge has already started or ended'));
+        }
+        if (endDate && currentDate > endDate) {
+            logger_1.default.warn('Challenge has already ended');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Challenge has already ended'));
+        }
+        if (challenge.status !== 'open') {
+            logger_1.default.warn('Challenge is not open for registration');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Challenge is not open for registration'));
+        }
         const teamLeadEmail = req.user ? req.user.email : null;
         const participantsCount = (0, exports.countParticipants)(value, teamLeadEmail);
         if (challenge.teamSize !== participantsCount) {
-            const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. Please ensure the correct number of participants is provided.`;
+            const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. You currently have ${participantsCount} participants. Please ensure the correct number of participants is provided.`;
             logger_1.default.warn(errorMessage);
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessage));
         }

@@ -75,7 +75,7 @@ const ChallengeSchema: Schema = new Schema({
     },
     status: {
         type: String,
-        enum: ['draft', 'open', 'ongoing', 'completed'],
+        enum: ['draft', 'open', 'ongoing', 'completed', 'closed'],
         default: 'draft'
     }
 }, {

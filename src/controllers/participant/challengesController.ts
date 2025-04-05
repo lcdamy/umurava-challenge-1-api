@@ -31,10 +31,27 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
 
+        //allow only to join the challenge before the start date and if the challenge is only open for registration
+        const currentDate = new Date();
+        const startDate = challenge.startDate ? new Date(challenge.startDate) : null;
+        const endDate = challenge.endDate ? new Date(challenge.endDate) : null;
+        if (startDate && currentDate > startDate) {
+            logger.warn('Challenge has already started or ended');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge has already started or ended'));
+        }
+        if (endDate && currentDate > endDate) {
+            logger.warn('Challenge has already ended');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge has already ended'));
+        }
+        if (challenge.status !== 'open') {
+            logger.warn('Challenge is not open for registration');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge is not open for registration'));
+        }
+
         const teamLeadEmail = req.user ? (req.user as any).email : null;
         const participantsCount = countParticipants(value, teamLeadEmail);
         if (challenge.teamSize !== participantsCount) {
-            const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. Please ensure the correct number of participants is provided.`;
+            const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. You currently have ${participantsCount} participants. Please ensure the correct number of participants is provided.`;
             logger.warn(errorMessage);
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessage));
         }

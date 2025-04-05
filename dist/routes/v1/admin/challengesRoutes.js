@@ -146,4 +146,6 @@ adminChallengesRoutes.get('/challenge/statistics', authenticationMiddleware(), a
 adminChallengesRoutes.post('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createChallengeCategory);
 adminChallengesRoutes.get('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeCategories);
 adminChallengesRoutes.get('/prize-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getPrizeCategories);
+adminChallengesRoutes.put('/challenge/update/status/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateChallengeStatus);
+adminChallengesRoutes.put('/challenge/update/grace-period/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateGracePeriod);
 exports.default = adminChallengesRoutes;

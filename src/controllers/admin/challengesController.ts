@@ -5,9 +5,11 @@ import Prize from '../../models/prizesModel';
 import { convertToISO, formatResponse, getDuration } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
-import User from '../../models/userModel';
 const ChallengeDTO = require('../../dtos/challengesDTO');
+const UpdateChallengeDTO = require('../../dtos/updateChallengeDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
+const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
+const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -116,7 +118,7 @@ export const createChallenge = async (req: Request, res: Response): Promise<Resp
 
 // Update an existing challenge
 export const updateChallenge = async (req: Request, res: Response): Promise<Response> => {
-    const { errors, value } = ChallengeDTO.validate(req.body);
+    const { errors, value } = UpdateChallengeDTO.validate(req.body);
     if (errors) {
         logger.warn('Validation error updating challenge', { errors });
         const errorMessages = errors.map((error: any) => error.message).join(', ');
@@ -279,6 +281,83 @@ export const getPrizeCategories = async (req: Request, res: Response): Promise<R
     } catch (error) {
         logger.error('Error fetching prize categories', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching prize categories', error));
+    }
+}
+
+// update challenge status
+export const updateChallengeStatus = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = UpdateChallengeStatusDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error updating challenge status', { errors });
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+    }
+    try {
+        const { id } = req.params;
+        const { status } = value;
+        logger.info('Fetching challenge for status update', { id });
+        const challenge = await Challenge.findById(id);
+        if (!challenge) {
+            logger.warn('Challenge not found for status update', { id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+        if (challenge.status === 'completed') {
+            logger.warn('Attempted to update status of a completed challenge', { id });
+            return res.status(StatusCodes.FORBIDDEN).json(formatResponse('error', 'Cannot update status of a completed challenge'));
+        }
+        if (challenge.status === status) {
+            logger.warn('Attempted to update status to the same value', { id, status });
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Status is already set to this value'));
+        }
+
+        logger.info('Updating challenge status', { id: req.params.id });
+        const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        if (!updatedChallenge) {
+            logger.warn('Challenge not found for status update', { id: req.params.id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+        logger.info('Challenge status updated successfully', { id: req.params.id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge status updated successfully', updatedChallenge));
+    } catch (error) {
+        logger.error('Error updating challenge status', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error updating challenge status', error));
+    }
+}
+// update grace period
+export const updateGracePeriod = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = UpdateChallengeSubmissionDateDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error updating challenge grace period', { errors });
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+    }
+    try {
+        const { id } = req.params;
+        const { new_submissionDate } = value;
+
+        logger.info('Fetching challenge for grace period update', { id });
+        const challenge = await Challenge.findById(id);
+        if (!challenge) {
+            logger.warn('Challenge not found for grace period update', { id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+
+        if (new Date(new_submissionDate) <= new Date(challenge.endDate)) {
+            logger.warn('Invalid grace period: must be after the challenge end date', { id, new_submissionDate });
+            return res.status(StatusCodes.BAD_REQUEST).json(
+                formatResponse('error', 'Invalid grace period: must be after the challenge end date')
+            );
+        }
+
+        challenge.submissionDate = new Date(new_submissionDate);
+        const updatedChallenge = await challenge.save();
+
+        logger.info('Challenge grace period updated successfully', { id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge grace period updated successfully', updatedChallenge));
+    } catch (error) {
+        console.error(error);
+        logger.error('Error updating challenge grace period', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error updating challenge grace period', error));
     }
 }
 
