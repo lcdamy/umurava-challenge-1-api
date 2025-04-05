@@ -331,6 +331,7 @@ export const updateGracePeriod = async (req: Request, res: Response): Promise<Re
         const errorMessages = errors.map((error: any) => error.message).join(', ');
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
+    
     try {
         const { id } = req.params;
         const { new_submissionDate } = value;
