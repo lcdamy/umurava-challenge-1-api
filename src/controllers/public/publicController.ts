@@ -5,9 +5,14 @@ import { Client, LocalAuth } from 'whatsapp-web.js';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import User from '../../models/userModel';
+import { NoticationSercice } from '../../services/notificationService';
+
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
+const createNotificationDTO = require('../../dtos/createNotificationDTO');
 const qrcode = require("qrcode-terminal");
+
+const notificationService = new NoticationSercice();
 
 // Get all skills
 export const getWelcomeMessage = async (req: Request, res: Response): Promise<Response> => {
@@ -94,4 +99,61 @@ export const joinWhatsAppCommunity = async (req: Request, res: Response) => {
 
     logger.info('Initializing WhatsApp client');
     client.initialize();
+};
+
+// Create a notification
+export const createNotification = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { errors, value } = createNotificationDTO.validate(req.body);
+        if (errors) {
+            logger.warn('Validation error in createNotification', { errors });
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Validation Error", errors));
+        }
+
+        const notification = await notificationService.createNotification(value);
+        logger.info('Notification created successfully', { notification });
+        return res.status(StatusCodes.CREATED).json(formatResponse("success", "Notification created successfully", notification));
+    } catch (error) {
+        logger.error('Error creating notification', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error creating notification", error));
+    }
+}
+
+// get notifications
+export const getAllNotifications = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        if (!req.user) {
+            logger.warn('User is not authenticated');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse("error", "User is not authenticated"));
+        }
+        const userId = (req.user && 'id' in req.user) ? String(req.user.id) : null;
+
+        if (!userId) {
+            logger.warn('User ID not found in request');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "User ID not found in request"));
+        }
+
+        const { status } = req.query; // Read status from query parameters
+        const filters: { userId: string; status?: string } = { userId };
+
+        if (status) {
+            if (status !== 'read' && status !== 'unread') {
+                logger.warn('Invalid status filter provided', { status });
+                return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Invalid status filter. Allowed values are 'read' or 'unread'"));
+            }
+            filters.status = status;
+        }
+
+        const notifications = await notificationService.getAllNotifications(filters);
+        if (!notifications || notifications.length === 0) {
+            logger.warn('No notifications found for user', { userId });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse("error", "No notifications found for user"));
+        }
+
+        logger.info('Notifications fetched successfully', { userId, status });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "Notifications fetched successfully", notifications));
+    } catch (error) {
+        logger.error('Error fetching notifications', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error fetching notifications", error));
+    }
 };

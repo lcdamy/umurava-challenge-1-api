@@ -13,8 +13,8 @@ import { CreateUserSocialDTO } from '../../dtos/createUserSocialDTO';
 import { UpdateUserDTO } from '../../dtos/updateUserDTO';
 import { UpdateUserPasswordDTO } from '../../dtos/updateUserPasswordDTO';
 import { AuthService } from '../../services/authService';
+import { NoticationSercice } from '../../services/notificationService';
 import bcrypt from "bcryptjs";
-import { lastDayOfDecade } from 'date-fns';
 
 const { FRONTEND_URL } = process.env;
 
@@ -65,6 +65,22 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
         // Send welcome email
         await sendEmail('send_notification', 'Welcome to Our Platform', value.email, context);
+
+        // Notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            const notificationService = new NoticationSercice();
+            for (const admin of admins) {
+            const notification = {
+                timestamp: new Date(),
+                type: 'info',
+                message: `A new user has registered on the platform. Please review their details.`,
+                userId: admin._id,
+                status: 'unread'
+            };
+            await notificationService.createNotification(notification);
+            }
+        }
 
         logger.info('User registered successfully', { id: savedUser._id });
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'User registered successfully', { id: savedUser._id }));
@@ -422,6 +438,23 @@ export const deleteProfile = async (req: Request, res: Response): Promise<Respon
             logger.warn('User not found for status update', { id: userId });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
         }
+
+        //send notification to all active admins
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            const notificationService = new NoticationSercice();
+            for (const admin of admins) {
+            const notification = {
+                timestamp: new Date(),
+                type: 'info',
+                message: `User ${updatedUser.names} has deleted their profile.`,
+                userId: admin._id,
+                status: 'unread'
+            };
+            await notificationService.createNotification(notification);
+            }
+        }
+        // Delete the user from the database
 
         logger.info('User profile deleted successfully', { id: updatedUser._id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'User profile deleted successfully'));

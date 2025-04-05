@@ -12,16 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
+exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const helper_1 = require("../../utils/helper");
 const whatsapp_web_js_1 = require("whatsapp-web.js");
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
 const userModel_1 = __importDefault(require("../../models/userModel"));
+const notificationService_1 = require("../../services/notificationService");
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
+const createNotificationDTO = require('../../dtos/createNotificationDTO');
 const qrcode = require("qrcode-terminal");
+const notificationService = new notificationService_1.NoticationSercice();
 // Get all skills
 const getWelcomeMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -105,3 +108,56 @@ const joinWhatsAppCommunity = (req, res) => __awaiter(void 0, void 0, void 0, fu
     client.initialize();
 });
 exports.joinWhatsAppCommunity = joinWhatsAppCommunity;
+// Create a notification
+const createNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { errors, value } = createNotificationDTO.validate(req.body);
+        if (errors) {
+            logger_1.default.warn('Validation error in createNotification', { errors });
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Validation Error", errors));
+        }
+        const notification = yield notificationService.createNotification(value);
+        logger_1.default.info('Notification created successfully', { notification });
+        return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)("success", "Notification created successfully", notification));
+    }
+    catch (error) {
+        logger_1.default.error('Error creating notification', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error creating notification", error));
+    }
+});
+exports.createNotification = createNotification;
+// get notifications
+const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!req.user) {
+            logger_1.default.warn('User is not authenticated');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)("error", "User is not authenticated"));
+        }
+        const userId = (req.user && 'id' in req.user) ? String(req.user.id) : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "User ID not found in request"));
+        }
+        const { status } = req.query; // Read status from query parameters
+        const filters = { userId };
+        if (status) {
+            if (status !== 'read' && status !== 'unread') {
+                logger_1.default.warn('Invalid status filter provided', { status });
+                return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Invalid status filter. Allowed values are 'read' or 'unread'"));
+            }
+            filters.status = status;
+        }
+        const notifications = yield notificationService.getAllNotifications(filters);
+        if (!notifications || notifications.length === 0) {
+            logger_1.default.warn('No notifications found for user', { userId });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "No notifications found for user"));
+        }
+        logger_1.default.info('Notifications fetched successfully', { userId, status });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Notifications fetched successfully", notifications));
+    }
+    catch (error) {
+        logger_1.default.error('Error fetching notifications', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error fetching notifications", error));
+    }
+});
+exports.getAllNotifications = getAllNotifications;

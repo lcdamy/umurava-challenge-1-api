@@ -27,6 +27,7 @@ const createUserSocialDTO_1 = require("../../dtos/createUserSocialDTO");
 const updateUserDTO_1 = require("../../dtos/updateUserDTO");
 const updateUserPasswordDTO_1 = require("../../dtos/updateUserPasswordDTO");
 const authService_1 = require("../../services/authService");
+const notificationService_1 = require("../../services/notificationService");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const { FRONTEND_URL } = process.env;
 const authService = new authService_1.AuthService();
@@ -68,6 +69,21 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         };
         // Send welcome email
         yield (0, emailService_1.sendEmail)('send_notification', 'Welcome to Our Platform', value.email, context);
+        // Notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            const notificationService = new notificationService_1.NoticationSercice();
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    message: `A new user has registered on the platform. Please review their details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
         logger_1.default.info('User registered successfully', { id: savedUser._id });
         return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'User registered successfully', { id: savedUser._id }));
     }
@@ -392,6 +408,22 @@ const deleteProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             logger_1.default.warn('User not found for status update', { id: userId });
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
         }
+        //send notification to all active admins
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            const notificationService = new notificationService_1.NoticationSercice();
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    message: `User ${updatedUser.names} has deleted their profile.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
+        // Delete the user from the database
         logger_1.default.info('User profile deleted successfully', { id: updatedUser._id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User profile deleted successfully'));
     }

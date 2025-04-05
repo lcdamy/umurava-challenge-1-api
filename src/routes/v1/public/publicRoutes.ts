@@ -160,14 +160,20 @@
 
 const express = require('express');
 const publicRoutes = express.Router();
-const skillsController = require('../../../controllers/admin/skillsController'); 
+const skillsController = require('../../../controllers/admin/skillsController');
 const challengesController = require('../../../controllers/admin/challengesController');
 const publicController = require('../../../controllers/public/publicController');
+
+const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
+const { authorizationMiddleware } = require("../../../middlewares/authorizationMiddleware");
+
+const roles = ["admin", "participant"];
 
 publicRoutes.get('/skills', skillsController.getSkills);
 publicRoutes.get('/challenges', challengesController.getChallenges);
 publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
 publicRoutes.post('/enter', publicController.joinProgram);
 publicRoutes.post('/join/whatsapp/community', publicController.joinWhatsAppCommunity);
+publicRoutes.get('/notifications', authenticationMiddleware(), authorizationMiddleware(roles), publicController.getAllNotifications);
 
 export default publicRoutes;

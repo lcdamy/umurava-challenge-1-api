@@ -6,22 +6,22 @@ import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import { sendEmail } from "../../utils/emailService";
 import { UserSercice } from '../../services/userService';
+import { NoticationSercice } from '../../services/notificationService';
+
 const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
 const userService = new UserSercice();
 
-// Participate join the challenge api
+// Participate join the challenge API
 export const joinChallenge = async (req: Request, res: Response): Promise<Response> => {
     logger.info('joinChallenge API called!');
     try {
-
         const { errors, value } = JoinChallengeDTO.validate(req.body);
         if (errors) {
-            logger.error('Validation Error', errors);
             const errorMessages = errors.map((error: any) => error.message).join(', ');
+            logger.error('Validation Error', errorMessages);
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages));
         }
-
 
         const challenge = await Challenge.findById(req.params.id);
         if (!challenge) {
@@ -29,15 +29,12 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
 
-        const participantsCount = countParticipants(value, req.user ? (req.user as any).email : null);
+        const teamLeadEmail = req.user ? (req.user as any).email : null;
+        const participantsCount = countParticipants(value, teamLeadEmail);
         if (challenge.teamSize !== participantsCount) {
-            logger.warn('Challenge must have the number of required participants');
-            return res.status(StatusCodes.BAD_REQUEST).json(
-                formatResponse(
-                    'error',
-                    `The challenge requires exactly ${challenge.teamSize} participants. Please ensure the correct number of participants is provided.`
-                )
-            );
+            const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. Please ensure the correct number of participants is provided.`;
+            logger.warn(errorMessage);
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessage));
         }
 
         const existingParticipant = await ChallengeParticipantsModel.findOne({
@@ -46,10 +43,9 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
         });
 
         if (existingParticipant) {
-            logger.warn('Participant is already part of this challenge');
-            return res.status(StatusCodes.CONFLICT).json(
-                formatResponse('error', 'Participant is already part of this challenge')
-            );
+            const errorMessage = 'Participant is already part of this challenge';
+            logger.warn(errorMessage);
+            return res.status(StatusCodes.CONFLICT).json(formatResponse('error', errorMessage));
         }
 
         const participant = new ChallengeParticipantsModel({
@@ -70,10 +66,8 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             link_label: ''
         };
 
-        const admins = await userService.getAdmins() || [];
-        if (admins.length === 0) {
-            logger.warn('No admins found');
-        } else {
+        const admins = await userService.getAdmins();
+        if (admins && admins.length > 0) {
             const adminEmails = admins.map((admin: any) => admin.email);
             await Promise.all(adminEmails.map((adminEmail: string) =>
                 sendEmail('send_notification', 'Participant Joined Challenge', adminEmail, {
@@ -85,9 +79,24 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                     link_label: 'View Dashboard'
                 }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
             ));
+
+            const notificationService = new NoticationSercice();
+            await Promise.all(admins.map((admin: any) =>
+                notificationService.createNotification({
+                    timestamp: new Date(),
+                    type: 'info',
+                    message: `A new user has registered on the platform. Please review their details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                })
+            ));
+            logger.info('Notification sent to admins successfully');
+        } else {
+            logger.warn('No admins found');
         }
 
-        await Promise.all((value.participants.members || []).map((member: string) =>
+        const memberEmails = value.participants.members || [];
+        await Promise.all(memberEmails.map((member: string) =>
             sendEmail('send_notification', 'You Have Been Added to a Challenge', member, {
                 ...context,
                 subject: 'You Have Been Added to a Challenge',
@@ -99,10 +108,9 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
         ));
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Participant joined the challenge successfully'));
-
     } catch (error) {
-        logger.error('Error joining the challenge', error);
         const errorMessage = (error as Error).message || 'Error joining the challenge';
+        logger.error('Error joining the challenge', errorMessage);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
     }
 };
