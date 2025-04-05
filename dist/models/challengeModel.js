@@ -19,6 +19,10 @@ const ChallengeSchema = new mongoose_1.Schema({
         type: Date,
         required: true
     },
+    submissionDate: {
+        type: Date,
+        default: null
+    },
     duration: {
         type: Number,
         required: true
@@ -60,6 +64,12 @@ const ChallengeSchema = new mongoose_1.Schema({
     }
 }, {
     timestamps: true
+});
+ChallengeSchema.pre('save', function (next) {
+    if (!this.submissionDate && this.endDate) {
+        this.submissionDate = this.endDate;
+    }
+    next();
 });
 const Challenge = (0, mongoose_1.model)('Challenge', ChallengeSchema);
 exports.default = Challenge;

@@ -4,6 +4,15 @@ interface IChallengeParticipantsModel extends Document {
     challengeId: string;
     teamLead: Schema.Types.ObjectId; // Reference to a user
     members: string[]; // Array of emails
+    submissionStatus: 'submitted' | 'not submitted';
+    submissionDate: Date | null;
+    submissionData: {
+        details_message: string;
+        links: {
+            link: string;
+            description: string;
+        }[];
+    } | null;
 }
 
 const challengeParticipantsModelSchema = new Schema<IChallengeParticipantsModel>({
@@ -24,7 +33,20 @@ const challengeParticipantsModelSchema = new Schema<IChallengeParticipantsModel>
             },
             message: 'One or more emails are invalid.'
         }
-    }
+    },
+    submissionStatus: {
+        type: String,
+        enum: ['submitted', 'not submitted'],
+        default: 'not submitted'
+    },
+    submissionDate: {
+        type: Date,
+        default: null
+    },
+    submissionData: {
+        type: Object,
+        default: null
+    },
 }, {
     timestamps: true
 });

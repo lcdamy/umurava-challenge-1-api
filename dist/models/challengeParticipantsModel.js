@@ -19,7 +19,20 @@ const challengeParticipantsModelSchema = new mongoose_1.Schema({
             },
             message: 'One or more emails are invalid.'
         }
-    }
+    },
+    submissionStatus: {
+        type: String,
+        enum: ['submitted', 'not submitted'],
+        default: 'not submitted'
+    },
+    submissionDate: {
+        type: Date,
+        default: null
+    },
+    submissionData: {
+        type: Object,
+        default: null
+    },
 }, {
     timestamps: true
 });

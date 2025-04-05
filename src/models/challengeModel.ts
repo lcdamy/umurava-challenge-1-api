@@ -6,6 +6,7 @@ interface IChallenge extends Document {
     startDate: Date;
     endDate: Date;
     duration: number;
+    submissionDate: Date | null;
     moneyPrize: Array<{ categoryPrize: string; prize: number }>;
     contactEmail: string;
     projectDescription: string;
@@ -33,6 +34,10 @@ const ChallengeSchema: Schema = new Schema({
     endDate: {
         type: Date,
         required: true
+    },
+    submissionDate: {
+        type: Date,
+        default: null
     },
     duration: {
         type: Number,
@@ -77,7 +82,12 @@ const ChallengeSchema: Schema = new Schema({
     timestamps: true
 });
 
-
+ChallengeSchema.pre<IChallenge>('save', function (next) {
+    if (!this.submissionDate && this.endDate) {
+        this.submissionDate = this.endDate;
+    }
+    next();
+});
 const Challenge = model<IChallenge>('Challenge', ChallengeSchema);
 
 export default Challenge;

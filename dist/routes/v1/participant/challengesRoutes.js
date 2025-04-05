@@ -26,4 +26,5 @@ const { authorizationMiddleware } = require("../../../middlewares/authorizationM
 const roles = ["admin", "participant"];
 participantChallengeRoutes.post('/join/challenge/:id', authenticationMiddleware(), authorizationMiddleware("participant"), challengesController.joinChallenge);
 participantChallengeRoutes.get('/:challenge_id/all', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getParticipantChallenges);
+participantChallengeRoutes.post('/:challenge_id/submit', authenticationMiddleware(), authorizationMiddleware("participant"), challengesController.submitChallenge);
 exports.default = participantChallengeRoutes;
