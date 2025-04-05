@@ -12,6 +12,8 @@ const {
     deleteProfile,
     changePassword,
     getAllUsers,
+    activateAccount,
+    deactivateAccount
 } = require('../../../controllers/auth/authController');
 
 const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
@@ -56,6 +58,12 @@ router.put('/profile/change-password', authenticationMiddleware(), authorization
 
 // Route for getting all users (protected route)
 router.get('/users', authenticationMiddleware(), authorizationMiddleware("admin"), getAllUsers);
+
+// Route to activate user account (if applicable)
+router.post('/activate-account/:id', authenticationMiddleware(), authorizationMiddleware("admin"), activateAccount);
+
+// Route to deactivate user account (if applicable)
+router.post('/deactivate-account/:id', authenticationMiddleware(), authorizationMiddleware("admin"), deactivateAccount);
 
 
 export default router;

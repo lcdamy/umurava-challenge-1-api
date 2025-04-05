@@ -71,14 +71,14 @@ export const register = async (req: Request, res: Response): Promise<Response> =
         if (admins.length > 0) {
             const notificationService = new NoticationSercice();
             for (const admin of admins) {
-            const notification = {
-                timestamp: new Date(),
-                type: 'info',
-                message: `A new user has registered on the platform. Please review their details.`,
-                userId: admin._id,
-                status: 'unread'
-            };
-            await notificationService.createNotification(notification);
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    message: `A new user has registered on the platform. Please review their details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
             }
         }
 
@@ -444,14 +444,14 @@ export const deleteProfile = async (req: Request, res: Response): Promise<Respon
         if (admins.length > 0) {
             const notificationService = new NoticationSercice();
             for (const admin of admins) {
-            const notification = {
-                timestamp: new Date(),
-                type: 'info',
-                message: `User ${updatedUser.names} has deleted their profile.`,
-                userId: admin._id,
-                status: 'unread'
-            };
-            await notificationService.createNotification(notification);
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    message: `User ${updatedUser.names} has deleted their profile.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
             }
         }
         // Delete the user from the database
@@ -550,3 +550,49 @@ export const getAllUsers = async (req: Request, res: Response): Promise<Response
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error retrieving all users', error));
     }
 };
+
+export const activateAccount = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { id } = req.params;
+        // Validate the ID format (if necessary)
+        if (!id) {
+            logger.warn('User ID is required for activation');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
+        }
+        // Find the user by ID and update the status to 'active'
+        const updatedUser = await User.findByIdAndUpdate(id, { status: 'active' }, { new: true });
+        if (!updatedUser) {
+            logger.warn('User not found for activation', id);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        logger.info('Account activated successfully', { id: updatedUser._id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Account activated successfully'));
+    } catch (error) {
+        logger.error('Error activating account', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error activating account', error));
+    }
+}
+
+export const deactivateAccount = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { id } = req.params;
+        // Validate the ID format (if necessary)
+        if (!id) {
+            logger.warn('User ID is required for deactivation');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
+        }
+        // Find the user by ID and update the status to 'inactive'
+        const updatedUser = await User.findByIdAndUpdate(id, { status: 'inactive' }, { new: true });
+        if (!updatedUser) {
+            logger.warn('User not found for deactivation', id);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));
+        }
+
+        logger.info('Account deactivated successfully', { id: updatedUser._id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Account deactivated successfully'));
+    } catch (error) {
+        logger.error('Error deactivating account', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deactivating account', error));
+    }
+}

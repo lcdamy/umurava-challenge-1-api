@@ -126,3 +126,40 @@ export const countParticipants = (object: { participants: { members: string[] } 
         throw new Error('Failed to count participants');
     }
 };
+
+//get all participants in a challenge
+export const getParticipantChallenges = async (req: Request, res: Response): Promise<Response> => {
+    logger.info('getParticipantChallenges API called!');
+    try {
+        const { challenge_id } = req.params;
+        if (!challenge_id) {
+            logger.warn('Challenge ID is required');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge ID is required'));
+        }
+        // Check if the challenge exists
+        const challenge = await Challenge.findById(challenge_id);
+        if (!challenge) {
+            logger.warn(`Challenge not found with id: ${challenge_id}`);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+ 
+        const participantChallenges = await ChallengeParticipantsModel.find({ challengeId: challenge_id })
+            .populate('teamLead', 'names profile_url email')
+            .populate('members', 'email')
+        if (!participantChallenges || participantChallenges.length === 0) {
+            logger.warn(`No participants found for challenge with id: ${challenge_id}`);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No participants found for this challenge'));
+        }
+        logger.info('Participant challenges retrieved successfully', participantChallenges);
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Participant challenges retrieved successfully', { participantChallenges }));
+    } catch (error) {
+        const errorMessage = (error as Error).message || 'Error retrieving participant challenges';
+        logger.error('Error retrieving participant challenges', errorMessage);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
+    }
+}
+
+
+
+
+

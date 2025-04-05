@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUsers = exports.changePassword = exports.deleteProfile = exports.updateProfile = exports.getProfile = exports.getTokenByEmail = exports.resetPassword = exports.forgetPassword = exports.verifyEmail = exports.login = exports.registerAdmin = exports.register = void 0;
+exports.deactivateAccount = exports.activateAccount = exports.getAllUsers = exports.changePassword = exports.deleteProfile = exports.updateProfile = exports.getProfile = exports.getTokenByEmail = exports.resetPassword = exports.forgetPassword = exports.verifyEmail = exports.login = exports.registerAdmin = exports.register = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
 const helper_1 = require("../../utils/helper");
@@ -511,3 +511,49 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getAllUsers = getAllUsers;
+const activateAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        // Validate the ID format (if necessary)
+        if (!id) {
+            logger_1.default.warn('User ID is required for activation');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
+        }
+        // Find the user by ID and update the status to 'active'
+        const updatedUser = yield userModel_1.default.findByIdAndUpdate(id, { status: 'active' }, { new: true });
+        if (!updatedUser) {
+            logger_1.default.warn('User not found for activation', id);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
+        }
+        logger_1.default.info('Account activated successfully', { id: updatedUser._id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Account activated successfully'));
+    }
+    catch (error) {
+        logger_1.default.error('Error activating account', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error activating account', error));
+    }
+});
+exports.activateAccount = activateAccount;
+const deactivateAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        // Validate the ID format (if necessary)
+        if (!id) {
+            logger_1.default.warn('User ID is required for deactivation');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
+        }
+        // Find the user by ID and update the status to 'inactive'
+        const updatedUser = yield userModel_1.default.findByIdAndUpdate(id, { status: 'inactive' }, { new: true });
+        if (!updatedUser) {
+            logger_1.default.warn('User not found for deactivation', id);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
+        }
+        logger_1.default.info('Account deactivated successfully', { id: updatedUser._id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Account deactivated successfully'));
+    }
+    catch (error) {
+        logger_1.default.error('Error deactivating account', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error deactivating account', error));
+    }
+});
+exports.deactivateAccount = deactivateAccount;

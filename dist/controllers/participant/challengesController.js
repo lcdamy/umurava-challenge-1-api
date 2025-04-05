@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.countParticipants = exports.joinChallenge = void 0;
+exports.getParticipantChallenges = exports.countParticipants = exports.joinChallenge = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const challengeParticipantsModel_1 = __importDefault(require("../../models/challengeParticipantsModel"));
 const helper_1 = require("../../utils/helper");
@@ -111,3 +111,35 @@ const countParticipants = (object, teamLead) => {
     }
 };
 exports.countParticipants = countParticipants;
+//get all participants in a challenge
+const getParticipantChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info('getParticipantChallenges API called!');
+    try {
+        const { challenge_id } = req.params;
+        if (!challenge_id) {
+            logger_1.default.warn('Challenge ID is required');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Challenge ID is required'));
+        }
+        // Check if the challenge exists
+        const challenge = yield challengeModel_1.default.findById(challenge_id);
+        if (!challenge) {
+            logger_1.default.warn(`Challenge not found with id: ${challenge_id}`);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
+        }
+        const participantChallenges = yield challengeParticipantsModel_1.default.find({ challengeId: challenge_id })
+            .populate('teamLead', 'names profile_url email')
+            .populate('members', 'email');
+        if (!participantChallenges || participantChallenges.length === 0) {
+            logger_1.default.warn(`No participants found for challenge with id: ${challenge_id}`);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'No participants found for this challenge'));
+        }
+        logger_1.default.info('Participant challenges retrieved successfully', participantChallenges);
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Participant challenges retrieved successfully', { participantChallenges }));
+    }
+    catch (error) {
+        const errorMessage = error.message || 'Error retrieving participant challenges';
+        logger_1.default.error('Error retrieving participant challenges', errorMessage);
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', errorMessage));
+    }
+});
+exports.getParticipantChallenges = getParticipantChallenges;

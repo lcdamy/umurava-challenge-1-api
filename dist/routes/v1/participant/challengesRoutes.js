@@ -23,5 +23,7 @@ const participantChallengeRoutes = express.Router();
 const challengesController = require('../../../controllers/participant/challengesController');
 const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
 const { authorizationMiddleware } = require("../../../middlewares/authorizationMiddleware");
+const roles = ["admin", "participant"];
 participantChallengeRoutes.post('/join/challenge/:id', authenticationMiddleware(), authorizationMiddleware("participant"), challengesController.joinChallenge);
+participantChallengeRoutes.get('/:challenge_id/all', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getParticipantChallenges);
 exports.default = participantChallengeRoutes;

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const { register, registerAdmin, login, verifyEmail, forgetPassword, resetPassword, getTokenByEmail, getProfile, updateProfile, deleteProfile, changePassword, getAllUsers, } = require('../../../controllers/auth/authController');
+const { register, registerAdmin, login, verifyEmail, forgetPassword, resetPassword, getTokenByEmail, getProfile, updateProfile, deleteProfile, changePassword, getAllUsers, activateAccount, deactivateAccount } = require('../../../controllers/auth/authController');
 const { authenticationMiddleware } = require("../../../middlewares/authenticationMiddleware");
 const { authorizationMiddleware } = require("../../../middlewares/authorizationMiddleware");
 const roles = ["admin", "participant"];
@@ -30,4 +30,8 @@ router.delete('/profile', authenticationMiddleware(), authorizationMiddleware(ro
 router.put('/profile/change-password', authenticationMiddleware(), authorizationMiddleware(roles), changePassword);
 // Route for getting all users (protected route)
 router.get('/users', authenticationMiddleware(), authorizationMiddleware("admin"), getAllUsers);
+// Route to activate user account (if applicable)
+router.post('/activate-account/:id', authenticationMiddleware(), authorizationMiddleware("admin"), activateAccount);
+// Route to deactivate user account (if applicable)
+router.post('/deactivate-account/:id', authenticationMiddleware(), authorizationMiddleware("admin"), deactivateAccount);
 exports.default = router;
