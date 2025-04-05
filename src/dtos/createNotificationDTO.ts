@@ -23,17 +23,17 @@ export class CreateNotificationDTO {
 
     // Add a method to validate the data using Joi
     static validate(data: {
-        timestamp: Date;
-        type: string;
-        message: string;
-        userId: string;
+        timestamp?: Date;
+        type?: string;
+        message?: string;
+        userId?: string;
         status: string;
     }) {
         const schema = Joi.object({
-            timestamp: Joi.date().required(),
-            type: Joi.string().valid('info', 'warning', 'error').required(),
-            message: Joi.string().trim().required(),
-            userId: Joi.string().trim().required(),
+            timestamp: Joi.date().optional(),
+            type: Joi.string().valid('info', 'warning', 'error').optional(),
+            message: Joi.string().trim().optional(),
+            userId: Joi.string().trim().optional(),
             status: Joi.string().valid('read', 'unread').required(),
         });
 

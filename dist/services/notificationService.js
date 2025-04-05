@@ -34,6 +34,20 @@ class NoticationSercice {
             }
         });
     }
+    getNotificationById(notificationId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const notification = yield notificationModel_1.default.findById(notificationId);
+                if (!notification) {
+                    throw new Error("Notification not found");
+                }
+                return notification;
+            }
+            catch (error) {
+                throw new Error(`Error fetching single notification: ${error.message}`);
+            }
+        });
+    }
     createNotification(notificationData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -45,17 +59,20 @@ class NoticationSercice {
             }
         });
     }
-    updateNotification(notificationId, updateData) {
+    updateNotification(notificationId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const updatedNotification = yield notificationModel_1.default.findByIdAndUpdate(notificationId, updateData, { new: true });
+                const updatedNotification = yield notificationModel_1.default.findByIdAndUpdate(notificationId, // Pass the notificationId directly
+                { status: 'read' }, // Update the status to 'read', 
+                { new: true } // Ensure the updated document is returned
+                );
                 if (!updatedNotification) {
                     throw new Error("Notification not found");
                 }
                 return updatedNotification;
             }
             catch (error) {
-                throw new Error(`Error updating notification: ${error.message}`);
+                throw new Error(`Error updating notification in service: ${error.message}`);
             }
         });
     }
@@ -69,7 +86,31 @@ class NoticationSercice {
                 return { message: "Notification deleted successfully" };
             }
             catch (error) {
-                throw new Error(`Error deleting notification: ${error.message}`);
+                throw new Error(`Error deleting notification in service: ${error.message}`);
+            }
+        });
+    }
+    deleteAllNotifications(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield notificationModel_1.default.deleteMany({ userId });
+                return { message: `${result.deletedCount} notifications deleted successfully` };
+            }
+            catch (error) {
+                throw new Error(`Error deleting notifications in service: ${error.message}`);
+            }
+        });
+    }
+    readAllNotifications(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield notificationModel_1.default.updateMany({ userId, status: { $ne: "read" } }, // Find notifications that are not already read
+                { $set: { status: "read" } } // Update their status to "read"
+                );
+                return { message: `${result.modifiedCount} notifications marked as read` };
+            }
+            catch (error) {
+                throw new Error(`Error marking notifications as read in service: ${error.message}`);
             }
         });
     }

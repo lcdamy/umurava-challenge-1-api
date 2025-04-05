@@ -164,4 +164,8 @@ publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
 publicRoutes.post('/enter', publicController.joinProgram);
 publicRoutes.post('/join/whatsapp/community', publicController.joinWhatsAppCommunity);
 publicRoutes.get('/notifications', authenticationMiddleware(), authorizationMiddleware(roles), publicController.getAllNotifications);
+publicRoutes.put('/notifications/:id', authenticationMiddleware(), authorizationMiddleware(roles), publicController.updateNotification);
+publicRoutes.delete('/notifications/:id', authenticationMiddleware(), authorizationMiddleware(roles), publicController.deleteNotification);
+publicRoutes.delete('/notifications/delete/all', authenticationMiddleware(), authorizationMiddleware(roles), publicController.deleteAllNotifications);
+publicRoutes.put('/notifications/read/all', authenticationMiddleware(), authorizationMiddleware(roles), publicController.readAllNotifications);
 exports.default = publicRoutes;

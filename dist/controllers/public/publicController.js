@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
+exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const helper_1 = require("../../utils/helper");
 const whatsapp_web_js_1 = require("whatsapp-web.js");
@@ -161,3 +161,97 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getAllNotifications = getAllNotifications;
+// Update a notification
+const updateNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            logger_1.default.warn('Notification ID not provided');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Notification ID not provided"));
+        }
+        const existingNotification = yield notificationService.getNotificationById(id);
+        logger_1.default.info('Existing notification fetched', { existingNotification });
+        if (!existingNotification) {
+            logger_1.default.warn('Notification not found', { id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "Notification not found"));
+        }
+        const updatedNotification = yield notificationService.updateNotification(id);
+        logger_1.default.info('Notification updated successfully', { updatedNotification });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Notification updated successfully", updatedNotification));
+    }
+    catch (error) {
+        logger_1.default.error('Error updating notification in controller', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error updating notification", error));
+    }
+});
+exports.updateNotification = updateNotification;
+// Delete a notification
+const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            logger_1.default.warn('Notification ID not provided');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Notification ID not provided"));
+        }
+        const existingNotification = yield notificationService.getNotificationById(id);
+        if (!existingNotification) {
+            logger_1.default.warn('Notification not found', { id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "Notification not found"));
+        }
+        logger_1.default.info('Existing notification fetched', { existingNotification });
+        const notification = yield notificationService.deleteNotification(id);
+        logger_1.default.info('Notification deleted successfully', { notification });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Notification deleted successfully", notification));
+    }
+    catch (error) {
+        logger_1.default.error('Error deleting notification  in controller', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error deleting notification", error));
+    }
+});
+exports.deleteNotification = deleteNotification;
+// Delete all notifications for a user
+const deleteAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!req.user) {
+            logger_1.default.warn('User is not authenticated');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)("error", "User is not authenticated"));
+        }
+        const userId = (req.user && 'id' in req.user) ? String(req.user.id) : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "User ID not found in request"));
+        }
+        logger_1.default.info('Deleting all notifications for user', { userId });
+        const deletedNotifications = yield notificationService.deleteAllNotifications(userId);
+        logger_1.default.info('All notifications deleted successfully', { userId });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "All notifications deleted successfully", deletedNotifications));
+    }
+    catch (error) {
+        logger_1.default.error('Error deleting all notifications  in controller', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error deleting all notifications", error));
+    }
+});
+exports.deleteAllNotifications = deleteAllNotifications;
+//Read all notifications for a user
+const readAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!req.user) {
+            logger_1.default.warn('User is not authenticated');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)("error", "User is not authenticated"));
+        }
+        const userId = (req.user && 'id' in req.user) ? String(req.user.id) : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "User ID not found in request"));
+        }
+        logger_1.default.info('Reading all notifications for user', { userId });
+        const readNotifications = yield notificationService.readAllNotifications(userId);
+        logger_1.default.info('All notifications marked as read successfully', { userId });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "All notifications marked as read successfully", readNotifications));
+    }
+    catch (error) {
+        logger_1.default.error('Error marking all notifications as read  in controller', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error marking all notifications as read", error));
+    }
+});
+exports.readAllNotifications = readAllNotifications;
