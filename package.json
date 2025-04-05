@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
   "scripts": {
     "test": "jest",
     "build": "tsc --build",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
+    "heroku-postbuild": "npm run build",
     "migrate:up": "migrate-mongo up",
     "migrate:down": "migrate-mongo down",
     "migrate:create": "migrate-mongo create",
