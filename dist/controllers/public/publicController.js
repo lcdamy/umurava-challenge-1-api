@@ -139,6 +139,7 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
             logger_1.default.warn('User ID not found in request');
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "User ID not found in request"));
         }
+        logger_1.default.info('Fetching notifications for user', { userId });
         const { status } = req.query; // Read status from query parameters
         const filters = { userId };
         if (status) {

@@ -134,6 +134,8 @@ export const getAllNotifications = async (req: Request, res: Response): Promise<
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "User ID not found in request"));
         }
 
+        logger.info('Fetching notifications for user', { userId });
+
         const { status } = req.query; // Read status from query parameters
         const filters: { userId: string; status?: string } = { userId };
 
