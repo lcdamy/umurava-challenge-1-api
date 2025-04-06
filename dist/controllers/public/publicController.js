@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
+exports.removeNewsletter = exports.joinNewsletter = exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const helper_1 = require("../../utils/helper");
 const whatsapp_web_js_1 = require("whatsapp-web.js");
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
 const userModel_1 = __importDefault(require("../../models/userModel"));
+const subscribersModel_1 = __importDefault(require("../../models/subscribersModel"));
 const notificationService_1 = require("../../services/notificationService");
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
@@ -147,8 +148,9 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
             }
             filters.status = status;
         }
+        logger_1.default.info('Filters for fetching notifications', { filters });
         const notifications = yield notificationService.getAllNotifications(filters);
-        if (!notifications || notifications.length === 0) {
+        if (!notifications) {
             logger_1.default.warn('No notifications found for user', { userId });
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "No notifications found for user"));
         }
@@ -255,3 +257,51 @@ const readAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.readAllNotifications = readAllNotifications;
+// Join newsletter
+const joinNewsletter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    if (!email) {
+        logger_1.default.warn('Email not provided for newsletter subscription');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Email is required"));
+    }
+    try {
+        // Logic to add the email to the newsletter subscription list
+        const existingSubscriber = yield subscribersModel_1.default.findOne({ email });
+        if (existingSubscriber) {
+            logger_1.default.warn('Email already subscribed to the newsletter', { email });
+            return res.status(http_status_codes_1.StatusCodes.CONFLICT).json((0, helper_1.formatResponse)("error", "Email already subscribed to the newsletter"));
+        }
+        const newSubscriber = new subscribersModel_1.default({ email, status: 'active' });
+        yield newSubscriber.save();
+        logger_1.default.info('New subscriber added to the newsletter', { email });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Successfully subscribed to the newsletter"));
+    }
+    catch (error) {
+        logger_1.default.error('Error subscribing to newsletter', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error subscribing to the newsletter", error));
+    }
+});
+exports.joinNewsletter = joinNewsletter;
+// Unsubscribe from newsletter
+const removeNewsletter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    if (!email) {
+        logger_1.default.warn('Email not provided for newsletter unsubscription');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Email is required"));
+    }
+    try {
+        const existingSubscriber = yield subscribersModel_1.default.findOne({ email });
+        if (!existingSubscriber) {
+            logger_1.default.warn('Email not found in the newsletter subscription list', { email });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "Email not found in the newsletter subscription list"));
+        }
+        yield subscribersModel_1.default.updateOne({ email }, { status: 'inactive' });
+        logger_1.default.info('Subscriber status updated to inactive in the newsletter', { email });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Successfully unsubscribed from the newsletter"));
+    }
+    catch (error) {
+        logger_1.default.error('Error unsubscribing from newsletter', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error unsubscribing from the newsletter", error));
+    }
+});
+exports.removeNewsletter = removeNewsletter;

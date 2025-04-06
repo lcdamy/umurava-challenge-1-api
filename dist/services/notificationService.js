@@ -30,7 +30,7 @@ class NoticationSercice {
                 return notifications;
             }
             catch (error) {
-                throw new Error(`Error fetching notifications: ${error.message}`);
+                throw new Error(`Error fetching notifications in service: ${error.message}`);
             }
         });
     }
