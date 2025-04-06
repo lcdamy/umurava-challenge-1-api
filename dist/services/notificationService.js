@@ -22,8 +22,9 @@ class NoticationSercice {
                 if (filters.status) {
                     query.status = filters.status;
                 }
+                console.log("Query for notifications:", query); // Log the query to see what is being sent to the database
                 const notifications = yield notificationModel_1.default.find(query);
-                if (!notifications || notifications.length === 0) {
+                if (!notifications) {
                     throw new Error("No notifications found for user");
                 }
                 notifications.sort((a, b) => b.timestamp - a.timestamp); // Sort by timestamp in descending order
