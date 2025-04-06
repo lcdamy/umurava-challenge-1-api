@@ -17,7 +17,7 @@ export class NoticationSercice {
             notifications.sort((a: any, b: any) => b.timestamp - a.timestamp); // Sort by timestamp in descending order
             return notifications;
         } catch (error) {
-            throw new Error(`Error fetching notifications: ${(error as Error).message}`);
+            throw new Error(`Error fetching notifications in service: ${(error as Error).message}`);
         }
     }
 
