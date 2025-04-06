@@ -26,14 +26,17 @@ const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
 const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
 // Get all challenges
 const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
+    const { page = 1, limit = 10, search = '', all = 'false', status } = req.query;
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
     const searchQuery = search
         ? { $or: [{ challengeName: { $regex: search, $options: 'i' } }, { projectDescription: { $regex: search, $options: 'i' } }] }
         : {};
+    if (status) {
+        searchQuery.status = status;
+    }
     try {
-        logger_1.default.info('Fetching challenges with query', { page, limit, search, all });
+        logger_1.default.info('Fetching challenges with query', { page, limit, search, all, status });
         const totalChallenges = yield challengeModel_1.default.countDocuments(searchQuery);
         const totalCompletedChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'completed' }));
         const totalOpenChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'open' }));

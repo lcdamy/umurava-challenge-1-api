@@ -13,14 +13,19 @@ const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubm
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
-    const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
+    const { page = 1, limit = 10, search = '', all = 'false', status } = req.query;
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
-    const searchQuery = search
+    const searchQuery: any = search
         ? { $or: [{ challengeName: { $regex: search as string, $options: 'i' } }, { projectDescription: { $regex: search as string, $options: 'i' } }] }
         : {};
+
+    if (status) {
+        searchQuery.status = status;
+    }
+
     try {
-        logger.info('Fetching challenges with query', { page, limit, search, all });
+        logger.info('Fetching challenges with query', { page, limit, search, all, status });
         const totalChallenges = await Challenge.countDocuments(searchQuery);
         const totalCompletedChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'completed' });
         const totalOpenChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'open' });
