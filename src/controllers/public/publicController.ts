@@ -145,8 +145,10 @@ export const getAllNotifications = async (req: Request, res: Response): Promise<
             filters.status = status;
         }
 
+        logger.info('Filters for fetching notifications', { filters });
+
         const notifications = await notificationService.getAllNotifications(filters);
-        if (!notifications || notifications.length === 0) {
+        if (!notifications) {
             logger.warn('No notifications found for user', { userId });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse("error", "No notifications found for user"));
         }
