@@ -22,8 +22,12 @@ const challengeParticipantsModelSchema = new mongoose_1.Schema({
     },
     submissionStatus: {
         type: String,
-        enum: ['submitted', 'not submitted'],
+        enum: ['submitted', 'not submitted', 'approved', 'rejected'],
         default: 'not submitted'
+    },
+    rejectionReason: {
+        type: String,
+        default: null
     },
     submissionDate: {
         type: Date,

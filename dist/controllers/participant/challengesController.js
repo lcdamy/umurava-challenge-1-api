@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.submitChallenge = exports.getParticipantChallenges = exports.countParticipants = exports.joinChallenge = void 0;
+exports.approveRejectChallengeSubmission = exports.getChallengeSubmissions = exports.submitChallenge = exports.getParticipantChallenges = exports.countParticipants = exports.joinChallenge = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const challengeParticipantsModel_1 = __importDefault(require("../../models/challengeParticipantsModel"));
 const helper_1 = require("../../utils/helper");
@@ -146,7 +146,7 @@ const getParticipantChallenges = (req, res) => __awaiter(void 0, void 0, void 0,
         const participantChallenges = yield challengeParticipantsModel_1.default.find({ challengeId: challenge_id })
             .populate('teamLead', 'names profile_url email')
             .populate('members', 'email');
-        if (!participantChallenges || participantChallenges.length === 0) {
+        if (!participantChallenges) {
             logger_1.default.warn(`No participants found for challenge with id: ${challenge_id}`);
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'No participants found for this challenge'));
         }
@@ -217,6 +217,100 @@ const submitChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.submitChallenge = submitChallenge;
+//get participant challenge submissions
+const getChallengeSubmissions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info('getChallengeSubmissions API called!');
+    try {
+        const { challenge_id } = req.params;
+        if (!challenge_id) {
+            logger_1.default.warn('Challenge ID is required');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Challenge ID is required'));
+        }
+        const challenge = yield challengeModel_1.default.findById(challenge_id);
+        if (!challenge) {
+            logger_1.default.warn(`Challenge not found with id: ${challenge_id}`);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
+        }
+        const participantChallenges = yield challengeParticipantsModel_1.default.find({ challengeId: challenge_id, submissionStatus: 'submitted' })
+            .populate('teamLead', 'names profile_url email')
+            .populate('members', 'email');
+        if (!participantChallenges) {
+            logger_1.default.warn(`No participants who submitted their work found for challenge with id: ${challenge_id}`);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'No participants who submitted their work found for this challenge'));
+        }
+        logger_1.default.info('Participants who submitted their work retrieved successfully', participantChallenges);
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Participants who submitted their work retrieved successfully', { participantChallenges }));
+    }
+    catch (error) {
+        const errorMessage = error.message || 'Error retrieving participant challenges';
+        logger_1.default.error('Error retrieving participant challenges', errorMessage);
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', errorMessage));
+    }
+});
+exports.getChallengeSubmissions = getChallengeSubmissions;
+//approve or reject challenge submission
+const approveRejectChallengeSubmission = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info('approveRejectChallengeSubmission API called!');
+    try {
+        const { submission_challenge_id } = req.params;
+        const { status } = req.body;
+        if (!submission_challenge_id) {
+            logger_1.default.warn('Submission Challenge ID is required');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Submission Challenge ID is required'));
+        }
+        if (!['approved', 'rejected'].includes(status)) {
+            logger_1.default.warn('Invalid status provided');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Invalid status. Status must be either "approved" or "rejected"'));
+        }
+        const participant = yield challengeParticipantsModel_1.default.findById(submission_challenge_id);
+        if (!participant) {
+            logger_1.default.warn(`Participant submission not found with id: ${submission_challenge_id}`);
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Participant submission not found'));
+        }
+        participant.submissionStatus = status;
+        if (status === 'rejected') {
+            participant.rejectionReason = "Your submission has been rejected. However, your work was among the best we received. We encourage you to try the next challenge as the Umurava platform has many exciting challenges coming in the future. Keep up the great work!";
+        }
+        yield participant.save();
+        logger_1.default.info('Challenge submission status updated successfully', { id: participant._id, status });
+        const context = {
+            year: new Date().getFullYear(),
+            logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
+            subject: '',
+            name: '',
+            message: '',
+            link: '',
+            link_label: ''
+        };
+        const getTeamLeadEmail = (teamLeadId) => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const user = yield userService.getUserById(teamLeadId);
+                return (user === null || user === void 0 ? void 0 : user.email) || null;
+            }
+            catch (error) {
+                logger_1.default.error(`Error fetching team lead email for ID: ${teamLeadId}`, error);
+                return null;
+            }
+        });
+        const teamLeadEmail = yield getTeamLeadEmail(participant.teamLead.toString());
+        const memberEmails = [...(participant.members || [])];
+        if (teamLeadEmail && !memberEmails.includes(teamLeadEmail)) {
+            memberEmails.push(teamLeadEmail);
+        }
+        const message = status === 'approved'
+            ? `Your submission has been approved. Congratulations on your outstanding work! Keep up the great effort and continue to excel in future challenges. You have moved to the next stage and will be contacted in a few days.`
+            : `Your submission has been rejected. However, your work was among the best we received. We encourage you to try the next challenge as the Umurava platform has many exciting challenges coming in the future. Keep up the great work!`;
+        yield Promise.all(memberEmails.map((email) => (0, emailService_1.sendEmail)('send_notification', 'Challenge Submission Status Updated', email, Object.assign(Object.assign({}, context), { subject: 'Challenge Submission Status Updated', name: 'Team Member', message, link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${participant.challengeId}`, link_label: 'View Challenge' })).catch(error => logger_1.default.error(`Error sending email to ${email}:`, error))));
+        logger_1.default.info('Challenge submission status email sent to team members successfully');
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge submission status updated successfully'));
+    }
+    catch (error) {
+        const errorMessage = error.message || 'Error updating challenge submission status';
+        logger_1.default.error('Error updating challenge submission status', errorMessage);
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', errorMessage));
+    }
+});
+exports.approveRejectChallengeSubmission = approveRejectChallengeSubmission;
 // Notify admins of late submission
 const notifyAdminsOfLateSubmission = (participant, user) => __awaiter(void 0, void 0, void 0, function* () {
     const admins = yield userService.getAdmins();
