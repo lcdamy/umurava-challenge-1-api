@@ -22,7 +22,6 @@ class NoticationSercice {
                 if (filters.status) {
                     query.status = filters.status;
                 }
-                console.log("Query for notifications:", query); // Log the query to see what is being sent to the database
                 const notifications = yield notificationModel_1.default.find(query);
                 if (!notifications) {
                     throw new Error("No notifications found for user");

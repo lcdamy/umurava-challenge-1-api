@@ -29,7 +29,9 @@ const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
-    const searchQuery = search ? { $text: { $search: search } } : {};
+    const searchQuery = search
+        ? { $or: [{ challengeName: { $regex: search, $options: 'i' } }, { projectDescription: { $regex: search, $options: 'i' } }] }
+        : {};
     try {
         logger_1.default.info('Fetching challenges with query', { page, limit, search, all });
         const totalChallenges = yield challengeModel_1.default.countDocuments(searchQuery);
