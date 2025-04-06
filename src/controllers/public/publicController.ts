@@ -5,6 +5,7 @@ import { Client, LocalAuth } from 'whatsapp-web.js';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
 import User from '../../models/userModel';
+import Subscribers from '../../models/subscribersModel';
 import { NoticationSercice } from '../../services/notificationService';
 
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
@@ -246,5 +247,53 @@ export const readAllNotifications = async (req: Request, res: Response): Promise
     } catch (error) {
         logger.error('Error marking all notifications as read  in controller', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error marking all notifications as read", error));
+    }
+}
+
+// Join newsletter
+export const joinNewsletter = async (req: Request, res: Response): Promise<Response> => {
+    const { email } = req.body;
+    if (!email) {
+        logger.warn('Email not provided for newsletter subscription');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Email is required"));
+    }
+
+    try {
+        // Logic to add the email to the newsletter subscription list
+        const existingSubscriber = await Subscribers.findOne({ email });
+        if (existingSubscriber) {
+            logger.warn('Email already subscribed to the newsletter', { email });
+            return res.status(StatusCodes.CONFLICT).json(formatResponse("error", "Email already subscribed to the newsletter"));
+        }
+        const newSubscriber = new Subscribers({ email, status: 'active' });
+        await newSubscriber.save();
+        logger.info('New subscriber added to the newsletter', { email });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "Successfully subscribed to the newsletter"));
+    } catch (error) {
+        logger.error('Error subscribing to newsletter', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error subscribing to the newsletter", error));
+    }
+}
+
+// Unsubscribe from newsletter
+export const removeNewsletter = async (req: Request, res: Response): Promise<Response> => {
+    const { email } = req.body;
+    if (!email) {
+        logger.warn('Email not provided for newsletter unsubscription');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Email is required"));
+    }
+
+    try {
+        const existingSubscriber = await Subscribers.findOne({ email });
+        if (!existingSubscriber) {
+            logger.warn('Email not found in the newsletter subscription list', { email });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse("error", "Email not found in the newsletter subscription list"));
+        }
+        await Subscribers.updateOne({ email }, { status: 'inactive' });
+        logger.info('Subscriber status updated to inactive in the newsletter', { email });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "Successfully unsubscribed from the newsletter"));
+    } catch (error) {
+        logger.error('Error unsubscribing from newsletter', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error unsubscribing from the newsletter", error));
     }
 }
