@@ -10,7 +10,6 @@ export class NoticationSercice {
                 query.status = filters.status;
             }
 
-            console.log("Query for notifications:", query); // Log the query to see what is being sent to the database
             const notifications = await Notification.find(query);
             if (!notifications) {
                 throw new Error("No notifications found for user");

@@ -16,8 +16,9 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
     const { page = 1, limit = 10, search = '', all = 'false' } = req.query;
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
-    const searchQuery = search ? { $text: { $search: search as string } } : {};
-
+    const searchQuery = search
+        ? { $or: [{ challengeName: { $regex: search as string, $options: 'i' } }, { projectDescription: { $regex: search as string, $options: 'i' } }] }
+        : {};
     try {
         logger.info('Fetching challenges with query', { page, limit, search, all });
         const totalChallenges = await Challenge.countDocuments(searchQuery);
