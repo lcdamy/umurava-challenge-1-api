@@ -30,6 +30,8 @@ const roles = ["admin", "participant"];
 participantChallengeRoutes.post('/join/challenge/:id', authenticationMiddleware(), authorizationMiddleware("participant"), challengesController.joinChallenge);
 participantChallengeRoutes.get('/:challenge_id/all', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getParticipantChallenges);
 participantChallengeRoutes.post('/:challenge_id/submit', authenticationMiddleware(), authorizationMiddleware("participant"), challengesController.submitChallenge);
+participantChallengeRoutes.get('/:challenge_id/submit', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeSubmissions);
+participantChallengeRoutes.put('/:submission_challenge_id/approve-reject', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.approveRejectChallengeSubmission);
 
 
 

@@ -165,7 +165,7 @@ export const getParticipantChallenges = async (req: Request, res: Response): Pro
         const participantChallenges = await ChallengeParticipantsModel.find({ challengeId: challenge_id })
             .populate('teamLead', 'names profile_url email')
             .populate('members', 'email')
-        if (!participantChallenges || participantChallenges.length === 0) {
+        if (!participantChallenges) {
             logger.warn(`No participants found for challenge with id: ${challenge_id}`);
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No participants found for this challenge'));
         }
@@ -243,6 +243,124 @@ export const submitChallenge = async (req: Request, res: Response): Promise<Resp
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
     }
 };
+
+//get participant challenge submissions
+export const getChallengeSubmissions = async (req: Request, res: Response): Promise<Response> => {
+    logger.info('getChallengeSubmissions API called!');
+    try {
+        const { challenge_id } = req.params;
+        if (!challenge_id) {
+            logger.warn('Challenge ID is required');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge ID is required'));
+        }
+
+        const challenge = await Challenge.findById(challenge_id);
+        if (!challenge) {
+            logger.warn(`Challenge not found with id: ${challenge_id}`);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+
+        const participantChallenges = await ChallengeParticipantsModel.find({ challengeId: challenge_id, submissionStatus: 'submitted' })
+            .populate('teamLead', 'names profile_url email')
+            .populate('members', 'email')
+        if (!participantChallenges) {
+            logger.warn(`No participants who submitted their work found for challenge with id: ${challenge_id}`);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No participants who submitted their work found for this challenge'));
+        }
+        logger.info('Participants who submitted their work retrieved successfully', participantChallenges);
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Participants who submitted their work retrieved successfully', { participantChallenges }));
+    } catch (error) {
+        const errorMessage = (error as Error).message || 'Error retrieving participant challenges';
+        logger.error('Error retrieving participant challenges', errorMessage);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
+    }
+}
+
+//approve or reject challenge submission
+export const approveRejectChallengeSubmission = async (req: Request, res: Response): Promise<Response> => {
+    logger.info('approveRejectChallengeSubmission API called!');
+    try {
+        const { submission_challenge_id } = req.params;
+        const { status } = req.body;
+
+        if (!submission_challenge_id) {
+            logger.warn('Submission Challenge ID is required');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Submission Challenge ID is required'));
+        }
+
+        if (!['approved', 'rejected'].includes(status)) {
+            logger.warn('Invalid status provided');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Invalid status. Status must be either "approved" or "rejected"'));
+        }
+
+        const participant = await ChallengeParticipantsModel.findById(submission_challenge_id);
+
+        if (!participant) {
+            logger.warn(`Participant submission not found with id: ${submission_challenge_id}`);
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Participant submission not found'));
+        }
+
+        participant.submissionStatus = status;
+        if (status === 'rejected') {
+            participant.rejectionReason = "Your submission has been rejected. However, your work was among the best we received. We encourage you to try the next challenge as the Umurava platform has many exciting challenges coming in the future. Keep up the great work!";
+        }
+
+        await participant.save();
+        logger.info('Challenge submission status updated successfully', { id: participant._id, status });
+
+        const context = {
+            year: new Date().getFullYear(),
+            logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
+            subject: '',
+            name: '',
+            message: '',
+            link: '',
+            link_label: ''
+        };
+
+        const getTeamLeadEmail = async (teamLeadId: string): Promise<string | null> => {
+            try {
+                const user = await userService.getUserById(teamLeadId);
+                return user?.email || null;
+            } catch (error) {
+                logger.error(`Error fetching team lead email for ID: ${teamLeadId}`, error);
+                return null;
+            }
+        };
+
+        const teamLeadEmail = await getTeamLeadEmail(participant.teamLead.toString());
+        const memberEmails = [...(participant.members || [])];
+
+        if (teamLeadEmail && !memberEmails.includes(teamLeadEmail)) {
+            memberEmails.push(teamLeadEmail);
+        }
+
+        const message = status === 'approved'
+            ? `Your submission has been approved. Congratulations on your outstanding work! Keep up the great effort and continue to excel in future challenges. You have moved to the next stage and will be contacted in a few days.`
+            : `Your submission has been rejected. However, your work was among the best we received. We encourage you to try the next challenge as the Umurava platform has many exciting challenges coming in the future. Keep up the great work!`;
+
+        await Promise.all(memberEmails.map((email: string) =>
+            sendEmail('send_notification', 'Challenge Submission Status Updated', email, {
+                ...context,
+                subject: 'Challenge Submission Status Updated',
+                name: 'Team Member',
+                message,
+                link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${participant.challengeId}`,
+                link_label: 'View Challenge'
+            }).catch(error => logger.error(`Error sending email to ${email}:`, error))
+        ));
+        
+        logger.info('Challenge submission status email sent to team members successfully');
+
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge submission status updated successfully'));
+    } catch (error) {
+        const errorMessage = (error as Error).message || 'Error updating challenge submission status';
+        logger.error('Error updating challenge submission status', errorMessage);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
+    }
+};
+
+
 // Notify admins of late submission
 const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {
     const admins = await userService.getAdmins();

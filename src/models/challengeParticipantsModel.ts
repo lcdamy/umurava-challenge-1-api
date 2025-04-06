@@ -4,7 +4,8 @@ interface IChallengeParticipantsModel extends Document {
     challengeId: string;
     teamLead: Schema.Types.ObjectId; // Reference to a user
     members: string[]; // Array of emails
-    submissionStatus: 'submitted' | 'not submitted';
+    submissionStatus: 'submitted' | 'not submitted' | 'approved' | 'rejected';
+    rejectionReason?: string; // Optional field for rejection reason
     submissionDate: Date | null;
     submissionData: {
         details_message: string;
@@ -36,8 +37,12 @@ const challengeParticipantsModelSchema = new Schema<IChallengeParticipantsModel>
     },
     submissionStatus: {
         type: String,
-        enum: ['submitted', 'not submitted'],
+        enum: ['submitted', 'not submitted', 'approved', 'rejected'],
         default: 'not submitted'
+    },
+    rejectionReason: {
+        type: String,
+        default: null
     },
     submissionDate: {
         type: Date,
