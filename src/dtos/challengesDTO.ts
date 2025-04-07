@@ -71,7 +71,6 @@ class ChallengesDTO {
                         categoryPrize: Joi.string().required(),
                         prize: Joi.number().positive().required(),
                         currency: Joi.string()
-                            .valid('USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD')
                             .default('RWF')
                             .required()
                     })

@@ -15,7 +15,6 @@ const prizeSchema = new Schema<IPrize>({
     currency: {
         type: String,
         required: true,
-        enum: ['USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'],
         default: 'RWF'
     },
     description: {

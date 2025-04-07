@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateGracePeriod = exports.updateChallengeStatus = exports.getPrizeCategories = exports.getChallengeCategories = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
+exports.updateGracePeriod = exports.updateChallengeStatus = exports.deletePrizeCategory = exports.updatePrizeCategory = exports.createPrizeCategory = exports.getPrizeCategories = exports.getChallengeCategories = exports.deleteChallengeCategory = exports.updateChallengeCategory = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const challengeCategoryModel_1 = __importDefault(require("../../models/challengeCategoryModel"));
 const prizesModel_1 = __importDefault(require("../../models/prizesModel"));
@@ -24,6 +24,7 @@ const UpdateChallengeDTO = require('../../dtos/updateChallengeDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
 const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
 const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
+const ChallengePrizeDTO = require('../../dtos/challengePrizeDTO');
 // Get all challenges
 const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 1, limit = 10, search = '', all = 'false', status } = req.query;
@@ -258,6 +259,48 @@ const createChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.createChallengeCategory = createChallengeCategory;
+// update challenge category
+const updateChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { errors, value } = ChallengeCategoryDTO.validate(req.body);
+    if (errors) {
+        logger_1.default.warn('Validation error updating challenge category', { errors });
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+    }
+    try {
+        logger_1.default.info('Updating challenge category', { id: req.params.id });
+        const updatedChallengeCategory = yield challengeCategoryModel_1.default.findByIdAndUpdate(req.params.id, value, { new: true });
+        if (!updatedChallengeCategory) {
+            logger_1.default.warn('Challenge category not found for update', { id: req.params.id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge category not found'));
+        }
+        logger_1.default.info('Challenge category updated successfully', { id: req.params.id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge category updated successfully', updatedChallengeCategory));
+    }
+    catch (error) {
+        logger_1.default.error('Error updating challenge category', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error updating challenge category', error));
+    }
+});
+exports.updateChallengeCategory = updateChallengeCategory;
+// delete challenge category
+const deleteChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        logger_1.default.info('Deleting challenge category', { id: req.params.id });
+        const deletedChallengeCategory = yield challengeCategoryModel_1.default.findByIdAndDelete(req.params.id);
+        if (!deletedChallengeCategory) {
+            logger_1.default.warn('Challenge category not found for deletion', { id: req.params.id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge category not found'));
+        }
+        logger_1.default.info('Challenge category deleted successfully', { id: req.params.id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge category deleted successfully'));
+    }
+    catch (error) {
+        logger_1.default.error('Error deleting challenge category', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error deleting challenge category', error));
+    }
+});
+exports.deleteChallengeCategory = deleteChallengeCategory;
 // Get all challenge categories
 const getChallengeCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -286,7 +329,79 @@ const getPrizeCategories = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getPrizeCategories = getPrizeCategories;
-// update challenge status
+//create prize category
+const createPrizeCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { errors, value } = ChallengePrizeDTO.validate(req.body);
+    if (errors) {
+        logger_1.default.warn('Validation error creating prize category', { errors });
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+    }
+    try {
+        // check if the prize category already exists
+        const existingCategory = yield prizesModel_1.default.findOne({ prizeName: value.prizeName });
+        if (existingCategory) {
+            logger_1.default.warn('Prize category already exists', { prizeName: value.prizeName });
+            return res.status(http_status_codes_1.StatusCodes.CONFLICT).json((0, helper_1.formatResponse)('error', 'Prize category already exists'));
+        }
+        const newPrizeCategory = new prizesModel_1.default({
+            prizeName: value.prizeName,
+            currency: value.currency,
+            description: value.description
+        });
+        const savedPrizeCategory = yield newPrizeCategory.save();
+        logger_1.default.info('Prize category created successfully', { id: savedPrizeCategory._id });
+        return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Prize category created successfully', savedPrizeCategory));
+    }
+    catch (error) {
+        logger_1.default.error('Error creating prize category', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error creating prize category', error));
+    }
+});
+exports.createPrizeCategory = createPrizeCategory;
+//update prize category
+const updatePrizeCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { errors, value } = ChallengePrizeDTO.validate(req.body);
+    if (errors) {
+        logger_1.default.warn('Validation error updating prize category', { errors });
+        const errorMessages = errors.map((error) => error.message).join(', ');
+        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
+    }
+    try {
+        logger_1.default.info('Updating prize category', { id: req.params.id });
+        const updatedPrizeCategory = yield prizesModel_1.default.findByIdAndUpdate(req.params.id, value, { new: true });
+        if (!updatedPrizeCategory) {
+            logger_1.default.warn('Prize category not found for update', { id: req.params.id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Prize category not found'));
+        }
+        logger_1.default.info('Prize category updated successfully', { id: req.params.id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Prize category updated successfully', updatedPrizeCategory));
+    }
+    catch (error) {
+        logger_1.default.error('Error updating prize category', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error updating prize category', error));
+    }
+});
+exports.updatePrizeCategory = updatePrizeCategory;
+//delete prize category
+const deletePrizeCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        logger_1.default.info('Deleting prize category', { id: req.params.id });
+        const deletedPrizeCategory = yield prizesModel_1.default.findByIdAndDelete(req.params.id);
+        if (!deletedPrizeCategory) {
+            logger_1.default.warn('Prize category not found for deletion', { id: req.params.id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Prize category not found'));
+        }
+        logger_1.default.info('Prize category deleted successfully', { id: req.params.id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Prize category deleted successfully'));
+    }
+    catch (error) {
+        logger_1.default.error('Error deleting prize category', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error deleting prize category', error));
+    }
+});
+exports.deletePrizeCategory = deletePrizeCategory;
+//update challenge status
 const updateChallengeStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { errors, value } = UpdateChallengeStatusDTO.validate(req.body);
     if (errors) {

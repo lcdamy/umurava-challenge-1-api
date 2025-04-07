@@ -10,6 +10,7 @@ const UpdateChallengeDTO = require('../../dtos/updateChallengeDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
 const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
 const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
+const ChallengePrizeDTO = require('../../dtos/challengePrizeDTO');
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -264,6 +265,44 @@ export const createChallengeCategory = async (req: Request, res: Response): Prom
     }
 };
 
+// update challenge category
+export const updateChallengeCategory = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = ChallengeCategoryDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error updating challenge category', { errors });
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+    }
+    try {
+        logger.info('Updating challenge category', { id: req.params.id });
+        const updatedChallengeCategory = await ChallengeCategory.findByIdAndUpdate(req.params.id, value, { new: true });
+        if (!updatedChallengeCategory) {
+            logger.warn('Challenge category not found for update', { id: req.params.id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge category not found'));
+        }
+        logger.info('Challenge category updated successfully', { id: req.params.id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge category updated successfully', updatedChallengeCategory));
+    } catch (error) {
+        logger.error('Error updating challenge category', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error updating challenge category', error));
+    }
+};
+// delete challenge category
+export const deleteChallengeCategory = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        logger.info('Deleting challenge category', { id: req.params.id });
+        const deletedChallengeCategory = await ChallengeCategory.findByIdAndDelete(req.params.id);
+        if (!deletedChallengeCategory) {
+            logger.warn('Challenge category not found for deletion', { id: req.params.id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge category not found'));
+        }
+        logger.info('Challenge category deleted successfully', { id: req.params.id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge category deleted successfully'));
+    } catch (error) {
+        logger.error('Error deleting challenge category', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deleting challenge category', error));
+    }
+};
 // Get all challenge categories
 export const getChallengeCategories = async (req: Request, res: Response): Promise<Response> => {
     try {
@@ -290,7 +329,76 @@ export const getPrizeCategories = async (req: Request, res: Response): Promise<R
     }
 }
 
-// update challenge status
+//create prize category
+export const createPrizeCategory = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = ChallengePrizeDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error creating prize category', { errors });
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+    }
+    try {
+        // check if the prize category already exists
+        const existingCategory = await Prize.findOne({ prizeName: value.prizeName });
+        if (existingCategory) {
+            logger.warn('Prize category already exists', { prizeName: value.prizeName });
+            return res.status(StatusCodes.CONFLICT).json(formatResponse('error', 'Prize category already exists'));
+        }
+
+        const newPrizeCategory = new Prize({
+            prizeName: value.prizeName,
+            currency: value.currency,
+            description: value.description
+        });
+        const savedPrizeCategory = await newPrizeCategory.save();
+        logger.info('Prize category created successfully', { id: savedPrizeCategory._id });
+        return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Prize category created successfully', savedPrizeCategory));
+    } catch (error) {
+        logger.error('Error creating prize category', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error creating prize category', error));
+    }
+}
+
+//update prize category
+export const updatePrizeCategory = async (req: Request, res: Response): Promise<Response> => {
+    const { errors, value } = ChallengePrizeDTO.validate(req.body);
+    if (errors) {
+        logger.warn('Validation error updating prize category', { errors });
+        const errorMessages = errors.map((error: any) => error.message).join(', ');
+        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
+    }
+    try {
+        logger.info('Updating prize category', { id: req.params.id });
+        const updatedPrizeCategory = await Prize.findByIdAndUpdate(req.params.id, value, { new: true });
+        if (!updatedPrizeCategory) {
+            logger.warn('Prize category not found for update', { id: req.params.id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Prize category not found'));
+        }
+        logger.info('Prize category updated successfully', { id: req.params.id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Prize category updated successfully', updatedPrizeCategory));
+    } catch (error) {
+        logger.error('Error updating prize category', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error updating prize category', error));
+    }
+}
+//delete prize category
+export const deletePrizeCategory = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        logger.info('Deleting prize category', { id: req.params.id });
+        const deletedPrizeCategory = await Prize.findByIdAndDelete(req.params.id);
+        if (!deletedPrizeCategory) {
+            logger.warn('Prize category not found for deletion', { id: req.params.id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Prize category not found'));
+        }
+        logger.info('Prize category deleted successfully', { id: req.params.id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Prize category deleted successfully'));
+    } catch (error) {
+        logger.error('Error deleting prize category', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deleting prize category', error));
+    }
+}
+
+//update challenge status
 export const updateChallengeStatus = async (req: Request, res: Response): Promise<Response> => {
     const { errors, value } = UpdateChallengeStatusDTO.validate(req.body);
     if (errors) {

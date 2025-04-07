@@ -68,7 +68,7 @@ class UpdateChallengeDTO {
                 Joi.object({
                     categoryPrize: Joi.string(),
                     prize: Joi.number().positive(),
-                    currency: Joi.string().valid('USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD').default('RWF')
+                    currency: Joi.string()
                 })
             ),
             contactEmail: Joi.string().email(),

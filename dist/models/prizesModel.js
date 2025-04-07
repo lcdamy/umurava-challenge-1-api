@@ -10,7 +10,6 @@ const prizeSchema = new mongoose_1.Schema({
     currency: {
         type: String,
         required: true,
-        enum: ['USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'],
         default: 'RWF'
     },
     description: {

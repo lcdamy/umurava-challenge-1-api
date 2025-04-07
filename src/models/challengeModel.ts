@@ -43,7 +43,7 @@ const ChallengeSchema: Schema = new Schema({
             {
                 categoryPrize: { type: String, required: true },
                 prize: { type: Number, required: true },
-                currency: { type: String, required: true, enum: ['USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'], default: 'RWF' }
+                currency: { type: String, required: true, default: 'RWF' }
             }
         ],
         required: true

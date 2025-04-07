@@ -153,10 +153,17 @@ adminChallengesRoutes.post('/challenge', authenticationMiddleware(), authorizati
 adminChallengesRoutes.put('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateChallenge);
 adminChallengesRoutes.delete('/challenge/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.deleteChallenge);
 adminChallengesRoutes.get('/challenge/statistics', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengesStatistics);
-adminChallengesRoutes.post('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createChallengeCategory);
-adminChallengesRoutes.get('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeCategories);
-adminChallengesRoutes.get( '/prize-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getPrizeCategories);
 adminChallengesRoutes.put('/challenge/update/status/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateChallengeStatus);
 adminChallengesRoutes.put('/challenge/update/grace-period/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateGracePeriod);
+
+adminChallengesRoutes.post('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createChallengeCategory);
+adminChallengesRoutes.get('/challenge-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getChallengeCategories);
+adminChallengesRoutes.put('/challenge-category/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updateChallengeCategory);
+adminChallengesRoutes.delete('/challenge-category/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.deleteChallengeCategory);
+
+adminChallengesRoutes.get('/prize-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.getPrizeCategories);
+adminChallengesRoutes.post('/prize-category', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.createPrizeCategory);
+adminChallengesRoutes.put('/prize-category/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.updatePrizeCategory);
+adminChallengesRoutes.delete('/prize-category/:id', authenticationMiddleware(), authorizationMiddleware("admin"), challengesController.deletePrizeCategory);
 
 export default adminChallengesRoutes;
