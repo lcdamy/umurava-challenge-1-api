@@ -7,7 +7,7 @@ class UpdateChallengeDTO {
     endDate: string | undefined;
     startDate: string | undefined;
     duration: number | undefined;
-    moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined;
+    moneyPrize: Array<{ categoryPrize: string; prize: number, currency: string }> | undefined;
     contactEmail!: string;
     projectDescription: string | undefined;
     status: 'open' | 'ongoing' | 'completed' | undefined;
@@ -22,7 +22,7 @@ class UpdateChallengeDTO {
         endDate: string | undefined,
         starDate: string | undefined,
         duration: number | undefined,
-        moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined,
+        moneyPrize: Array<{ categoryPrize: string; prize: number, currency: string }> | undefined,
         contactEmail: string,
         projectDescription: string | undefined,
         status: 'open' | 'ongoing' | 'completed' | undefined,
@@ -52,7 +52,7 @@ class UpdateChallengeDTO {
         challengeCategory?: string;
         endDate?: string;
         startDate?: string;
-        moneyPrize?: Array<{ categoryPrize: string; prize: number }>;
+        moneyPrize?: Array<{ categoryPrize: string; prize: number, currency: string }> | undefined;
         contactEmail?: string;
         projectDescription?: string;
         levels?: Array<string>;
@@ -67,7 +67,8 @@ class UpdateChallengeDTO {
             moneyPrize: Joi.array().items(
                 Joi.object({
                     categoryPrize: Joi.string(),
-                    prize: Joi.number().positive()
+                    prize: Joi.number().positive(),
+                    currency: Joi.string().valid('USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD').default('RWF')
                 })
             ),
             contactEmail: Joi.string().email(),

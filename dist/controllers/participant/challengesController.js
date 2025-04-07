@@ -190,7 +190,7 @@ const submitChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
             return res.status(http_status_codes_1.StatusCodes.FORBIDDEN).json((0, helper_1.formatResponse)('error', 'Only the team lead who joined the challenge can submit the challenge'));
         }
         const currentDate = new Date();
-        const submissionDate = challenge.submissionDate ? new Date(challenge.submissionDate) : null;
+        const submissionDate = challenge.endDate ? new Date(challenge.endDate) : null;
         if (submissionDate && currentDate > submissionDate) {
             logger_1.default.warn('Challenge submission date has passed');
             yield notifyAdminsOfLateSubmission(participant, req.user);

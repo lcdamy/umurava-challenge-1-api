@@ -355,7 +355,7 @@ export const updateGracePeriod = async (req: Request, res: Response): Promise<Re
             );
         }
 
-        challenge.submissionDate = new Date(new_submissionDate);
+        challenge.endDate = new Date(new_submissionDate);
         const updatedChallenge = await challenge.save();
 
         logger.info('Challenge grace period updated successfully', { id });

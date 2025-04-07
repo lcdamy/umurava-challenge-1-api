@@ -215,7 +215,7 @@ export const submitChallenge = async (req: Request, res: Response): Promise<Resp
         }
 
         const currentDate = new Date();
-        const submissionDate = challenge.submissionDate ? new Date(challenge.submissionDate) : null;
+        const submissionDate = challenge.endDate ? new Date(challenge.endDate) : null;
         if (submissionDate && currentDate > submissionDate) {
             logger.warn('Challenge submission date has passed');
             await notifyAdminsOfLateSubmission(participant, req.user);

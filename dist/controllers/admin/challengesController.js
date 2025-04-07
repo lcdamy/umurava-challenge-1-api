@@ -347,7 +347,7 @@ const updateGracePeriod = (req, res) => __awaiter(void 0, void 0, void 0, functi
             logger_1.default.warn('Invalid grace period: must be after the challenge end date', { id, new_submissionDate });
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Invalid grace period: must be after the challenge end date'));
         }
-        challenge.submissionDate = new Date(new_submissionDate);
+        challenge.endDate = new Date(new_submissionDate);
         const updatedChallenge = yield challenge.save();
         logger_1.default.info('Challenge grace period updated successfully', { id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge grace period updated successfully', updatedChallenge));

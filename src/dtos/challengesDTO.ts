@@ -7,7 +7,7 @@ class ChallengesDTO {
     endDate: string | undefined;
     startDate: string | undefined;
     duration: number | undefined;
-    moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined;
+    moneyPrize: Array<{ categoryPrize: string; prize: number, currency: string }> | undefined;
     contactEmail!: string;
     projectDescription: string | undefined;
     status: 'open' | 'ongoing' | 'completed' | undefined;
@@ -22,7 +22,7 @@ class ChallengesDTO {
         endDate: string | undefined,
         starDate: string | undefined,
         duration: number | undefined,
-        moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined,
+        moneyPrize: Array<{ categoryPrize: string; prize: number; currency: string }> | undefined,
         contactEmail: string,
         projectDescription: string | undefined,
         status: 'open' | 'ongoing' | 'completed' | undefined,
