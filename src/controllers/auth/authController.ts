@@ -16,6 +16,7 @@ import { AuthService } from '../../services/authService';
 import { NoticationSercice } from '../../services/notificationService';
 import bcrypt from "bcryptjs";
 import Joi from 'joi';
+import { title } from 'process';
 
 const { FRONTEND_URL } = process.env;
 
@@ -75,6 +76,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
+                    title: 'New User Registration',
                     message: `A new user has registered on the platform. Please review their details.`,
                     userId: admin._id,
                     status: 'unread'
@@ -448,6 +450,7 @@ export const deleteProfile = async (req: Request, res: Response): Promise<Respon
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
+                    title: 'User Profile Deleted',
                     message: `User ${updatedUser.names} has deleted their profile.`,
                     userId: admin._id,
                     status: 'unread'

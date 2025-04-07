@@ -95,6 +95,7 @@ const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             yield Promise.all(admins.map((admin) => notificationService.createNotification({
                 timestamp: new Date(),
                 type: 'info',
+                title: 'New Participant Joined',
                 message: `A new user has registered on the platform. Please review their details.`,
                 userId: admin._id,
                 status: 'unread'
@@ -329,6 +330,7 @@ const notifyAdminsOfLateSubmission = (participant, user) => __awaiter(void 0, vo
         yield Promise.all(admins.map((admin) => notificationService.createNotification({
             timestamp: new Date(),
             type: 'warning',
+            title: 'Late Submission Attempt',
             message: `A challenge submission attempt was made after the deadline by ${participant.teamLead}.`,
             userId: admin._id,
             status: 'unread'
@@ -357,6 +359,7 @@ const notifyAdminsAndMembersOfSubmission = (participant, challenge) => __awaiter
         yield Promise.all(admins.map((admin) => notificationService.createNotification({
             timestamp: new Date(),
             type: 'info',
+            title: 'Challenge Submitted',
             message: `A challenge has been submitted by ${participant.teamLead}.`,
             userId: admin._id,
             status: 'unread'

@@ -12,6 +12,10 @@ const NotificationSchema = new mongoose_1.Schema({
         required: true,
         enum: ['info', 'warning', 'error']
     },
+    title: {
+        type: String,
+        required: true
+    },
     message: {
         type: String,
         required: true

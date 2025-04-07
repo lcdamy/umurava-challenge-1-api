@@ -4,6 +4,7 @@ export interface INotification extends Document {
     timestamp: Date;
     type: string;
     message: string;
+    title: string;
     userId: string;
     status: string;
 }
@@ -18,6 +19,10 @@ const NotificationSchema = new Schema<INotification>({
         type: String,
         required: true,
         enum: ['info', 'warning', 'error']
+    },
+    title: {
+        type: String,
+        required: true
     },
     message: {
         type: String,

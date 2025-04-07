@@ -7,7 +7,7 @@ interface IChallenge extends Document {
     endDate: Date;
     duration: number;
     submissionDate: Date | null;
-    moneyPrize: Array<{ categoryPrize: string; prize: number }>;
+    moneyPrize: Array<{ categoryPrize: string; prize: number;currency: string }> | null;
     contactEmail: string;
     projectDescription: string;
     teamSize: number;
@@ -47,7 +47,8 @@ const ChallengeSchema: Schema = new Schema({
         type: [
             {
                 categoryPrize: { type: String, required: true },
-                prize: { type: Number, required: true }
+                prize: { type: Number, required: true },
+                currency: { type: String, required: true, enum: ['USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'], default: 'RWF' }
             }
         ],
         required: true

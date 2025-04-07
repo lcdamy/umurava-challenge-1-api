@@ -31,7 +31,8 @@ const ChallengeSchema = new mongoose_1.Schema({
         type: [
             {
                 categoryPrize: { type: String, required: true },
-                prize: { type: Number, required: true }
+                prize: { type: Number, required: true },
+                currency: { type: String, required: true, enum: ['USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'], default: 'RWF' }
             }
         ],
         required: true

@@ -8,6 +8,7 @@ import { sendEmail } from "../../utils/emailService";
 import { UserSercice } from '../../services/userService';
 import { NoticationSercice } from '../../services/notificationService';
 import { SubmitChallengeDTO } from '../../dtos/submitChallengeDTO';
+import { title } from 'process';
 
 const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
@@ -104,6 +105,7 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                 notificationService.createNotification({
                     timestamp: new Date(),
                     type: 'info',
+                    title   : 'New Participant Joined',
                     message: `A new user has registered on the platform. Please review their details.`,
                     userId: admin._id,
                     status: 'unread'
@@ -384,6 +386,7 @@ const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {
             notificationService.createNotification({
                 timestamp: new Date(),
                 type: 'warning',
+                title: 'Late Submission Attempt',
                 message: `A challenge submission attempt was made after the deadline by ${participant.teamLead}.`,
                 userId: admin._id,
                 status: 'unread'
@@ -425,6 +428,7 @@ const notifyAdminsAndMembersOfSubmission = async (participant: any, challenge: a
             notificationService.createNotification({
                 timestamp: new Date(),
                 type: 'info',
+                title: 'Challenge Submitted',
                 message: `A challenge has been submitted by ${participant.teamLead}.`,
                 userId: admin._id,
                 status: 'unread'

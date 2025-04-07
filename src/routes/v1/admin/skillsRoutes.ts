@@ -59,6 +59,7 @@ const { authorizationMiddleware } = require("../../../middlewares/authorizationM
 skillsRoutes.put('/skills/:id', authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.updateSkill);
 skillsRoutes.delete('/skills/:id',authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.deleteSkill);
 skillsRoutes.post('/skills', authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.createSkill);
+skillsRoutes.get('/skills', authenticationMiddleware(), authorizationMiddleware("admin"),  skillsController.getSkills);
 
 
 export default skillsRoutes;

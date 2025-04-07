@@ -53,7 +53,7 @@ class ChallengesDTO {
         challengeCategory: string;
         endDate: string;
         startDate: string;
-        moneyPrize: Array<{ categoryPrize: string; prize: number }> | undefined;
+        moneyPrize: Array<{ categoryPrize: string; prize: number; currency: string }> | undefined;
         contactEmail: string;
         projectDescription: string;
         levels: Array<string>;
@@ -69,7 +69,11 @@ class ChallengesDTO {
                 .items(
                     Joi.object({
                         categoryPrize: Joi.string().required(),
-                        prize: Joi.number().positive().required()
+                        prize: Joi.number().positive().required(),
+                        currency: Joi.string()
+                            .valid('USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD')
+                            .default('RWF')
+                            .required()
                     })
                 )
                 .required(),

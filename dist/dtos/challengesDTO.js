@@ -30,7 +30,11 @@ class ChallengesDTO {
             moneyPrize: joi_1.default.array()
                 .items(joi_1.default.object({
                 categoryPrize: joi_1.default.string().required(),
-                prize: joi_1.default.number().positive().required()
+                prize: joi_1.default.number().positive().required(),
+                currency: joi_1.default.string()
+                    .valid('USD', 'EUR', 'GBP', 'RWF', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD')
+                    .default('RWF')
+                    .required()
             }))
                 .required(),
             contactEmail: joi_1.default.string().email().required(),
