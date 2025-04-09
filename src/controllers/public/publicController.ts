@@ -7,6 +7,7 @@ import logger from '../../config/logger';
 import User from '../../models/userModel';
 import Subscribers from '../../models/subscribersModel';
 import { NoticationSercice } from '../../services/notificationService';
+import { UserSercice } from '../../services/userService';
 
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
@@ -14,6 +15,7 @@ const createNotificationDTO = require('../../dtos/createNotificationDTO');
 const qrcode = require("qrcode-terminal");
 
 const notificationService = new NoticationSercice();
+const userSercice = new UserSercice();
 
 // Get all skills
 export const getWelcomeMessage = async (req: Request, res: Response): Promise<Response> => {
@@ -299,5 +301,21 @@ export const removeNewsletter = async (req: Request, res: Response): Promise<Res
     } catch (error) {
         logger.error('Error unsubscribing from newsletter', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error unsubscribing from the newsletter", error));
+    }
+}
+
+//get website data
+export const getWebsiteData = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const websiteData = await userSercice.getWebsiteData();
+        if (!websiteData) {
+            logger.warn('No website data found');
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse("error", "No website data found"));
+        }
+        logger.info('Website data fetched successfully', { websiteData });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "Website data fetched successfully", websiteData));
+    } catch (error) {
+        logger.error('Error fetching website data', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error fetching website data", error));
     }
 }

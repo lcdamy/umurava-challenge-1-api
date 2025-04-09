@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserSercice = void 0;
 const userModel_1 = __importDefault(require("../models/userModel")); // Adjust the import path as necessary
+const subscribersModel_1 = __importDefault(require("../models/subscribersModel"));
+const challengeModel_1 = __importDefault(require("../models/challengeModel"));
 class UserSercice {
     createUser(userData) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -90,6 +92,26 @@ class UserSercice {
             }
             catch (error) {
                 throw new Error(`Error fetching admins: ${error.message}`);
+            }
+        });
+    }
+    getWebsiteData() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const [totalUsers, totalChallenges, totalSubscribers] = yield Promise.all([
+                    userModel_1.default.countDocuments(),
+                    challengeModel_1.default.countDocuments(),
+                    subscribersModel_1.default.countDocuments()
+                ]);
+                return {
+                    usersCount: totalUsers + totalSubscribers,
+                    challengeCount: totalChallenges,
+                    year: 2,
+                    countriesCount: 1
+                };
+            }
+            catch (error) {
+                throw new Error(`Error fetching website data: ${error.message}`);
             }
         });
     }

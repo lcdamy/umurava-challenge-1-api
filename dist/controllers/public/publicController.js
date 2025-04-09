@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeNewsletter = exports.joinNewsletter = exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
+exports.getWebsiteData = exports.removeNewsletter = exports.joinNewsletter = exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const helper_1 = require("../../utils/helper");
 const whatsapp_web_js_1 = require("whatsapp-web.js");
@@ -21,11 +21,13 @@ const logger_1 = __importDefault(require("../../config/logger"));
 const userModel_1 = __importDefault(require("../../models/userModel"));
 const subscribersModel_1 = __importDefault(require("../../models/subscribersModel"));
 const notificationService_1 = require("../../services/notificationService");
+const userService_1 = require("../../services/userService");
 const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
 const createNotificationDTO = require('../../dtos/createNotificationDTO');
 const qrcode = require("qrcode-terminal");
 const notificationService = new notificationService_1.NoticationSercice();
+const userSercice = new userService_1.UserSercice();
 // Get all skills
 const getWelcomeMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -306,3 +308,20 @@ const removeNewsletter = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.removeNewsletter = removeNewsletter;
+//get website data
+const getWebsiteData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const websiteData = yield userSercice.getWebsiteData();
+        if (!websiteData) {
+            logger_1.default.warn('No website data found');
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "No website data found"));
+        }
+        logger_1.default.info('Website data fetched successfully', { websiteData });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Website data fetched successfully", websiteData));
+    }
+    catch (error) {
+        logger_1.default.error('Error fetching website data', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error fetching website data", error));
+    }
+});
+exports.getWebsiteData = getWebsiteData;

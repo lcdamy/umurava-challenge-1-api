@@ -1,4 +1,6 @@
 import User from '../models/userModel'; // Adjust the import path as necessary
+import Subscribers from '../models/subscribersModel';
+import Challenge from '../models/challengeModel';
 
 export class UserSercice {
 
@@ -65,6 +67,25 @@ export class UserSercice {
             return admins;
         } catch (error) {
             throw new Error(`Error fetching admins: ${(error as Error).message}`);
+        }
+    }
+
+    async getWebsiteData(): Promise<Record<string, number>> {
+        try {
+            const [totalUsers, totalChallenges, totalSubscribers] = await Promise.all([
+                User.countDocuments(),
+                Challenge.countDocuments(),
+                Subscribers.countDocuments()
+            ]);
+
+            return {
+                usersCount: totalUsers + totalSubscribers,
+                challengeCount: totalChallenges,
+                year: 2,
+                countriesCount: 1
+            };
+        } catch (error) {
+            throw new Error(`Error fetching website data: ${(error as Error).message}`);
         }
     }
 }
