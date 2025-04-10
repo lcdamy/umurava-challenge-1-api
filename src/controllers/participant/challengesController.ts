@@ -364,8 +364,19 @@ export const approveRejectChallengeSubmission = async (req: Request, res: Respon
 
 //get all challenges participant joined + all public challenges
 export const getAllJoinedChallenges = async (req: Request, res: Response): Promise<Response> => {
-    logger.info('getAllJoinedChallenges API called!');
+    const { page = 1, limit = 10, search = '', status } = req.query;
+    const pageNumber = parseInt(page as string, 10);
+    const limitNumber = parseInt(limit as string, 10);
+    const searchQuery: any = search
+        ? { $or: [{ challengeName: { $regex: search as string, $options: 'i' } }, { projectDescription: { $regex: search as string, $options: 'i' } }] }
+        : {};
+
+    if (status) {
+        searchQuery.status = status;
+    }
+
     try {
+        logger.info('getAllJoinedChallenges API called with query', { page, limit, search, status });
         const userId = req.user ? (req.user as any).id : null;
         if (!userId) {
             logger.warn('User ID is required');
@@ -373,7 +384,7 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
         }
 
         const [openChallenges, joinedChallenges] = await Promise.all([
-            Challenge.find({ status: 'open' }).sort({ createdAt: -1 }),
+            Challenge.find({ ...searchQuery, status: 'open' }).sort({ createdAt: -1 }),
             ChallengeParticipantsModel.find({ teamLead: userId })
                 .populate('challengeId', 'challengeName status startDate endDate')
                 .populate('members', 'email')
@@ -403,11 +414,11 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
 
         const challenges = openChallenges.map((openChallenge: any) => {
             const joinedChallenge = validJoinedChallenges.find((joinedChallenge: any) =>
-            joinedChallenge._id?.toString() === openChallenge._id?.toString()
+                joinedChallenge._id?.toString() === openChallenge._id?.toString()
             );
             return {
-            ...openChallenge.toObject(),
-            joined_status: !!joinedChallenge || validJoinedChallenges.some((jc: any) => jc._id?.toString() === openChallenge._id?.toString())
+                ...openChallenge.toObject(),
+                joined_status: !!joinedChallenge || validJoinedChallenges.some((jc: any) => jc._id?.toString() === openChallenge._id?.toString())
             };
         }).concat(validJoinedChallenges.map((joinedChallenge: any) => ({
             ...joinedChallenge,
@@ -416,15 +427,36 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
             index === self.findIndex((c: any) => c._id?.toString() === challenge._id?.toString())
         );
 
-        if (challenges.length === 0) {
+        const filteredChallenges = challenges.filter((challenge: any) => {
+            if (status) {
+                return challenge.status === status;
+            }
+            return true;
+        });
+
+        const totalChallenges = filteredChallenges.length;
+        const totalCompletedChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'completed').length;
+        const totalOpenChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'open').length;
+        const totalOngoingChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'ongoing').length;
+
+        const paginatedChallenges = filteredChallenges.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
+
+        if (paginatedChallenges.length === 0) {
             logger.warn('No challenges found');
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No challenges found'));
         }
 
-        challenges.sort((a: any, b: any) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-
-        logger.info('All challenges retrieved successfully', challenges);
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'All challenges retrieved successfully', { challenges }));
+        logger.info('All challenges retrieved successfully', paginatedChallenges);
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'All challenges retrieved successfully', {
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            challenges: paginatedChallenges,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalChallenges / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalChallenges
+            }
+        }));
     } catch (error) {
         const errorMessage = (error as Error).message || 'Error retrieving all challenges';
         logger.error('Error retrieving all challenges', errorMessage);

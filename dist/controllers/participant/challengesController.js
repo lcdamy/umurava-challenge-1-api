@@ -314,15 +314,24 @@ const approveRejectChallengeSubmission = (req, res) => __awaiter(void 0, void 0,
 exports.approveRejectChallengeSubmission = approveRejectChallengeSubmission;
 //get all challenges participant joined + all public challenges
 const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info('getAllJoinedChallenges API called!');
+    const { page = 1, limit = 10, search = '', status } = req.query;
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const searchQuery = search
+        ? { $or: [{ challengeName: { $regex: search, $options: 'i' } }, { projectDescription: { $regex: search, $options: 'i' } }] }
+        : {};
+    if (status) {
+        searchQuery.status = status;
+    }
     try {
+        logger_1.default.info('getAllJoinedChallenges API called with query', { page, limit, search, status });
         const userId = req.user ? req.user.id : null;
         if (!userId) {
             logger_1.default.warn('User ID is required');
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
         }
         const [openChallenges, joinedChallenges] = yield Promise.all([
-            challengeModel_1.default.find({ status: 'open' }).sort({ createdAt: -1 }),
+            challengeModel_1.default.find(Object.assign(Object.assign({}, searchQuery), { status: 'open' })).sort({ createdAt: -1 }),
             challengeParticipantsModel_1.default.find({ teamLead: userId })
                 .populate('challengeId', 'challengeName status startDate endDate')
                 .populate('members', 'email')
@@ -345,13 +354,32 @@ const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, f
             const joinedChallenge = validJoinedChallenges.find((joinedChallenge) => { var _a, _b; return ((_a = joinedChallenge._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = openChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); });
             return Object.assign(Object.assign({}, openChallenge.toObject()), { joined_status: !!joinedChallenge || validJoinedChallenges.some((jc) => { var _a, _b; return ((_a = jc._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = openChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }) });
         }).concat(validJoinedChallenges.map((joinedChallenge) => (Object.assign(Object.assign({}, joinedChallenge), { joined_status: true })))).filter((challenge, index, self) => index === self.findIndex((c) => { var _a, _b; return ((_a = c._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = challenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }));
-        if (challenges.length === 0) {
+        const filteredChallenges = challenges.filter((challenge) => {
+            if (status) {
+                return challenge.status === status;
+            }
+            return true;
+        });
+        const totalChallenges = filteredChallenges.length;
+        const totalCompletedChallenges = filteredChallenges.filter((challenge) => challenge.status === 'completed').length;
+        const totalOpenChallenges = filteredChallenges.filter((challenge) => challenge.status === 'open').length;
+        const totalOngoingChallenges = filteredChallenges.filter((challenge) => challenge.status === 'ongoing').length;
+        const paginatedChallenges = filteredChallenges.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
+        if (paginatedChallenges.length === 0) {
             logger_1.default.warn('No challenges found');
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'No challenges found'));
         }
-        challenges.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-        logger_1.default.info('All challenges retrieved successfully', challenges);
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All challenges retrieved successfully', { challenges }));
+        logger_1.default.info('All challenges retrieved successfully', paginatedChallenges);
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All challenges retrieved successfully', {
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            challenges: paginatedChallenges,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalChallenges / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalChallenges
+            }
+        }));
     }
     catch (error) {
         const errorMessage = error.message || 'Error retrieving all challenges';
