@@ -36,7 +36,7 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
         const currentDate = new Date();
         const startDate = challenge.startDate ? new Date(challenge.startDate) : null;
         const endDate = challenge.endDate ? new Date(challenge.endDate) : null;
-        if (startDate && currentDate > startDate) {
+        if (startDate && currentDate > startDate && currentDate.toDateString() !== startDate.toDateString()) {
             logger.warn('Challenge has already started or ended');
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge has already started or ended'));
         }
@@ -105,7 +105,7 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                 notificationService.createNotification({
                     timestamp: new Date(),
                     type: 'info',
-                    title   : 'New Participant Joined',
+                    title: 'New Participant Joined',
                     message: `A new user has registered on the platform. Please review their details.`,
                     userId: admin._id,
                     status: 'unread'
@@ -351,7 +351,7 @@ export const approveRejectChallengeSubmission = async (req: Request, res: Respon
                 link_label: 'View Challenge'
             }).catch(error => logger.error(`Error sending email to ${email}:`, error))
         ));
-        
+
         logger.info('Challenge submission status email sent to team members successfully');
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge submission status updated successfully'));
@@ -361,6 +361,77 @@ export const approveRejectChallengeSubmission = async (req: Request, res: Respon
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
     }
 };
+
+//get all challenges participant joined + all public challenges
+export const getAllJoinedChallenges = async (req: Request, res: Response): Promise<Response> => {
+    logger.info('getAllJoinedChallenges API called!');
+    try {
+        const userId = req.user ? (req.user as any).id : null;
+        if (!userId) {
+            logger.warn('User ID is required');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
+        }
+
+        const [openChallenges, joinedChallenges] = await Promise.all([
+            Challenge.find({ status: 'open' }).sort({ createdAt: -1 }),
+            ChallengeParticipantsModel.find({ teamLead: userId })
+                .populate('challengeId', 'challengeName status startDate endDate')
+                .populate('members', 'email')
+        ]);
+
+        const challengesFromJoinedChallenges = await Promise.all(joinedChallenges.map(async (joinedChallenge: any) => {
+            const challenge = joinedChallenge.challengeId;
+            if (!challenge) {
+                logger.warn(`Challenge not found for participation with id: ${joinedChallenge._id}`);
+                return null;
+            }
+
+            const fullChallengeData = await Challenge.findById(challenge).lean();
+            if (!fullChallengeData) {
+                logger.warn(`Full challenge data not found for challenge with id: ${challenge}`);
+                return null;
+            }
+
+            return {
+                ...fullChallengeData,
+                teamLead: joinedChallenge.teamLead,
+                members: joinedChallenge.members
+            };
+        }));
+
+        const validJoinedChallenges = challengesFromJoinedChallenges.filter((joinedChallenge: any) => joinedChallenge !== null);
+
+        const challenges = openChallenges.map((openChallenge: any) => {
+            const joinedChallenge = validJoinedChallenges.find((joinedChallenge: any) =>
+            joinedChallenge._id?.toString() === openChallenge._id?.toString()
+            );
+            return {
+            ...openChallenge.toObject(),
+            joined_status: !!joinedChallenge || validJoinedChallenges.some((jc: any) => jc._id?.toString() === openChallenge._id?.toString())
+            };
+        }).concat(validJoinedChallenges.map((joinedChallenge: any) => ({
+            ...joinedChallenge,
+            joined_status: true
+        }))).filter((challenge: any, index: number, self: any[]) =>
+            index === self.findIndex((c: any) => c._id?.toString() === challenge._id?.toString())
+        );
+
+        if (challenges.length === 0) {
+            logger.warn('No challenges found');
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No challenges found'));
+        }
+
+        challenges.sort((a: any, b: any) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
+        logger.info('All challenges retrieved successfully', challenges);
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'All challenges retrieved successfully', { challenges }));
+    } catch (error) {
+        const errorMessage = (error as Error).message || 'Error retrieving all challenges';
+        logger.error('Error retrieving all challenges', errorMessage);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
+    }
+};
+
 
 
 // Notify admins of late submission

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.approveRejectChallengeSubmission = exports.getChallengeSubmissions = exports.submitChallenge = exports.getParticipantChallenges = exports.countParticipants = exports.joinChallenge = void 0;
+exports.getAllJoinedChallenges = exports.approveRejectChallengeSubmission = exports.getChallengeSubmissions = exports.submitChallenge = exports.getParticipantChallenges = exports.countParticipants = exports.joinChallenge = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const challengeParticipantsModel_1 = __importDefault(require("../../models/challengeParticipantsModel"));
 const helper_1 = require("../../utils/helper");
@@ -43,7 +43,7 @@ const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const currentDate = new Date();
         const startDate = challenge.startDate ? new Date(challenge.startDate) : null;
         const endDate = challenge.endDate ? new Date(challenge.endDate) : null;
-        if (startDate && currentDate > startDate) {
+        if (startDate && currentDate > startDate && currentDate.toDateString() !== startDate.toDateString()) {
             logger_1.default.warn('Challenge has already started or ended');
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Challenge has already started or ended'));
         }
@@ -312,6 +312,54 @@ const approveRejectChallengeSubmission = (req, res) => __awaiter(void 0, void 0,
     }
 });
 exports.approveRejectChallengeSubmission = approveRejectChallengeSubmission;
+//get all challenges participant joined + all public challenges
+const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info('getAllJoinedChallenges API called!');
+    try {
+        const userId = req.user ? req.user.id : null;
+        if (!userId) {
+            logger_1.default.warn('User ID is required');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
+        }
+        const [openChallenges, joinedChallenges] = yield Promise.all([
+            challengeModel_1.default.find({ status: 'open' }).sort({ createdAt: -1 }),
+            challengeParticipantsModel_1.default.find({ teamLead: userId })
+                .populate('challengeId', 'challengeName status startDate endDate')
+                .populate('members', 'email')
+        ]);
+        const challengesFromJoinedChallenges = yield Promise.all(joinedChallenges.map((joinedChallenge) => __awaiter(void 0, void 0, void 0, function* () {
+            const challenge = joinedChallenge.challengeId;
+            if (!challenge) {
+                logger_1.default.warn(`Challenge not found for participation with id: ${joinedChallenge._id}`);
+                return null;
+            }
+            const fullChallengeData = yield challengeModel_1.default.findById(challenge).lean();
+            if (!fullChallengeData) {
+                logger_1.default.warn(`Full challenge data not found for challenge with id: ${challenge}`);
+                return null;
+            }
+            return Object.assign(Object.assign({}, fullChallengeData), { teamLead: joinedChallenge.teamLead, members: joinedChallenge.members });
+        })));
+        const validJoinedChallenges = challengesFromJoinedChallenges.filter((joinedChallenge) => joinedChallenge !== null);
+        const challenges = openChallenges.map((openChallenge) => {
+            const joinedChallenge = validJoinedChallenges.find((joinedChallenge) => { var _a, _b; return ((_a = joinedChallenge._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = openChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); });
+            return Object.assign(Object.assign({}, openChallenge.toObject()), { joined_status: !!joinedChallenge || validJoinedChallenges.some((jc) => { var _a, _b; return ((_a = jc._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = openChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }) });
+        }).concat(validJoinedChallenges.map((joinedChallenge) => (Object.assign(Object.assign({}, joinedChallenge), { joined_status: true })))).filter((challenge, index, self) => index === self.findIndex((c) => { var _a, _b; return ((_a = c._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = challenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }));
+        if (challenges.length === 0) {
+            logger_1.default.warn('No challenges found');
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'No challenges found'));
+        }
+        challenges.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        logger_1.default.info('All challenges retrieved successfully', challenges);
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All challenges retrieved successfully', { challenges }));
+    }
+    catch (error) {
+        const errorMessage = error.message || 'Error retrieving all challenges';
+        logger_1.default.error('Error retrieving all challenges', errorMessage);
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', errorMessage));
+    }
+});
+exports.getAllJoinedChallenges = getAllJoinedChallenges;
 // Notify admins of late submission
 const notifyAdminsOfLateSubmission = (participant, user) => __awaiter(void 0, void 0, void 0, function* () {
     const admins = yield userService.getAdmins();
