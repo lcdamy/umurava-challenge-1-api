@@ -90,7 +90,11 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
             return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challenge));
         }
 
-        const joinedStatus = await ChallengeParticipantsModel.findOne({ challengeId: id, userId });
+        const joinedStatus = await ChallengeParticipantsModel.findOne({ challengeId: id, teamLead: userId });
+        if (!joinedStatus) {
+            logger.warn('Challenge not found in ChallengeParticipantsModel for the given team lead', { challengeId: id, teamLead: userId });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found for the given team lead'));
+        }
         const challengeModified = {
             ...challenge.toObject(),
             joined_status: joinedStatus ? true : false,

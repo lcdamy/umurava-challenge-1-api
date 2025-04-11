@@ -97,7 +97,11 @@ const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             logger_1.default.info('Challenge fetched successfully for non-participant user', { id });
             return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challenge));
         }
-        const joinedStatus = yield challengeParticipantsModel_1.default.findOne({ challengeId: id, userId });
+        const joinedStatus = yield challengeParticipantsModel_1.default.findOne({ challengeId: id, teamLead: userId });
+        if (!joinedStatus) {
+            logger_1.default.warn('Challenge not found in ChallengeParticipantsModel for the given team lead', { challengeId: id, teamLead: userId });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found for the given team lead'));
+        }
         const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: joinedStatus ? true : false });
         logger_1.default.info('Challenge fetched successfully for participant user', { id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeModified));
