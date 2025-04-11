@@ -18,10 +18,6 @@ const cron = require('node-cron');
 cron.schedule('0 0 * * *', () => {
     updateChallengeStatus();
 });
-//schedule a task to run every 1 minute
-cron.schedule('* * * * *', () => {
-    updateChallengeStatus();
-});
 module.exports = {};
 function hasTheChallengeCompleted(endDate) {
     const today = new Date();

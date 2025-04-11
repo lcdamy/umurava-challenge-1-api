@@ -100,7 +100,7 @@ class UserSercice {
             try {
                 const [totalUsers, totalChallenges, totalSubscribers] = yield Promise.all([
                     userModel_1.default.countDocuments(),
-                    challengeModel_1.default.countDocuments(),
+                    challengeModel_1.default.countDocuments({ status: 'completed' }),
                     subscribersModel_1.default.countDocuments()
                 ]);
                 return {
