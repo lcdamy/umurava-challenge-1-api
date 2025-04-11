@@ -90,10 +90,10 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
             return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challenge));
         }
 
-        const joinedStatus = await ChallengeParticipantsModel.exists({ challengeId: id, userId });
+        const joinedStatus = await ChallengeParticipantsModel.findOne({ challengeId: id, userId });
         const challengeModified = {
             ...challenge.toObject(),
-            joined_status: !!joinedStatus,
+            joined_status: joinedStatus ? true : false,
         };
 
         logger.info('Challenge fetched successfully for participant user', { id });

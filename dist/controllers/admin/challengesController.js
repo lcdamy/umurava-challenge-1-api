@@ -97,8 +97,8 @@ const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             logger_1.default.info('Challenge fetched successfully for non-participant user', { id });
             return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challenge));
         }
-        const joinedStatus = yield challengeParticipantsModel_1.default.exists({ challengeId: id, userId });
-        const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: !!joinedStatus });
+        const joinedStatus = yield challengeParticipantsModel_1.default.findOne({ challengeId: id, userId });
+        const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: joinedStatus ? true : false });
         logger_1.default.info('Challenge fetched successfully for participant user', { id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeModified));
     }
