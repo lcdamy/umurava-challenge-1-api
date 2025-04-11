@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import Challenge from '../../models/challengeModel';
+import ChallengeParticipantsModel from '../../models/challengeParticipantsModel';
+import User from '../../models/userModel';
 import ChallengeCategory from '../../models/challengeCategoryModel';
 import Prize from '../../models/prizesModel';
 import { convertToISO, formatResponse, getDuration } from '../../utils/helper';
@@ -63,19 +65,34 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
 export const getChallengeById = async (req: Request, res: Response): Promise<Response> => {
     try {
         logger.info('Fetching challenge by ID', { id: req.params.id });
+
+        const userId = req.user ? (req.user as any).id : null;
+        if (!userId) {
+            logger.warn('User ID is required');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
+        }
+
         const challenge = await Challenge.findById(req.params.id);
         if (!challenge) {
             logger.warn('Challenge not found', { id: req.params.id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
-        // Fetch participant data manually
 
-        const challengeWithParticipants = {
-            ...challenge.toObject()
-        };
+        let joined_status = false;
+        const isParticipant = await User.findOne({ _id: userId, userRole: 'participant' });
+        if (isParticipant) {
+            const hasParticipantJoined = await ChallengeParticipantsModel.findOne({ challengeId: req.params.id, userId });
+            if (hasParticipantJoined) {
+                joined_status = true;
+            }
+        }
+        const challengeModified = {
+            ...challenge.toObject(),
+            joined_status,
+        }
 
         logger.info('Challenge fetched successfully', { id: req.params.id });
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challengeWithParticipants));
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challengeModified));
     } catch (error) {
         logger.error('Error fetching challenge', { id: req.params.id, error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge', error));

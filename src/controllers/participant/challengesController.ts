@@ -8,7 +8,7 @@ import { sendEmail } from "../../utils/emailService";
 import { UserSercice } from '../../services/userService';
 import { NoticationSercice } from '../../services/notificationService';
 import { SubmitChallengeDTO } from '../../dtos/submitChallengeDTO';
-import { title } from 'process';
+
 
 const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
