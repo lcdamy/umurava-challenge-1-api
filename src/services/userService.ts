@@ -74,7 +74,7 @@ export class UserSercice {
         try {
             const [totalUsers, totalChallenges, totalSubscribers] = await Promise.all([
                 User.countDocuments(),
-                Challenge.countDocuments(),
+                Challenge.countDocuments({status: 'completed'}),
                 Subscribers.countDocuments()
             ]);
 
