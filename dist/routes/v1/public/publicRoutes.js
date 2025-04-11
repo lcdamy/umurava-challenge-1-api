@@ -160,7 +160,7 @@ const { authorizationMiddleware } = require("../../../middlewares/authorizationM
 const roles = ["admin", "participant"];
 publicRoutes.get('/skills', skillsController.getSkills);
 publicRoutes.get('/challenges', challengesController.getChallenges);
-publicRoutes.get('/challenges/:id', challengesController.getChallengeById);
+publicRoutes.get('/challenges/:id', authenticationMiddleware(), challengesController.getChallengeById);
 publicRoutes.post('/enter', publicController.joinProgram);
 publicRoutes.post('/join/whatsapp/community', publicController.joinWhatsAppCommunity);
 publicRoutes.post('/subscribe-newsletter', publicController.joinNewsletter);

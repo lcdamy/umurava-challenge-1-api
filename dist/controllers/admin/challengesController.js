@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateGracePeriod = exports.updateChallengeStatus = exports.deletePrizeCategory = exports.updatePrizeCategory = exports.createPrizeCategory = exports.getPrizeCategories = exports.getChallengeCategories = exports.deleteChallengeCategory = exports.updateChallengeCategory = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
+const challengeParticipantsModel_1 = __importDefault(require("../../models/challengeParticipantsModel"));
+const userModel_1 = __importDefault(require("../../models/userModel"));
 const challengeCategoryModel_1 = __importDefault(require("../../models/challengeCategoryModel"));
 const prizesModel_1 = __importDefault(require("../../models/prizesModel"));
 const helper_1 = require("../../utils/helper");
@@ -34,7 +36,12 @@ const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         ? { $or: [{ challengeName: { $regex: search, $options: 'i' } }, { projectDescription: { $regex: search, $options: 'i' } }] }
         : {};
     if (status) {
-        searchQuery.status = status;
+        if (status === 'no-draft') {
+            searchQuery.status = { $ne: 'draft' };
+        }
+        else {
+            searchQuery.status = status;
+        }
     }
     try {
         logger_1.default.info('Fetching challenges with query', { page, limit, search, all, status });
@@ -73,16 +80,27 @@ exports.getChallenges = getChallenges;
 // Get a single challenge by ID
 const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        logger_1.default.info('Fetching challenge by ID', { id: req.params.id });
-        const challenge = yield challengeModel_1.default.findById(req.params.id);
+        const { id } = req.params;
+        const userId = req.user ? req.user.id : null;
+        logger_1.default.info('Fetching challenge by ID', { id });
+        if (!userId) {
+            logger_1.default.warn('User ID is required');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
+        }
+        const challenge = yield challengeModel_1.default.findById(id);
         if (!challenge) {
-            logger_1.default.warn('Challenge not found', { id: req.params.id });
+            logger_1.default.warn('Challenge not found', { id });
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
         }
-        // Fetch participant data manually
-        const challengeWithParticipants = Object.assign({}, challenge.toObject());
-        logger_1.default.info('Challenge fetched successfully', { id: req.params.id });
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeWithParticipants));
+        const isParticipant = yield userModel_1.default.exists({ _id: userId, userRole: 'participant' });
+        if (!isParticipant) {
+            logger_1.default.info('Challenge fetched successfully for non-participant user', { id });
+            return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challenge));
+        }
+        const joinedStatus = yield challengeParticipantsModel_1.default.exists({ challengeId: id, userId });
+        const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: !!joinedStatus });
+        logger_1.default.info('Challenge fetched successfully for participant user', { id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeModified));
     }
     catch (error) {
         logger_1.default.error('Error fetching challenge', { id: req.params.id, error });

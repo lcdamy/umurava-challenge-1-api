@@ -24,7 +24,11 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
         : {};
 
     if (status) {
-        searchQuery.status = status;
+        if (status === 'no-draft') {
+            searchQuery.status = { $ne: 'draft' };
+        } else {
+            searchQuery.status = status;
+        }
     }
 
     try {
