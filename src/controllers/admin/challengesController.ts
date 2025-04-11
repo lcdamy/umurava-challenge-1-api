@@ -64,34 +64,35 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
 // Get a single challenge by ID
 export const getChallengeById = async (req: Request, res: Response): Promise<Response> => {
     try {
-        logger.info('Fetching challenge by ID', { id: req.params.id });
-
+        const { id } = req.params;
         const userId = req.user ? (req.user as any).id : null;
+
+        logger.info('Fetching challenge by ID', { id });
+
         if (!userId) {
             logger.warn('User ID is required');
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
         }
 
-        const challenge = await Challenge.findById(req.params.id);
+        const challenge = await Challenge.findById(id);
         if (!challenge) {
-            logger.warn('Challenge not found', { id: req.params.id });
+            logger.warn('Challenge not found', { id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
 
-        let joined_status = false;
-        const isParticipant = await User.findOne({ _id: userId, userRole: 'participant' });
-        if (isParticipant) {
-            const hasParticipantJoined = await ChallengeParticipantsModel.findOne({ challengeId: req.params.id, userId });
-            if (hasParticipantJoined) {
-                joined_status = true;
-            }
-        }
-        const challengeModified = {
-            ...challenge.toObject(),
-            joined_status,
+        const isParticipant = await User.exists({ _id: userId, userRole: 'participant' });
+        if (!isParticipant) {
+            logger.info('Challenge fetched successfully for non-participant user', { id });
+            return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challenge));
         }
 
-        logger.info('Challenge fetched successfully', { id: req.params.id });
+        const joinedStatus = await ChallengeParticipantsModel.exists({ challengeId: id, userId });
+        const challengeModified = {
+            ...challenge.toObject(),
+            joined_status: !!joinedStatus,
+        };
+
+        logger.info('Challenge fetched successfully for participant user', { id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challengeModified));
     } catch (error) {
         logger.error('Error fetching challenge', { id: req.params.id, error });
