@@ -295,13 +295,13 @@ export const unreadAllNotifications = async (req: Request, res: Response): Promi
             logger.warn('User ID not found in request');
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "User ID not found in request"));
         }
-        logger.info('Reading all notifications for user', { userId });
+        logger.info('unreading all notifications for user', { userId });
         const readNotifications = await notificationService.unreadAllNotifications(userId);
-        logger.info('All notifications marked as read successfully', { userId });
-        return res.status(StatusCodes.OK).json(formatResponse("success", "All notifications marked as read successfully", readNotifications));
+        logger.info('All notifications marked as unread successfully', { userId });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "All notifications marked as unread successfully", readNotifications));
     } catch (error) {
         logger.error('Error marking all notifications as read  in controller', { error });
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error marking all notifications as read", error));
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error marking all notifications as unread", error));
     }
 }
 

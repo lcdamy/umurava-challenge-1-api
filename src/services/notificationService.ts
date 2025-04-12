@@ -103,10 +103,11 @@ export class NoticationSercice {
     }
 
     async unreadAllNotifications(userId: string): Promise<any> {
+        console.log("line 106: ", userId);
         try {
             const result = await Notification.updateMany(
                 { userId, status: { $ne: "unread" } }, // Find notifications that are not already read
-                { $set: { status: "unread" } } // Update their status to "read"
+                { $set: { status: "unread" } } // Update their status to "unread"
             );
             return { message: `${result.modifiedCount} notifications marked as unread` };
         } catch (error) {

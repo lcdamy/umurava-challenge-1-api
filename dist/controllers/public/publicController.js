@@ -299,14 +299,14 @@ const unreadAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, f
             logger_1.default.warn('User ID not found in request');
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "User ID not found in request"));
         }
-        logger_1.default.info('Reading all notifications for user', { userId });
+        logger_1.default.info('unreading all notifications for user', { userId });
         const readNotifications = yield notificationService.unreadAllNotifications(userId);
-        logger_1.default.info('All notifications marked as read successfully', { userId });
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "All notifications marked as read successfully", readNotifications));
+        logger_1.default.info('All notifications marked as unread successfully', { userId });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "All notifications marked as unread successfully", readNotifications));
     }
     catch (error) {
         logger_1.default.error('Error marking all notifications as read  in controller', { error });
-        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error marking all notifications as read", error));
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error marking all notifications as unread", error));
     }
 });
 exports.unreadAllNotifications = unreadAllNotifications;

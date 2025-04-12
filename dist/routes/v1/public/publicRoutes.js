@@ -172,6 +172,6 @@ publicRoutes.put('/notifications/unread/:id', authenticationMiddleware(), author
 publicRoutes.delete('/notifications/:id', authenticationMiddleware(), authorizationMiddleware(roles), publicController.deleteNotification);
 publicRoutes.delete('/notifications/delete/all', authenticationMiddleware(), authorizationMiddleware(roles), publicController.deleteAllNotifications);
 publicRoutes.put('/notifications/read/all', authenticationMiddleware(), authorizationMiddleware(roles), publicController.readAllNotifications);
-publicRoutes.put('/notifications/unread/all', authenticationMiddleware(), authorizationMiddleware(roles), publicController.unreadAllNotifications);
+publicRoutes.put('/notifications/unread/update/all', authenticationMiddleware(), authorizationMiddleware(roles), publicController.unreadAllNotifications);
 publicRoutes.get('/website/data', publicController.getWebsiteData);
 exports.default = publicRoutes;

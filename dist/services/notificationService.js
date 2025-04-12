@@ -120,9 +120,10 @@ class NoticationSercice {
     }
     unreadAllNotifications(userId) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("line 106: ", userId);
             try {
                 const result = yield notificationModel_1.default.updateMany({ userId, status: { $ne: "unread" } }, // Find notifications that are not already read
-                { $set: { status: "unread" } } // Update their status to "read"
+                { $set: { status: "unread" } } // Update their status to "unread"
                 );
                 return { message: `${result.modifiedCount} notifications marked as unread` };
             }
