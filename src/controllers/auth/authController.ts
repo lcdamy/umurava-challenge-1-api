@@ -16,11 +16,16 @@ import { AuthService } from '../../services/authService';
 import { NoticationSercice } from '../../services/notificationService';
 import bcrypt from "bcryptjs";
 import Joi from 'joi';
-import { title } from 'process';
 
 const { FRONTEND_URL } = process.env;
 
 const authService = new AuthService();
+import WebSocketHandler from '../../websocket/webSocketHandler'; // Adjust the path as needed
+
+import { Server } from 'http'; // Ensure this import exists if not already present
+const server = new Server(); // Replace with your actual server instance
+const webSocketHandlerInstance = new WebSocketHandler(server);
+const notificationService = new NoticationSercice(webSocketHandlerInstance);
 
 // Controller function for user registration
 export const register = async (req: Request, res: Response): Promise<Response> => {
@@ -71,7 +76,6 @@ export const register = async (req: Request, res: Response): Promise<Response> =
         // Notify each active admin
         const admins = await User.find({ userRole: 'admin', status: 'active' });
         if (admins.length > 0) {
-            const notificationService = new NoticationSercice();
             for (const admin of admins) {
                 const notification = {
                     timestamp: new Date(),
@@ -445,7 +449,6 @@ export const deleteProfile = async (req: Request, res: Response): Promise<Respon
         //send notification to all active admins
         const admins = await User.find({ userRole: 'admin', status: 'active' });
         if (admins.length > 0) {
-            const notificationService = new NoticationSercice();
             for (const admin of admins) {
                 const notification = {
                     timestamp: new Date(),

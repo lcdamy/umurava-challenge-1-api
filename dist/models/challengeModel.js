@@ -62,6 +62,5 @@ const ChallengeSchema = new mongoose_1.Schema({
 }, {
     timestamps: true
 });
-ChallengeSchema.index({ challengeName: 1 }, { unique: true });
 const Challenge = (0, mongoose_1.model)('Challenge', ChallengeSchema);
 exports.default = Challenge;

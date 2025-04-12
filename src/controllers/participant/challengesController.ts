@@ -14,6 +14,12 @@ const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
 
 const userService = new UserSercice();
+import WebSocketHandler from '../../websocket/webSocketHandler'; // Adjust the path as needed
+
+import { Server } from 'http'; // Ensure this import exists if not already present
+const server = new Server(); // Replace with your actual server instance
+const webSocketHandlerInstance = new WebSocketHandler(server);
+const notificationService = new NoticationSercice(webSocketHandlerInstance);
 
 // Participate join the challenge API
 export const joinChallenge = async (req: Request, res: Response): Promise<Response> => {
@@ -100,7 +106,6 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                 }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
             ));
 
-            const notificationService = new NoticationSercice();
             await Promise.all(admins.map((admin: any) =>
                 notificationService.createNotification({
                     timestamp: new Date(),
@@ -484,7 +489,7 @@ const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {
                 .catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
         ));
 
-        const notificationService = new NoticationSercice();
+
         await Promise.all(admins.map((admin: any) =>
             notificationService.createNotification({
                 timestamp: new Date(),
@@ -526,7 +531,7 @@ const notifyAdminsAndMembersOfSubmission = async (participant: any, challenge: a
             }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
         ));
 
-        const notificationService = new NoticationSercice();
+
         await Promise.all(admins.map((admin: any) =>
             notificationService.createNotification({
                 timestamp: new Date(),

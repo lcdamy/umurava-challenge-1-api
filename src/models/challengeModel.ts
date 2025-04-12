@@ -78,8 +78,6 @@ const ChallengeSchema: Schema = new Schema({
     timestamps: true
 });
 
-ChallengeSchema.index({ challengeName: 1 }, { unique: true });
-
 const Challenge = model<IChallenge>('Challenge', ChallengeSchema);
 
 export default Challenge;

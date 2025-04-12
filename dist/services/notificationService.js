@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NoticationSercice = void 0;
 const notificationModel_1 = __importDefault(require("../models/notificationModel"));
 class NoticationSercice {
+    constructor(webSocketHandler) {
+        this.webSocketHandler = webSocketHandler;
+    }
     getAllNotifications(filters) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -52,6 +55,7 @@ class NoticationSercice {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const newNotification = yield notificationModel_1.default.create(notificationData);
+                this.webSocketHandler.sendMessageToAllClients('New notification created');
                 return newNotification;
             }
             catch (error) {

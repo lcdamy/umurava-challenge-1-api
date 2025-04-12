@@ -1,7 +1,15 @@
 import Notification from "../models/notificationModel";
+import WebSocketHandler from "../websocket/webSocketHandler";
+
 
 
 export class NoticationSercice {
+
+    private webSocketHandler: WebSocketHandler;
+
+    constructor(webSocketHandler: WebSocketHandler) {
+        this.webSocketHandler = webSocketHandler;
+    }
 
     async getAllNotifications(filters: { userId: string; status?: string }): Promise<any> {
         try {
@@ -36,6 +44,9 @@ export class NoticationSercice {
     async createNotification(notificationData: any): Promise<any> {
         try {
             const newNotification = await Notification.create(notificationData);
+
+            this.webSocketHandler.sendMessageToAllClients('New notification created');
+
             return newNotification;
         } catch (error) {
             throw new Error(`Error creating notification: ${(error as Error).message}`);

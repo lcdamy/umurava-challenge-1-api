@@ -24,6 +24,11 @@ const notificationService_1 = require("../../services/notificationService");
 const submitChallengeDTO_1 = require("../../dtos/submitChallengeDTO");
 const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 const userService = new userService_1.UserSercice();
+const webSocketHandler_1 = __importDefault(require("../../websocket/webSocketHandler")); // Adjust the path as needed
+const http_1 = require("http"); // Ensure this import exists if not already present
+const server = new http_1.Server(); // Replace with your actual server instance
+const webSocketHandlerInstance = new webSocketHandler_1.default(server);
+const notificationService = new notificationService_1.NoticationSercice(webSocketHandlerInstance);
 // Participate join the challenge API
 const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info('joinChallenge API called!');
@@ -91,7 +96,6 @@ const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (admins && admins.length > 0) {
             const adminEmails = admins.map((admin) => admin.email);
             yield Promise.all(adminEmails.map((adminEmail) => (0, emailService_1.sendEmail)('send_notification', 'Participant Joined Challenge', adminEmail, Object.assign(Object.assign({}, context), { subject: 'Participant Joined Challenge', name: 'Admin', message: `A participant has joined the challenge: ${challenge.challengeName}.`, link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard', link_label: 'View Dashboard' })).catch(error => logger_1.default.error(`Error sending email to ${adminEmail}:`, error))));
-            const notificationService = new notificationService_1.NoticationSercice();
             yield Promise.all(admins.map((admin) => notificationService.createNotification({
                 timestamp: new Date(),
                 type: 'info',
@@ -402,7 +406,6 @@ const notifyAdminsOfLateSubmission = (participant, user) => __awaiter(void 0, vo
         };
         yield Promise.all(adminEmails.map((adminEmail) => (0, emailService_1.sendEmail)('send_notification', 'Challenge Submission Attempt After Deadline', adminEmail, context)
             .catch(error => logger_1.default.error(`Error sending email to ${adminEmail}:`, error))));
-        const notificationService = new notificationService_1.NoticationSercice();
         yield Promise.all(admins.map((admin) => notificationService.createNotification({
             timestamp: new Date(),
             type: 'warning',
@@ -431,7 +434,6 @@ const notifyAdminsAndMembersOfSubmission = (participant, challenge) => __awaiter
     if (admins && admins.length > 0) {
         const adminEmails = admins.map((admin) => admin.email);
         yield Promise.all(adminEmails.map((adminEmail) => (0, emailService_1.sendEmail)('send_notification', 'Challenge Submitted', adminEmail, Object.assign(Object.assign({}, context), { subject: 'Challenge Submitted', name: 'Admin', message: `A challenge has been submitted by ${participant.teamLead}.`, link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard', link_label: 'View Dashboard' })).catch(error => logger_1.default.error(`Error sending email to ${adminEmail}:`, error))));
-        const notificationService = new notificationService_1.NoticationSercice();
         yield Promise.all(admins.map((admin) => notificationService.createNotification({
             timestamp: new Date(),
             type: 'info',
