@@ -105,8 +105,8 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                 notificationService.createNotification({
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'New Participant Joined',
-                    message: `A new user has registered on the platform. Please review their details.`,
+                    title: 'New Participant Joined Challenge',
+                    message: `A new participant has joined the challenge: ${challenge.challengeName}. Please review their details.`,
                     userId: admin._id,
                     status: 'unread'
                 })
@@ -463,8 +463,6 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', errorMessage));
     }
 };
-
-
 
 // Notify admins of late submission
 const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {

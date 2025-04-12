@@ -14,10 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteSkill = exports.updateSkill = exports.createSkill = exports.getSkillById = exports.getSkills = void 0;
 const skillsModel_1 = __importDefault(require("../../models/skillsModel"));
+const userModel_1 = __importDefault(require("../../models/userModel"));
 const helper_1 = require("../../utils/helper");
 const http_status_codes_1 = require("http-status-codes");
 const SkillDTO = require('../../dtos/skillsDTO');
 const logger_1 = __importDefault(require("../../config/logger"));
+const notificationService_1 = require("../../services/notificationService");
+const notificationService = new notificationService_1.NoticationSercice();
 // Get all skills
 const getSkills = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -65,6 +68,21 @@ const createSkill = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const newSkill = new skillsModel_1.default(value);
         const savedSkill = yield newSkill.save();
         logger_1.default.info('Skill created successfully');
+        //notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'New Skill Created',
+                    message: `A new skill "${value.skillName}" has been added. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
         return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Skill created successfully', savedSkill));
     }
     catch (error) {

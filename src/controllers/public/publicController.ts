@@ -318,6 +318,24 @@ export const joinNewsletter = async (req: Request, res: Response): Promise<Respo
         const newSubscriber = new Subscribers({ email, status: 'active' });
         await newSubscriber.save();
         logger.info('New subscriber added to the newsletter', { email });
+
+        //notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'New Subscriber',
+                    message: `A new subscriber "${email}" has joined the newsletter.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+        logger.info('Notification sent to admins about new subscriber', { email });
+
         return res.status(StatusCodes.OK).json(formatResponse("success", "Successfully subscribed to the newsletter"));
     } catch (error) {
         logger.error('Error subscribing to newsletter', { error });

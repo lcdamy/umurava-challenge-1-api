@@ -323,6 +323,22 @@ const joinNewsletter = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const newSubscriber = new subscribersModel_1.default({ email, status: 'active' });
         yield newSubscriber.save();
         logger_1.default.info('New subscriber added to the newsletter', { email });
+        //notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'New Subscriber',
+                    message: `A new subscriber "${email}" has joined the newsletter.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
+        logger_1.default.info('Notification sent to admins about new subscriber', { email });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Successfully subscribed to the newsletter"));
     }
     catch (error) {

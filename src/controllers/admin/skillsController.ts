@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import Skill from '../../models/skillsModel';
+import User from '../../models/userModel';
 import { formatResponse } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 const SkillDTO = require('../../dtos/skillsDTO');
 import logger from '../../config/logger';
+import { NoticationSercice } from '../../services/notificationService';
+
+const notificationService = new NoticationSercice();
 
 // Get all skills
 export const getSkills = async (req: Request, res: Response): Promise<Response> => {
@@ -51,6 +55,22 @@ export const createSkill = async (req: Request, res: Response): Promise<Response
         const newSkill = new Skill(value);
         const savedSkill = await newSkill.save();
         logger.info('Skill created successfully');
+        //notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'New Skill Created',
+                    message: `A new skill "${value.skillName}" has been added. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Skill created successfully', savedSkill));
     } catch (error) {
         logger.error('Error creating skill', error);

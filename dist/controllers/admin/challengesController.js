@@ -21,12 +21,14 @@ const prizesModel_1 = __importDefault(require("../../models/prizesModel"));
 const helper_1 = require("../../utils/helper");
 const http_status_codes_1 = require("http-status-codes");
 const logger_1 = __importDefault(require("../../config/logger"));
+const notificationService_1 = require("../../services/notificationService");
 const ChallengeDTO = require('../../dtos/challengesDTO');
 const UpdateChallengeDTO = require('../../dtos/updateChallengeDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
 const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
 const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
 const ChallengePrizeDTO = require('../../dtos/challengePrizeDTO');
+const notificationService = new notificationService_1.NoticationSercice();
 // Get all challenges
 const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 1, limit = 10, search = '', all = 'false', status } = req.query;
@@ -154,6 +156,23 @@ const createChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
         const newChallenge = new challengeModel_1.default(Object.assign(Object.assign({}, value), { endDate, startDate, duration }));
         const savedChallenge = yield newChallenge.save();
         logger_1.default.info('Challenge created successfully', { id: savedChallenge._id });
+        // Notify each active admin and participant
+        const notifyUsers = (userRole, title, message) => __awaiter(void 0, void 0, void 0, function* () {
+            const users = yield userModel_1.default.find({ userRole, status: 'active' });
+            if (users.length > 0) {
+                const notifications = users.map(user => ({
+                    timestamp: new Date(),
+                    type: 'info',
+                    title,
+                    message,
+                    userId: user._id,
+                    status: 'unread'
+                }));
+                yield notificationService.createNotification(notifications);
+            }
+        });
+        yield notifyUsers('admin', 'Challenge Created', 'A new challenge has been created. Please review the details.');
+        yield notifyUsers('participant', 'Challenge Created', 'A new challenge has been created. Please check your dashboard for details.');
         return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Challenge created successfully', savedChallenge));
     }
     catch (error) {
@@ -192,6 +211,23 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         const updatedChallenge = yield challengeModel_1.default.findByIdAndUpdate(req.params.id, Object.assign(Object.assign({}, value), { endDate, startDate, duration }), { new: true });
         logger_1.default.info('Challenge updated successfully', { id: req.params.id });
+        // Notify each active admin and participant
+        const notifyUsers = (userRole, title, message) => __awaiter(void 0, void 0, void 0, function* () {
+            const users = yield userModel_1.default.find({ userRole, status: 'active' });
+            if (users.length > 0) {
+                const notifications = users.map(user => ({
+                    timestamp: new Date(),
+                    type: 'info',
+                    title,
+                    message,
+                    userId: user._id,
+                    status: 'unread'
+                }));
+                yield notificationService.createNotification(notifications);
+            }
+        });
+        yield notifyUsers('admin', 'Challenge Updated', 'The challenge has been updated. Please review the details.');
+        yield notifyUsers('participant', 'Challenge Updated', 'The challenge has been updated. Please check your dashboard for details.');
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge updated successfully', updatedChallenge));
     }
     catch (error) {
@@ -210,6 +246,21 @@ const deleteChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
         }
         logger_1.default.info('Challenge deleted successfully', { id: req.params.id });
+        //notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Deleted',
+                    message: `A challenge has been deleted. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge deleted successfully'));
     }
     catch (error) {
@@ -288,6 +339,21 @@ const createChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, 
         const newChallengeCategory = new challengeCategoryModel_1.default(value);
         const savedChallengeCategory = yield newChallengeCategory.save();
         logger_1.default.info('Challenge category created successfully', { id: savedChallengeCategory._id });
+        //notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Category Created',
+                    message: `A new challenge category has been created. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
         return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Challenge category created successfully', savedChallengeCategory));
     }
     catch (error) {
@@ -388,6 +454,21 @@ const createPrizeCategory = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         const savedPrizeCategory = yield newPrizeCategory.save();
         logger_1.default.info('Prize category created successfully', { id: savedPrizeCategory._id });
+        //notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Prize Category Created',
+                    message: `A new prize category has been created. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
         return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Prize category created successfully', savedPrizeCategory));
     }
     catch (error) {
@@ -470,6 +551,37 @@ const updateChallengeStatus = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
         }
         logger_1.default.info('Challenge status updated successfully', { id: req.params.id });
+        // Notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Status Updated',
+                    message: `The status of the challenge has been updated. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
+        // Notify each active participant
+        const participants = yield challengeParticipantsModel_1.default.find({ challengeId: id });
+        if (participants.length > 0) {
+            for (const participant of participants) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Status Updated',
+                    message: `The status of the challenge has been updated. Please check your dashboard for details.`,
+                    userId: participant.teamLead,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
+        logger_1.default.info('Challenge status updated successfully', { id: req.params.id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge status updated successfully', updatedChallenge));
     }
     catch (error) {
@@ -501,6 +613,37 @@ const updateGracePeriod = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         challenge.endDate = new Date(new_submissionDate);
         const updatedChallenge = yield challenge.save();
+        // notify each active admin
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Deadline Updated',
+                    message: `The Deadline for the challenge has been updated. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
+        // notify each active participant
+        const participants = yield challengeParticipantsModel_1.default.find({ challengeId: id });
+        if (participants.length > 0) {
+            for (const participant of participants) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Deadline Updated',
+                    message: `The Deadline for the challenge has been updated. Please check your dashboard for details.`,
+                    userId: participant.teamLead,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
+        logger_1.default.info('Grace period updated successfully', { id });
         logger_1.default.info('Challenge grace period updated successfully', { id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge grace period updated successfully', updatedChallenge));
     }

@@ -116,6 +116,21 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Create and save the new user
         const newUser = new userModel_1.default(Object.assign(Object.assign({}, value), { password: hashedPassword, userRole: 'admin', status: 'active' }));
         const savedUser = yield newUser.save();
+        // Create notification for each active admin except the one who registered
+        const admins = yield userModel_1.default.find({ userRole: 'admin', status: 'active', email: { $ne: value.email } });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'New Admin Registration',
+                    message: `A new admin has been registered on the platform. Please review their details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                yield notificationService.createNotification(notification);
+            }
+        }
         if (!savedUser) {
             logger_1.default.error('Error saving user to database', { user: value });
             return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error saving user to database'));

@@ -7,12 +7,16 @@ import Prize from '../../models/prizesModel';
 import { convertToISO, formatResponse, getDuration } from '../../utils/helper';
 import { StatusCodes } from "http-status-codes";
 import logger from '../../config/logger';
+import { NoticationSercice } from '../../services/notificationService';
+
 const ChallengeDTO = require('../../dtos/challengesDTO');
 const UpdateChallengeDTO = require('../../dtos/updateChallengeDTO');
 const ChallengeCategoryDTO = require('../../dtos/challengeCategoryDTO');
 const UpdateChallengeStatusDTO = require('../../dtos/updateChallengeStatusDTO');
 const UpdateChallengeSubmissionDateDTO = require('../../dtos/updateChallengeSubmissionDateDTO');
 const ChallengePrizeDTO = require('../../dtos/challengePrizeDTO');
+
+const notificationService = new NoticationSercice();
 
 // Get all challenges
 export const getChallenges = async (req: Request, res: Response): Promise<Response> => {
@@ -159,6 +163,26 @@ export const createChallenge = async (req: Request, res: Response): Promise<Resp
         const newChallenge = new Challenge({ ...value, endDate, startDate, duration });
         const savedChallenge = await newChallenge.save();
         logger.info('Challenge created successfully', { id: savedChallenge._id });
+
+        // Notify each active admin and participant
+        const notifyUsers = async (userRole: string, title: string, message: string) => {
+            const users = await User.find({ userRole, status: 'active' });
+            if (users.length > 0) {
+                const notifications = users.map(user => ({
+                    timestamp: new Date(),
+                    type: 'info',
+                    title,
+                    message,
+                    userId: user._id,
+                    status: 'unread'
+                }));
+                await notificationService.createNotification(notifications);
+            }
+        };
+
+        await notifyUsers('admin', 'Challenge Created', 'A new challenge has been created. Please review the details.');
+        await notifyUsers('participant', 'Challenge Created', 'A new challenge has been created. Please check your dashboard for details.');
+
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Challenge created successfully', savedChallenge));
     } catch (error) {
         logger.error('Error creating challenge', { error });
@@ -204,6 +228,26 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
 
         const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, { ...value, endDate, startDate, duration }, { new: true });
         logger.info('Challenge updated successfully', { id: req.params.id });
+
+        // Notify each active admin and participant
+        const notifyUsers = async (userRole: string, title: string, message: string) => {
+            const users = await User.find({ userRole, status: 'active' });
+            if (users.length > 0) {
+                const notifications = users.map(user => ({
+                    timestamp: new Date(),
+                    type: 'info',
+                    title,
+                    message,
+                    userId: user._id,
+                    status: 'unread'
+                }));
+                await notificationService.createNotification(notifications);
+            }
+        };
+
+        await notifyUsers('admin', 'Challenge Updated', 'The challenge has been updated. Please review the details.');
+        await notifyUsers('participant', 'Challenge Updated', 'The challenge has been updated. Please check your dashboard for details.');
+
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge updated successfully', updatedChallenge));
     } catch (error) {
         logger.error('Error updating challenge', { id: req.params.id, error });
@@ -221,6 +265,21 @@ export const deleteChallenge = async (req: Request, res: Response): Promise<Resp
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
         logger.info('Challenge deleted successfully', { id: req.params.id });
+        //notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Deleted',
+                    message: `A challenge has been deleted. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge deleted successfully'));
     } catch (error) {
         logger.error('Error deleting challenge', { id: req.params.id, error });
@@ -301,6 +360,23 @@ export const createChallengeCategory = async (req: Request, res: Response): Prom
         const newChallengeCategory = new ChallengeCategory(value);
         const savedChallengeCategory = await newChallengeCategory.save();
         logger.info('Challenge category created successfully', { id: savedChallengeCategory._id });
+
+        //notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Category Created',
+                    message: `A new challenge category has been created. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Challenge category created successfully', savedChallengeCategory));
     } catch (error) {
         logger.error('Error creating challenge category', { error });
@@ -395,6 +471,22 @@ export const createPrizeCategory = async (req: Request, res: Response): Promise<
         });
         const savedPrizeCategory = await newPrizeCategory.save();
         logger.info('Prize category created successfully', { id: savedPrizeCategory._id });
+        //notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Prize Category Created',
+                    message: `A new prize category has been created. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Prize category created successfully', savedPrizeCategory));
     } catch (error) {
         logger.error('Error creating prize category', { error });
@@ -474,6 +566,40 @@ export const updateChallengeStatus = async (req: Request, res: Response): Promis
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
         logger.info('Challenge status updated successfully', { id: req.params.id });
+
+        // Notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Status Updated',
+                    message: `The status of the challenge has been updated. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+
+        // Notify each active participant
+        const participants = await ChallengeParticipantsModel.find({ challengeId: id });
+        if (participants.length > 0) {
+            for (const participant of participants) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Status Updated',
+                    message: `The status of the challenge has been updated. Please check your dashboard for details.`,
+                    userId: participant.teamLead,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+        logger.info('Challenge status updated successfully', { id: req.params.id });
+
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge status updated successfully', updatedChallenge));
     } catch (error) {
         logger.error('Error updating challenge status', { id: req.params.id, error });
@@ -508,6 +634,38 @@ export const updateGracePeriod = async (req: Request, res: Response): Promise<Re
 
         challenge.endDate = new Date(new_submissionDate);
         const updatedChallenge = await challenge.save();
+
+        // notify each active admin
+        const admins = await User.find({ userRole: 'admin', status: 'active' });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Deadline Updated',
+                    message: `The Deadline for the challenge has been updated. Please review the details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+        // notify each active participant
+        const participants = await ChallengeParticipantsModel.find({ challengeId: id });
+        if (participants.length > 0) {
+            for (const participant of participants) {
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'Challenge Deadline Updated',
+                    message: `The Deadline for the challenge has been updated. Please check your dashboard for details.`,
+                    userId: participant.teamLead,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
+            }
+        }
+        logger.info('Grace period updated successfully', { id });
 
         logger.info('Challenge grace period updated successfully', { id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge grace period updated successfully', updatedChallenge));

@@ -118,11 +118,26 @@ export const registerAdmin = async (req: Request, res: Response): Promise<Respon
         const newUser = new User({ ...value, password: hashedPassword, userRole: 'admin', status: 'active' });
         const savedUser = await newUser.save();
 
+        // Create notification for each active admin except the one who registered
+        const admins = await User.find({ userRole: 'admin', status: 'active', email: { $ne: value.email } });
+        if (admins.length > 0) {
+            for (const admin of admins) {
+            const notification = {
+                timestamp: new Date(),
+                type: 'info',
+                title: 'New Admin Registration',
+                message: `A new admin has been registered on the platform. Please review their details.`,
+                userId: admin._id,
+                status: 'unread'
+            };
+            await notificationService.createNotification(notification);
+            }
+        }
+
         if (!savedUser) {
             logger.error('Error saving user to database', { user: value });
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error saving user to database'));
         }
-
 
         // Prepare email context
         const context = {
