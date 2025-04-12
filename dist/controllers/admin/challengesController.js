@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateGracePeriod = exports.updateChallengeStatus = exports.deletePrizeCategory = exports.updatePrizeCategory = exports.createPrizeCategory = exports.getPrizeCategories = exports.getChallengeCategories = exports.deleteChallengeCategory = exports.updateChallengeCategory = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallenges = void 0;
+exports.updateGracePeriod = exports.updateChallengeStatus = exports.deletePrizeCategory = exports.updatePrizeCategory = exports.createPrizeCategory = exports.getPrizeCategories = exports.getChallengeCategories = exports.deleteChallengeCategory = exports.updateChallengeCategory = exports.createChallengeCategory = exports.getChallengesStatistics = exports.deleteChallenge = exports.updateChallenge = exports.createChallenge = exports.getChallengeById = exports.getChallengesById = exports.getChallenges = void 0;
 const challengeModel_1 = __importDefault(require("../../models/challengeModel"));
 const challengeParticipantsModel_1 = __importDefault(require("../../models/challengeParticipantsModel"));
 const userModel_1 = __importDefault(require("../../models/userModel"));
@@ -78,7 +78,7 @@ const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getChallenges = getChallenges;
 // Get a single challenge by ID
-const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getChallengesById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const userId = req.user ? req.user.id : null;
@@ -105,6 +105,24 @@ const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: joinedStatus ? true : false });
         logger_1.default.info('Challenge fetched successfully for participant user', { id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeModified));
+    }
+    catch (error) {
+        logger_1.default.error('Error fetching challenge', { id: req.params.id, error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)('error', 'Error fetching challenge', error));
+    }
+});
+exports.getChallengesById = getChallengesById;
+const getChallengeById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        logger_1.default.info('Fetching challenge by ID', { id });
+        const challenge = yield challengeModel_1.default.findById(id);
+        if (!challenge) {
+            logger_1.default.warn('Challenge not found', { id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'Challenge not found'));
+        }
+        logger_1.default.info('Challenge fetched successfully ', { id });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challenge));
     }
     catch (error) {
         logger_1.default.error('Error fetching challenge', { id: req.params.id, error });

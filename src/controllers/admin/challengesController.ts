@@ -66,7 +66,7 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
 };
 
 // Get a single challenge by ID
-export const getChallengeById = async (req: Request, res: Response): Promise<Response> => {
+export const getChallengesById = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { id } = req.params;
         const userId = req.user ? (req.user as any).id : null;
@@ -102,6 +102,25 @@ export const getChallengeById = async (req: Request, res: Response): Promise<Res
 
         logger.info('Challenge fetched successfully for participant user', { id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challengeModified));
+    } catch (error) {
+        logger.error('Error fetching challenge', { id: req.params.id, error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge', error));
+    }
+};
+
+export const getChallengeById = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { id } = req.params;
+        logger.info('Fetching challenge by ID', { id });
+
+        const challenge = await Challenge.findById(id);
+        if (!challenge) {
+            logger.warn('Challenge not found', { id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+
+        logger.info('Challenge fetched successfully ', { id });
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge fetched successfully', challenge));
     } catch (error) {
         logger.error('Error fetching challenge', { id: req.params.id, error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge', error));
