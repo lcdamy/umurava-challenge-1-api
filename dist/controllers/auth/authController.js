@@ -170,6 +170,11 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             logger_1.default.warn('Login failed: user not active', { email });
             return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Your account is inactive. Please verify your email to activate your account.'));
         }
+        // check if the user is deleted
+        if (user.status === 'slept') {
+            logger_1.default.warn('Login failed: user not active', { email });
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Your account has been deleted. Please contact support for assistance.'));
+        }
         // Compare passwords
         const isPasswordValid = yield authService.comparePassword(password, user.password);
         if (!isPasswordValid) {
@@ -319,6 +324,10 @@ const getTokenByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function
             user = new userModel_1.default({ names, email, profile_url, status: 'active', password: hashedPassword, userRole: 'participant' });
             yield user.save();
             logger_1.default.info('New user created for social login', { id: user._id });
+        }
+        if (user.status === 'slept') {
+            logger_1.default.warn('Login failed: user not active', { email });
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Your account has been deleted. Please contact support for assistance.'));
         }
         // Generate token for the user
         const token = (0, helper_1.generateToken)({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration

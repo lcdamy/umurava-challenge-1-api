@@ -179,6 +179,12 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
             return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Your account is inactive. Please verify your email to activate your account.'));
         }
 
+        // check if the user is deleted
+        if (user.status === 'slept') {
+            logger.warn('Login failed: user not active', { email });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Your account has been deleted. Please contact support for assistance.'));
+        }
+
         // Compare passwords
         const isPasswordValid = await authService.comparePassword(password, user.password);
         if (!isPasswordValid) {
@@ -346,6 +352,12 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
             await user.save();
             logger.info('New user created for social login', { id: user._id });
         }
+        
+        if (user.status === 'slept') {
+            logger.warn('Login failed: user not active', { email });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Your account has been deleted. Please contact support for assistance.'));
+        }
+
         // Generate token for the user
         const token = generateToken({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
         logger.info('Social login successful', { id: user._id });

@@ -6,7 +6,7 @@ export interface IUser extends Document {
     userRole: 'admin' | 'participant';
     profile_url: string;
     password: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'slept';
 }
 
 const UserSchema = new Schema<IUser>({
