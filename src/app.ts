@@ -11,37 +11,18 @@ import helmet from 'helmet';
 import routes from './routes';
 import { auditLogger } from './middlewares/auditLogger';
 import './types/index';
-import { WebSocketServer } from 'ws';
 import http from 'http';
+
+import WebSocketHandler from './websocket/webSocketHandler';
 
 const port = process.env.PORT || 4000;
 const app = express();
+const server = http.createServer(app);
 
-// Initialize WebSocket server
-const initializeWebSocketServer = () => {
-    const wss = new WebSocketServer({ noServer: true });
 
-    wss.on('connection', (ws) => {
-        console.log('New WebSocket connection established.');
-        ws.on('message', (message) => {
-            console.log(`Received message: ${message}`);
-            // Broadcast the message to all connected clients
-            wss.clients.forEach((client) => {
-                if (client.readyState === client.OPEN) {
-                    client.send(message);
-                }
-            });
-        });
+const webSocketHandlerInstance = new WebSocketHandler(server);
+export { webSocketHandlerInstance };
 
-        ws.on('close', () => {
-            console.log('WebSocket connection closed.');
-        });
-    });
-
-    return wss;
-};
-
-const wss = initializeWebSocketServer();
 
 const configureMiddlewares = () => {
     app.use(express.json());
@@ -51,10 +32,12 @@ const configureMiddlewares = () => {
     app.use(auditLogger);
 };
 
+
 const configureRoutes = () => {
     app.use('/api', routes);
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 };
+
 
 const startServer = async () => {
     try {
@@ -62,24 +45,13 @@ const startServer = async () => {
         await connectDB();
         configureMiddlewares();
         configureRoutes();
-
         app.set('trust proxy', true);
-
-        const server = http.createServer(app); // Create HTTP server from Express app
-
-        // Attach WebSocket upgrade event
-        server.on('upgrade', (request, socket, head) => {
-            wss.handleUpgrade(request, socket, head, (ws) => {
-                wss.emit('connection', ws, request);
-            });
-        });
-
         server.listen(port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
-            console.log(`Swagger UI is available at http://localhost:${port}/api-docs`);
+            console.log(`🚀 Server running at http://localhost:${port}`);
+            console.log(`📘 Swagger docs available at http://localhost:${port}/api-docs`);
         });
     } catch (error) {
-        console.error('Error starting the server:', error);
+        console.error('❌ Error starting server:', error);
     }
 };
 

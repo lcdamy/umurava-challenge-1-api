@@ -26,11 +26,7 @@ const JoinProgramDTO = require('../../dtos/joinProgramDTO');
 const JoinCommunityDTO = require('../../dtos/joinCommunityDTO');
 const createNotificationDTO = require('../../dtos/createNotificationDTO');
 const qrcode = require("qrcode-terminal");
-const webSocketHandler_1 = __importDefault(require("../../websocket/webSocketHandler")); // Adjust the path as needed
-const http_1 = require("http"); // Ensure this import exists if not already present
-const server = new http_1.Server(); // Replace with your actual server instance
-const webSocketHandlerInstance = new webSocketHandler_1.default(server);
-const notificationService = new notificationService_1.NoticationSercice(webSocketHandlerInstance);
+const notificationService = new notificationService_1.NoticationSercice();
 const userSercice = new userService_1.UserSercice();
 // Get all skills
 const getWelcomeMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

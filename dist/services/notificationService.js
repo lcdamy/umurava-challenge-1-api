@@ -14,10 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NoticationSercice = void 0;
 const notificationModel_1 = __importDefault(require("../models/notificationModel"));
+const app_1 = require("../app");
 class NoticationSercice {
-    constructor(webSocketHandler) {
-        this.webSocketHandler = webSocketHandler;
-    }
     getAllNotifications(filters) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -55,7 +53,7 @@ class NoticationSercice {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const newNotification = yield notificationModel_1.default.create(notificationData);
-                this.webSocketHandler.sendMessageToAllClients('New notification created');
+                app_1.webSocketHandlerInstance.sendMessageToAllClients(JSON.stringify(notificationData));
                 return newNotification;
             }
             catch (error) {

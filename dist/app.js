@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.webSocketHandlerInstance = void 0;
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
@@ -25,31 +26,13 @@ const helmet_1 = __importDefault(require("helmet"));
 const routes_1 = __importDefault(require("./routes"));
 const auditLogger_1 = require("./middlewares/auditLogger");
 require("./types/index");
-const ws_1 = require("ws");
 const http_1 = __importDefault(require("http"));
+const webSocketHandler_1 = __importDefault(require("./websocket/webSocketHandler"));
 const port = process.env.PORT || 4000;
 const app = (0, express_1.default)();
-// Initialize WebSocket server
-const initializeWebSocketServer = () => {
-    const wss = new ws_1.WebSocketServer({ noServer: true });
-    wss.on('connection', (ws) => {
-        console.log('New WebSocket connection established.');
-        ws.on('message', (message) => {
-            console.log(`Received message: ${message}`);
-            // Broadcast the message to all connected clients
-            wss.clients.forEach((client) => {
-                if (client.readyState === client.OPEN) {
-                    client.send(message);
-                }
-            });
-        });
-        ws.on('close', () => {
-            console.log('WebSocket connection closed.');
-        });
-    });
-    return wss;
-};
-const wss = initializeWebSocketServer();
+const server = http_1.default.createServer(app);
+const webSocketHandlerInstance = new webSocketHandler_1.default(server);
+exports.webSocketHandlerInstance = webSocketHandlerInstance;
 const configureMiddlewares = () => {
     app.use(express_1.default.json());
     app.use((0, cors_1.default)({ origin: '*' }));
@@ -68,20 +51,13 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         configureMiddlewares();
         configureRoutes();
         app.set('trust proxy', true);
-        const server = http_1.default.createServer(app); // Create HTTP server from Express app
-        // Attach WebSocket upgrade event
-        server.on('upgrade', (request, socket, head) => {
-            wss.handleUpgrade(request, socket, head, (ws) => {
-                wss.emit('connection', ws, request);
-            });
-        });
         server.listen(port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
-            console.log(`Swagger UI is available at http://localhost:${port}/api-docs`);
+            console.log(`🚀 Server running at http://localhost:${port}`);
+            console.log(`📘 Swagger docs available at http://localhost:${port}/api-docs`);
         });
     }
     catch (error) {
-        console.error('Error starting the server:', error);
+        console.error('❌ Error starting server:', error);
     }
 });
 startServer();

@@ -20,12 +20,8 @@ import Joi from 'joi';
 const { FRONTEND_URL } = process.env;
 
 const authService = new AuthService();
-import WebSocketHandler from '../../websocket/webSocketHandler'; // Adjust the path as needed
 
-import { Server } from 'http'; // Ensure this import exists if not already present
-const server = new Server(); // Replace with your actual server instance
-const webSocketHandlerInstance = new WebSocketHandler(server);
-const notificationService = new NoticationSercice(webSocketHandlerInstance);
+const notificationService = new NoticationSercice();
 
 // Controller function for user registration
 export const register = async (req: Request, res: Response): Promise<Response> => {

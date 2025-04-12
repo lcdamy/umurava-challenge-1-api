@@ -32,11 +32,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const joi_1 = __importDefault(require("joi"));
 const { FRONTEND_URL } = process.env;
 const authService = new authService_1.AuthService();
-const webSocketHandler_1 = __importDefault(require("../../websocket/webSocketHandler")); // Adjust the path as needed
-const http_1 = require("http"); // Ensure this import exists if not already present
-const server = new http_1.Server(); // Replace with your actual server instance
-const webSocketHandlerInstance = new webSocketHandler_1.default(server);
-const notificationService = new notificationService_1.NoticationSercice(webSocketHandlerInstance);
+const notificationService = new notificationService_1.NoticationSercice();
 // Controller function for user registration
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { errors, value } = createUserDTO_1.CreateUserDTO.validate(req.body);

@@ -24,11 +24,7 @@ const notificationService_1 = require("../../services/notificationService");
 const submitChallengeDTO_1 = require("../../dtos/submitChallengeDTO");
 const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 const userService = new userService_1.UserSercice();
-const webSocketHandler_1 = __importDefault(require("../../websocket/webSocketHandler")); // Adjust the path as needed
-const http_1 = require("http"); // Ensure this import exists if not already present
-const server = new http_1.Server(); // Replace with your actual server instance
-const webSocketHandlerInstance = new webSocketHandler_1.default(server);
-const notificationService = new notificationService_1.NoticationSercice(webSocketHandlerInstance);
+const notificationService = new notificationService_1.NoticationSercice();
 // Participate join the challenge API
 const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info('joinChallenge API called!');
