@@ -98,7 +98,8 @@ const getChallengesById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challenge));
         }
         const joinedStatus = yield challengeParticipantsModel_1.default.findOne({ challengeId: id, teamLead: userId });
-        const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: joinedStatus ? true : false });
+        const submission_status = joinedStatus ? joinedStatus.submissionStatus : "not submitted";
+        const challengeModified = Object.assign(Object.assign({}, challenge.toObject()), { joined_status: joinedStatus ? true : false, submissionStatus: submission_status });
         logger_1.default.info('Challenge fetched successfully for participant user', { id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge fetched successfully', challengeModified));
     }

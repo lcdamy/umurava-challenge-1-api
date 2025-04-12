@@ -91,10 +91,11 @@ export const getChallengesById = async (req: Request, res: Response): Promise<Re
         }
 
         const joinedStatus = await ChallengeParticipantsModel.findOne({ challengeId: id, teamLead: userId });
-   
+        const submission_status = joinedStatus ? joinedStatus.submissionStatus : "not submitted";
         const challengeModified = {
             ...challenge.toObject(),
             joined_status: joinedStatus ? true : false,
+            submissionStatus: submission_status
         };
 
         logger.info('Challenge fetched successfully for participant user', { id });
