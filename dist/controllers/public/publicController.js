@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWebsiteData = exports.removeNewsletter = exports.joinNewsletter = exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
+exports.getWebsiteData = exports.removeNewsletter = exports.joinNewsletter = exports.unreadAllNotifications = exports.readAllNotifications = exports.deleteAllNotifications = exports.deleteNotification = exports.unreadUpdateNotification = exports.updateNotification = exports.getAllNotifications = exports.createNotification = exports.joinWhatsAppCommunity = exports.joinProgram = exports.getWelcomeMessage = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const helper_1 = require("../../utils/helper");
 const whatsapp_web_js_1 = require("whatsapp-web.js");
@@ -180,7 +180,7 @@ const updateNotification = (req, res) => __awaiter(void 0, void 0, void 0, funct
             logger_1.default.warn('Notification not found', { id });
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "Notification not found"));
         }
-        const updatedNotification = yield notificationService.updateNotification(id);
+        const updatedNotification = yield notificationService.updateNotification(id, 'read');
         logger_1.default.info('Notification updated successfully', { updatedNotification });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Notification updated successfully", updatedNotification));
     }
@@ -190,6 +190,30 @@ const updateNotification = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.updateNotification = updateNotification;
+// Update a notification
+const unreadUpdateNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            logger_1.default.warn('Notification ID not provided');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "Notification ID not provided"));
+        }
+        const existingNotification = yield notificationService.getNotificationById(id);
+        logger_1.default.info('Existing notification fetched', { existingNotification });
+        if (!existingNotification) {
+            logger_1.default.warn('Notification not found', { id });
+            return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)("error", "Notification not found"));
+        }
+        const updatedNotification = yield notificationService.updateNotification(id, 'unread');
+        logger_1.default.info('Notification updated successfully', { updatedNotification });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "Notification updated successfully", updatedNotification));
+    }
+    catch (error) {
+        logger_1.default.error('Error updating notification in controller', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error updating notification", error));
+    }
+});
+exports.unreadUpdateNotification = unreadUpdateNotification;
 // Delete a notification
 const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -260,6 +284,28 @@ const readAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.readAllNotifications = readAllNotifications;
+const unreadAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!req.user) {
+            logger_1.default.warn('User is not authenticated');
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)("error", "User is not authenticated"));
+        }
+        const userId = (req.user && 'id' in req.user) ? String(req.user.id) : null;
+        if (!userId) {
+            logger_1.default.warn('User ID not found in request');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)("error", "User ID not found in request"));
+        }
+        logger_1.default.info('Reading all notifications for user', { userId });
+        const readNotifications = yield notificationService.unreadAllNotifications(userId);
+        logger_1.default.info('All notifications marked as read successfully', { userId });
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)("success", "All notifications marked as read successfully", readNotifications));
+    }
+    catch (error) {
+        logger_1.default.error('Error marking all notifications as read  in controller', { error });
+        return res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR).json((0, helper_1.formatResponse)("error", "Error marking all notifications as read", error));
+    }
+});
+exports.unreadAllNotifications = unreadAllNotifications;
 // Join newsletter
 const joinNewsletter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;

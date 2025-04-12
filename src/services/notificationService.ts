@@ -41,11 +41,11 @@ export class NoticationSercice {
             throw new Error(`Error creating notification: ${(error as Error).message}`);
         }
     }
-    async updateNotification(notificationId: string): Promise<any> {
+    async updateNotification(notificationId: string, status: string): Promise<any> {
         try {
             const updatedNotification = await Notification.findByIdAndUpdate(
                 notificationId, // Pass the notificationId directly
-                { status: 'read' }, // Update the status to 'read', 
+                { status }, // Update the status to 'read', 
                 { new: true } // Ensure the updated document is returned
             );
             if (!updatedNotification) {
@@ -88,6 +88,18 @@ export class NoticationSercice {
             return { message: `${result.modifiedCount} notifications marked as read` };
         } catch (error) {
             throw new Error(`Error marking notifications as read in service: ${(error as Error).message}`);
+        }
+    }
+
+    async unreadAllNotifications(userId: string): Promise<any> {
+        try {
+            const result = await Notification.updateMany(
+                { userId, status: { $ne: "unread" } }, // Find notifications that are not already read
+                { $set: { status: "unread" } } // Update their status to "read"
+            );
+            return { message: `${result.modifiedCount} notifications marked as unread` };
+        } catch (error) {
+            throw new Error(`Error marking notifications as unread in service: ${(error as Error).message}`);
         }
     }
 }

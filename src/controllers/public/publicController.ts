@@ -179,7 +179,29 @@ export const updateNotification = async (req: Request, res: Response): Promise<R
             logger.warn('Notification not found', { id });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse("error", "Notification not found"));
         }
-        const updatedNotification = await notificationService.updateNotification(id);
+        const updatedNotification = await notificationService.updateNotification(id, 'read');
+        logger.info('Notification updated successfully', { updatedNotification });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "Notification updated successfully", updatedNotification));
+    } catch (error) {
+        logger.error('Error updating notification in controller', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error updating notification", error));
+    }
+}
+// Update a notification
+export const unreadUpdateNotification = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            logger.warn('Notification ID not provided');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "Notification ID not provided"));
+        }
+        const existingNotification = await notificationService.getNotificationById(id);
+        logger.info('Existing notification fetched', { existingNotification });
+        if (!existingNotification) {
+            logger.warn('Notification not found', { id });
+            return res.status(StatusCodes.NOT_FOUND).json(formatResponse("error", "Notification not found"));
+        }
+        const updatedNotification = await notificationService.updateNotification(id, 'unread');
         logger.info('Notification updated successfully', { updatedNotification });
         return res.status(StatusCodes.OK).json(formatResponse("success", "Notification updated successfully", updatedNotification));
     } catch (error) {
@@ -248,6 +270,28 @@ export const readAllNotifications = async (req: Request, res: Response): Promise
         }
         logger.info('Reading all notifications for user', { userId });
         const readNotifications = await notificationService.readAllNotifications(userId);
+        logger.info('All notifications marked as read successfully', { userId });
+        return res.status(StatusCodes.OK).json(formatResponse("success", "All notifications marked as read successfully", readNotifications));
+    } catch (error) {
+        logger.error('Error marking all notifications as read  in controller', { error });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse("error", "Error marking all notifications as read", error));
+    }
+}
+
+export const unreadAllNotifications = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        if (!req.user) {
+            logger.warn('User is not authenticated');
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse("error", "User is not authenticated"));
+        }
+        const userId = (req.user && 'id' in req.user) ? String(req.user.id) : null;
+
+        if (!userId) {
+            logger.warn('User ID not found in request');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse("error", "User ID not found in request"));
+        }
+        logger.info('Reading all notifications for user', { userId });
+        const readNotifications = await notificationService.unreadAllNotifications(userId);
         logger.info('All notifications marked as read successfully', { userId });
         return res.status(StatusCodes.OK).json(formatResponse("success", "All notifications marked as read successfully", readNotifications));
     } catch (error) {

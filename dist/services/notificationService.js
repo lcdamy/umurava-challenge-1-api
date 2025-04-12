@@ -59,11 +59,11 @@ class NoticationSercice {
             }
         });
     }
-    updateNotification(notificationId) {
+    updateNotification(notificationId, status) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const updatedNotification = yield notificationModel_1.default.findByIdAndUpdate(notificationId, // Pass the notificationId directly
-                { status: 'read' }, // Update the status to 'read', 
+                { status }, // Update the status to 'read', 
                 { new: true } // Ensure the updated document is returned
                 );
                 if (!updatedNotification) {
@@ -111,6 +111,19 @@ class NoticationSercice {
             }
             catch (error) {
                 throw new Error(`Error marking notifications as read in service: ${error.message}`);
+            }
+        });
+    }
+    unreadAllNotifications(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield notificationModel_1.default.updateMany({ userId, status: { $ne: "unread" } }, // Find notifications that are not already read
+                { $set: { status: "unread" } } // Update their status to "read"
+                );
+                return { message: `${result.modifiedCount} notifications marked as unread` };
+            }
+            catch (error) {
+                throw new Error(`Error marking notifications as unread in service: ${error.message}`);
             }
         });
     }
