@@ -27,19 +27,19 @@ const getSkills = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { page = 1, limit = 10 } = req.query;
         const pageNumber = parseInt(page, 10);
         const limitNumber = parseInt(limit, 10);
+        logger_1.default.info('Fetching skills with pagination', { page, limit });
+        const totalSkills = yield skillsModel_1.default.countDocuments({ status: "active" });
         const skills = yield skillsModel_1.default.find({ status: "active" })
             .skip((pageNumber - 1) * limitNumber)
             .limit(limitNumber);
-        const totalSkills = yield skillsModel_1.default.countDocuments({ status: "active" });
-        const totalPages = Math.ceil(totalSkills / limitNumber);
         logger_1.default.info('Skills fetched successfully with pagination');
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Skills fetched successfully', {
             skills,
             pagination: {
-                totalItems: totalSkills,
-                totalPages,
                 currentPage: pageNumber,
-                itemsPerPage: limitNumber
+                totalPages: Math.ceil(totalSkills / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalSkills
             }
         }));
     }
