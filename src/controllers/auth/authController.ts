@@ -566,11 +566,13 @@ export const getAllUsers = async (req: Request, res: Response): Promise<Response
         ]);
 
         const paginatedData = {
-            page,
-            limit,
-            total,
-            lastPage: Math.ceil(total / limit),
-            data: users,
+            users,
+            pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            pageSize: limit,
+            totalItems: total,
+            },
         };
 
         logger.info('All users retrieved successfully', { count: users.length });

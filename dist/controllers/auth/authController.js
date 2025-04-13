@@ -522,11 +522,13 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             userModel_1.default.countDocuments(query),
         ]);
         const paginatedData = {
-            page,
-            limit,
-            total,
-            lastPage: Math.ceil(total / limit),
-            data: users,
+            users,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                pageSize: limit,
+                totalItems: total,
+            },
         };
         logger_1.default.info('All users retrieved successfully', { count: users.length });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All users retrieved successfully', paginatedData));

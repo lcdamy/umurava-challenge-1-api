@@ -26,10 +26,10 @@ export const getSkills = async (req: Request, res: Response): Promise<Response> 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Skills fetched successfully', {
             skills,
             pagination: {
-            currentPage: pageNumber,
-            totalPages: Math.ceil(totalSkills / limitNumber),
-            pageSize: limitNumber,
-            totalItems: totalSkills
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalSkills / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalSkills
             }
         }));
     } catch (error) {
