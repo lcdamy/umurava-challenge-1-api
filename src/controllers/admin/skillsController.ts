@@ -12,9 +12,28 @@ const notificationService = new NoticationSercice();
 // Get all skills
 export const getSkills = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const skills = await Skill.find({ status: "active" });
-        logger.info('Skills fetched successfully');
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Skills fetched successfully', skills));
+        const { page = 1, limit = 10 } = req.query;
+
+        const pageNumber = parseInt(page as string, 10);
+        const limitNumber = parseInt(limit as string, 10);
+
+        const skills = await Skill.find({ status: "active" })
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber);
+
+        const totalSkills = await Skill.countDocuments({ status: "active" });
+        const totalPages = Math.ceil(totalSkills / limitNumber);
+
+        logger.info('Skills fetched successfully with pagination');
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Skills fetched successfully', {
+            skills,
+            pagination: {
+                totalItems: totalSkills,
+                totalPages,
+                currentPage: pageNumber,
+                itemsPerPage: limitNumber
+            }
+        }));
     } catch (error) {
         logger.error('Error fetching skills', error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching skills', error));

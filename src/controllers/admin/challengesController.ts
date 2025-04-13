@@ -425,10 +425,26 @@ export const deleteChallengeCategory = async (req: Request, res: Response): Prom
 // Get all challenge categories
 export const getChallengeCategories = async (req: Request, res: Response): Promise<Response> => {
     try {
-        logger.info('Fetching challenge categories');
-        const categories = await ChallengeCategory.find({});
-        logger.info('Challenge categories fetched successfully');
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge categories fetched successfully', categories));
+        const { page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page as string, 10);
+        const limitNumber = parseInt(limit as string, 10);
+
+        logger.info('Fetching challenge categories with pagination', { page, limit });
+        const totalCategories = await ChallengeCategory.countDocuments();
+        const categories = await ChallengeCategory.find({})
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber);
+
+        logger.info('Challenge categories fetched successfully with pagination');
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge categories fetched successfully', {
+            categories,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalCategories / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalCategories
+            }
+        }));
     } catch (error) {
         logger.error('Error fetching challenge categories', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching challenge categories', error));
@@ -438,10 +454,26 @@ export const getChallengeCategories = async (req: Request, res: Response): Promi
 // Get all prize categories
 export const getPrizeCategories = async (req: Request, res: Response): Promise<Response> => {
     try {
-        logger.info('Fetching prize categories');
-        const categories = await Prize.find({});
-        logger.info('Prize categories fetched successfully');
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Prize categories fetched successfully', categories));
+        const { page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page as string, 10);
+        const limitNumber = parseInt(limit as string, 10);
+
+        logger.info('Fetching prize categories with pagination', { page, limit });
+        const totalCategories = await Prize.countDocuments();
+        const categories = await Prize.find({})
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber);
+
+        logger.info('Prize categories fetched successfully with pagination');
+        return res.status(StatusCodes.OK).json(formatResponse('success', 'Prize categories fetched successfully', {
+            categories,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalCategories / limitNumber),
+                pageSize: limitNumber,
+                totalItems: totalCategories
+            }
+        }));
     } catch (error) {
         logger.error('Error fetching prize categories', { error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error fetching prize categories', error));

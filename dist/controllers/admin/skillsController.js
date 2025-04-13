@@ -24,9 +24,24 @@ const notificationService = new notificationService_1.NoticationSercice();
 // Get all skills
 const getSkills = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const skills = yield skillsModel_1.default.find({ status: "active" });
-        logger_1.default.info('Skills fetched successfully');
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Skills fetched successfully', skills));
+        const { page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page, 10);
+        const limitNumber = parseInt(limit, 10);
+        const skills = yield skillsModel_1.default.find({ status: "active" })
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber);
+        const totalSkills = yield skillsModel_1.default.countDocuments({ status: "active" });
+        const totalPages = Math.ceil(totalSkills / limitNumber);
+        logger_1.default.info('Skills fetched successfully with pagination');
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Skills fetched successfully', {
+            skills,
+            pagination: {
+                totalItems: totalSkills,
+                totalPages,
+                currentPage: pageNumber,
+                itemsPerPage: limitNumber
+            }
+        }));
     }
     catch (error) {
         logger_1.default.error('Error fetching skills', error);
