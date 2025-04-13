@@ -20,9 +20,25 @@ const logger_1 = __importDefault(require("../../config/logger"));
 // Get all audits
 const getAudits = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const audits = yield auditModel_1.default.find({}).sort({ timestamp: -1 });
-        logger_1.default.info('Audits fetched successfully');
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Audits fetched successfully', audits));
+        const { page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page, 10);
+        const limitNumber = parseInt(limit, 10);
+        const audits = yield auditModel_1.default.find({})
+            .sort({ timestamp: -1 })
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber);
+        const totalAudits = yield auditModel_1.default.countDocuments({});
+        const totalPages = Math.ceil(totalAudits / limitNumber);
+        logger_1.default.info('Audits fetched successfully with pagination');
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Audits fetched successfully', {
+            audits,
+            pagination: {
+                totalAudits,
+                totalPages,
+                currentPage: pageNumber,
+                pageSize: limitNumber
+            }
+        }));
     }
     catch (error) {
         logger_1.default.error('Error fetching audits', error);
