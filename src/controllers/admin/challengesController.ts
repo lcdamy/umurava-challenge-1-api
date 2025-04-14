@@ -41,6 +41,8 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
         const totalCompletedChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'completed' });
         const totalOpenChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'open' });
         const totalOngoingChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'ongoing' });
+        const totalDraftChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'draft' });
+        const totolClosedChallenges = await Challenge.countDocuments({ ...searchQuery, status: 'closed' });
 
         let challenges;
         if (all === 'true') {
@@ -54,7 +56,7 @@ export const getChallenges = async (req: Request, res: Response): Promise<Respon
 
         logger.info('Challenges fetched successfully');
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenges fetched successfully', {
-            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges, totalDraftChallenges, totolClosedChallenges },
             challenges,
             pagination: all === 'true' ? null : {
                 currentPage: pageNumber,

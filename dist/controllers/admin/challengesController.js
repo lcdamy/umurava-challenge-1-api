@@ -51,6 +51,8 @@ const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const totalCompletedChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'completed' }));
         const totalOpenChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'open' }));
         const totalOngoingChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'ongoing' }));
+        const totalDraftChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'draft' }));
+        const totolClosedChallenges = yield challengeModel_1.default.countDocuments(Object.assign(Object.assign({}, searchQuery), { status: 'closed' }));
         let challenges;
         if (all === 'true') {
             challenges = yield challengeModel_1.default.find(searchQuery).sort({ createdAt: -1 });
@@ -63,7 +65,7 @@ const getChallenges = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         logger_1.default.info('Challenges fetched successfully');
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenges fetched successfully', {
-            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges, totalDraftChallenges, totolClosedChallenges },
             challenges,
             pagination: all === 'true' ? null : {
                 currentPage: pageNumber,
