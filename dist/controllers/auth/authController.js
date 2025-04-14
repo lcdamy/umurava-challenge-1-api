@@ -142,7 +142,7 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             subject: 'Welcome to Umurava Skills Challenge Platform',
             name: value.names,
             message: `Congratulations on being added as an Admin to the Umurava Skills Challenge Platform! Your temporary password is: ${adminPassword}. Please click the link below to login to your account, and start managing the platform.`,
-            link: `${FRONTEND_URL}/admin/login`,
+            link: `${FRONTEND_URL}/login`,
             link_label: 'Log in to your account'
         };
         // Send welcome email
