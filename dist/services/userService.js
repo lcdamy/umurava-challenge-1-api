@@ -104,10 +104,10 @@ class UserSercice {
                     subscribersModel_1.default.countDocuments()
                 ]);
                 return {
-                    usersCount: totalUsers + totalSubscribers,
-                    challengeCount: totalChallenges,
-                    year: 2,
-                    countriesCount: 1
+                    usersCount: 10000, // totalUsers + totalSubscribers
+                    challengeCount: 50, //totalChallenges
+                    year: 1, //2
+                    countriesCount: 10, //totalCountries
                 };
             }
             catch (error) {

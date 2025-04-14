@@ -79,10 +79,10 @@ export class UserSercice {
             ]);
 
             return {
-                usersCount: totalUsers + totalSubscribers,
-                challengeCount: totalChallenges,
-                year: 2,
-                countriesCount: 1
+                usersCount: 10000, // totalUsers + totalSubscribers
+                challengeCount: 50, //totalChallenges
+                year: 1, //2
+                countriesCount: 10, //totalCountries
             };
         } catch (error) {
             throw new Error(`Error fetching website data: ${(error as Error).message}`);
