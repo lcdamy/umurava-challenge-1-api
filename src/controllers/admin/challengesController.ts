@@ -204,16 +204,6 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
         const startDate = convertToISO(value.startDate);
         const endDate = convertToISO(value.endDate);
 
-        const startDateObj = new Date(startDate);
-        const endDateObj = new Date(endDate);
-
-        const now = new Date();
-        if (startDateObj < now || endDateObj < now || endDateObj <= startDateObj) {
-            return res.status(StatusCodes.BAD_REQUEST).json(
-                formatResponse('error', 'Invalid duration: start date must be in the future and end date must be after start date')
-            );
-        }
-
         const duration = getDuration(endDate, startDate);
 
         logger.info('Updating challenge', { id: req.params.id });
@@ -312,7 +302,7 @@ export const getChallengesStatistics = async (req: Request, res: Response): Prom
 
         const calculatePercentageChange = (current: number, previous: number) => {
             if (previous === 0) return current === 0 ? 0 : 100;
-            return ((current - previous) / previous) * 100;
+            return parseFloat(((current - previous) / previous * 100).toFixed(2));
         };
 
         const calculateChangeDirection = (current: number, previous: number) => {

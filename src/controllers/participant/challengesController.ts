@@ -33,102 +33,91 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
         }
 
-        //allow only to join the challenge before the start date and if the challenge is only open for registration
-        const currentDate = new Date();
-        const startDate = challenge.startDate ? new Date(challenge.startDate) : null;
-        const endDate = challenge.endDate ? new Date(challenge.endDate) : null;
-        if (startDate && currentDate > startDate && currentDate.toDateString() !== startDate.toDateString()) {
-            logger.warn('Challenge has already started or ended');
-            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge has already started or ended'));
-        }
-        if (endDate && currentDate > endDate) {
-            logger.warn('Challenge has already ended');
-            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge has already ended'));
-        }
-        if (challenge.status !== 'open') {
-            logger.warn('Challenge is not open for registration');
-            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Challenge is not open for registration'));
-        }
+        if (challenge.status == 'open') {
+            const teamLeadEmail = req.user ? (req.user as any).email : null;
+            const participantsCount = countParticipants(value, teamLeadEmail);
+            if (challenge.teamSize !== participantsCount) {
+                const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. You currently have ${participantsCount} participants. Please ensure the correct number of participants is provided.`;
+                logger.warn(errorMessage);
+                return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessage));
+            }
 
-        const teamLeadEmail = req.user ? (req.user as any).email : null;
-        const participantsCount = countParticipants(value, teamLeadEmail);
-        if (challenge.teamSize !== participantsCount) {
-            const errorMessage = `The challenge requires exactly ${challenge.teamSize} participants. You currently have ${participantsCount} participants. Please ensure the correct number of participants is provided.`;
+            const existingParticipant = await ChallengeParticipantsModel.findOne({
+                challengeId: req.params.id,
+                teamLead: req.user ? (req.user as any).id : null
+            });
+
+            if (existingParticipant) {
+                const errorMessage = 'Participant is already part of this challenge';
+                logger.warn(errorMessage);
+                return res.status(StatusCodes.CONFLICT).json(formatResponse('error', errorMessage));
+            }
+
+            const participant = new ChallengeParticipantsModel({
+                challengeId: req.params.id,
+                teamLead: req.user && (req.user as any).id ? (req.user as any).id : 'Unknown',
+                members: value.participants.members || [],
+            });
+            await participant.save();
+            logger.info('Participant joined the challenge successfully', participant);
+
+            const context = {
+                year: new Date().getFullYear(),
+                logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
+                subject: '',
+                name: '',
+                message: '',
+                link: '',
+                link_label: ''
+            };
+
+            const admins = await userService.getAdmins();
+            if (admins && admins.length > 0) {
+                const adminEmails = admins.map((admin: any) => admin.email);
+                await Promise.all(adminEmails.map((adminEmail: string) =>
+                    sendEmail('send_notification', 'Participant Joined Challenge', adminEmail, {
+                        ...context,
+                        subject: 'Participant Joined Challenge',
+                        name: 'Admin',
+                        message: `A participant has joined the challenge: ${challenge.challengeName}.`,
+                        link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard',
+                        link_label: 'View Dashboard'
+                    }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
+                ));
+
+                await Promise.all(admins.map((admin: any) =>
+                    notificationService.createNotification({
+                        timestamp: new Date(),
+                        type: 'info',
+                        title: 'New Participant Joined Challenge',
+                        message: `A new participant has joined the challenge: ${challenge.challengeName}. Please review their details.`,
+                        userId: admin._id,
+                        status: 'unread'
+                    })
+                ));
+                logger.info('Notification sent to admins successfully');
+            } else {
+                logger.warn('No admins found');
+            }
+
+            const memberEmails = value.participants.members || [];
+            await Promise.all(memberEmails.map((member: string) =>
+                sendEmail('send_notification', 'You Have Been Added to a Challenge', member, {
+                    ...context,
+                    subject: 'You Have Been Added to a Challenge',
+                    name: 'Team Member',
+                    message: `You have been added to the challenge: ${challenge.challengeName}.`,
+                    link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${challenge._id}`,
+                    link_label: 'View Challenge'
+                }).catch(error => logger.error(`Error sending email to ${member}:`, error))
+            ));
+
+            return res.status(StatusCodes.OK).json(formatResponse('success', 'Participant joined the challenge successfully'));
+        } else {
+            const errorMessage = 'You can only join challenges that are open for participation';
             logger.warn(errorMessage);
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessage));
         }
-
-        const existingParticipant = await ChallengeParticipantsModel.findOne({
-            challengeId: req.params.id,
-            teamLead: req.user ? (req.user as any).id : null
-        });
-
-        if (existingParticipant) {
-            const errorMessage = 'Participant is already part of this challenge';
-            logger.warn(errorMessage);
-            return res.status(StatusCodes.CONFLICT).json(formatResponse('error', errorMessage));
-        }
-
-        const participant = new ChallengeParticipantsModel({
-            challengeId: req.params.id,
-            teamLead: req.user && (req.user as any).id ? (req.user as any).id : 'Unknown',
-            members: value.participants.members || [],
-        });
-        await participant.save();
-        logger.info('Participant joined the challenge successfully', participant);
-
-        const context = {
-            year: new Date().getFullYear(),
-            logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfOXMNnYUnd7jDT5v7LsNK8T23Wa5gBM0jQQ&s",
-            subject: '',
-            name: '',
-            message: '',
-            link: '',
-            link_label: ''
-        };
-
-        const admins = await userService.getAdmins();
-        if (admins && admins.length > 0) {
-            const adminEmails = admins.map((admin: any) => admin.email);
-            await Promise.all(adminEmails.map((adminEmail: string) =>
-                sendEmail('send_notification', 'Participant Joined Challenge', adminEmail, {
-                    ...context,
-                    subject: 'Participant Joined Challenge',
-                    name: 'Admin',
-                    message: `A participant has joined the challenge: ${challenge.challengeName}.`,
-                    link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard',
-                    link_label: 'View Dashboard'
-                }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
-            ));
-
-            await Promise.all(admins.map((admin: any) =>
-                notificationService.createNotification({
-                    timestamp: new Date(),
-                    type: 'info',
-                    title: 'New Participant Joined Challenge',
-                    message: `A new participant has joined the challenge: ${challenge.challengeName}. Please review their details.`,
-                    userId: admin._id,
-                    status: 'unread'
-                })
-            ));
-            logger.info('Notification sent to admins successfully');
-        } else {
-            logger.warn('No admins found');
-        }
-
-        const memberEmails = value.participants.members || [];
-        await Promise.all(memberEmails.map((member: string) =>
-            sendEmail('send_notification', 'You Have Been Added to a Challenge', member, {
-                ...context,
-                subject: 'You Have Been Added to a Challenge',
-                name: 'Team Member',
-                message: `You have been added to the challenge: ${challenge.challengeName}.`,
-                link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${challenge._id}`,
-                link_label: 'View Challenge'
-            }).catch(error => logger.error(`Error sending email to ${member}:`, error))
-        ));
-
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Participant joined the challenge successfully'));
     } catch (error) {
         const errorMessage = (error as Error).message || 'Error joining the challenge';
         logger.error('Error joining the challenge', errorMessage);
@@ -201,6 +190,11 @@ export const submitChallenge = async (req: Request, res: Response): Promise<Resp
         if (!challenge) {
             logger.warn(`Challenge not found with id: ${challenge_id}`);
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'Challenge not found'));
+        }
+        // only submit if the challenge is ongoing
+        if (challenge.status !== 'ongoing') {
+            logger.warn('Challenge is not ongoing');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'You can only submit the challenge if it is ongoing'));
         }
 
         const participant = await ChallengeParticipantsModel.findOne({

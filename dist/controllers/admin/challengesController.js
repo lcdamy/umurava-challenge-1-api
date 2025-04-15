@@ -194,12 +194,6 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const startDate = (0, helper_1.convertToISO)(value.startDate);
         const endDate = (0, helper_1.convertToISO)(value.endDate);
-        const startDateObj = new Date(startDate);
-        const endDateObj = new Date(endDate);
-        const now = new Date();
-        if (startDateObj < now || endDateObj < now || endDateObj <= startDateObj) {
-            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Invalid duration: start date must be in the future and end date must be after start date'));
-        }
         const duration = (0, helper_1.getDuration)(endDate, startDate);
         logger_1.default.info('Updating challenge', { id: req.params.id });
         const challenge = yield challengeModel_1.default.findById(req.params.id);
@@ -293,7 +287,7 @@ const getChallengesStatistics = (req, res) => __awaiter(void 0, void 0, void 0, 
         const calculatePercentageChange = (current, previous) => {
             if (previous === 0)
                 return current === 0 ? 0 : 100;
-            return ((current - previous) / previous) * 100;
+            return parseFloat(((current - previous) / previous * 100).toFixed(2));
         };
         const calculateChangeDirection = (current, previous) => {
             return current >= previous ? 'positive' : 'negative';
