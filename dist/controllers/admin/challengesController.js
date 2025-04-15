@@ -287,7 +287,7 @@ const getChallengesStatistics = (req, res) => __awaiter(void 0, void 0, void 0, 
         const calculatePercentageChange = (current, previous) => {
             if (previous === 0)
                 return current === 0 ? 0 : 100;
-            return parseFloat(((current - previous) / previous * 100).toFixed(2));
+            return Math.round(((current - previous) / previous) * 100);
         };
         const calculateChangeDirection = (current, previous) => {
             return current >= previous ? 'positive' : 'negative';

@@ -302,7 +302,7 @@ export const getChallengesStatistics = async (req: Request, res: Response): Prom
 
         const calculatePercentageChange = (current: number, previous: number) => {
             if (previous === 0) return current === 0 ? 0 : 100;
-            return parseFloat(((current - previous) / previous * 100).toFixed(2));
+            return Math.round(((current - previous) / previous) * 100);
         };
 
         const calculateChangeDirection = (current: number, previous: number) => {
