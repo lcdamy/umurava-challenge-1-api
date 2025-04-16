@@ -16,8 +16,6 @@ const seedseedChallengeCategorys = async () => {
             { challengeCategoryName: 'Mobile development', description: 'Challenges focused on creating applications for mobile devices.' },
             { challengeCategoryName: 'Data science', description: 'Challenges involving data analysis, machine learning, and statistical modeling.' },
             { challengeCategoryName: 'Game development', description: 'Challenges related to designing and developing video games.' },
-            { challengeCategoryName: 'Cybersecurity', description: 'Challenges focused on protecting systems and networks from cyber threats.' },
-            { challengeCategoryName: 'Cloud computing', description: 'Challenges related to cloud services, deployment, and architecture.' },
             { challengeCategoryName: 'Artificial Intelligence', description: 'Challenges involving AI algorithms, models, and applications.' },
             { challengeCategoryName: 'Blockchain', description: 'Challenges related to blockchain technology and decentralized applications.' },
             { challengeCategoryName: 'Internet of Things (IoT)', description: 'Challenges focused on IoT devices and applications.' },
@@ -25,19 +23,7 @@ const seedseedChallengeCategorys = async () => {
             { challengeCategoryName: 'UI/UX Design', description: 'Challenges focused on user interface and user experience design.' },
             { challengeCategoryName: 'AR/VR Development', description: 'Challenges related to augmented reality and virtual reality applications.' },
             { challengeCategoryName: 'Robotics', description: 'Challenges focused on designing and programming robots.' },
-            { challengeCategoryName: 'Game Development', description: 'Challenges related to creating video games.' },
-            { challengeCategoryName: 'Open Source Contribution', description: 'Challenges focused on contributing to open source projects.' },
-            { challengeCategoryName: 'API Development', description: 'Challenges related to designing and implementing APIs.' },
-            { challengeCategoryName: 'E-commerce', description: 'Challenges focused on building e-commerce platforms and solutions.' },
-            { challengeCategoryName: 'Social Media', description: 'Challenges related to social media applications and platforms.' },
-            { challengeCategoryName: 'Fintech', description: 'Challenges focused on financial technology solutions.' },
-            { challengeCategoryName: 'HealthTech', description: 'Challenges related to healthcare technology solutions.' },
-            { challengeCategoryName: 'EdTech', description: 'Challenges focused on educational technology solutions.' },
-            { challengeCategoryName: 'SaaS', description: 'Challenges related to Software as a Service applications.' },
-            { challengeCategoryName: 'AR/VR', description: 'Challenges focused on augmented reality and virtual reality applications.' },
-            { challengeCategoryName: 'Chatbot Development', description: 'Challenges related to building chatbots and conversational interfaces.' },
-            { challengeCategoryName: 'Natural Language Processing (NLP)', description: 'Challenges focused on processing and analyzing human language.' },
-            { challengeCategoryName: 'Computer Vision', description: 'Challenges related to image and video analysis using computer vision techniques.' },
+            { challengeCategoryName: 'Game Development', description: 'Challenges related to creating video games.' }
         ];
 
         // Clear existing challengeCategory
