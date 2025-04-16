@@ -194,6 +194,7 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const startDate = (0, helper_1.convertToISO)(value.startDate);
         const endDate = (0, helper_1.convertToISO)(value.endDate);
+        const today = new Date();
         const duration = (0, helper_1.getDuration)(endDate, startDate);
         logger_1.default.info('Updating challenge', { id: req.params.id });
         const challenge = yield challengeModel_1.default.findById(req.params.id);
@@ -204,6 +205,10 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (challenge.status === 'completed') {
             logger_1.default.warn('Attempted to update a completed challenge', { id: req.params.id });
             return res.status(http_status_codes_1.StatusCodes.FORBIDDEN).json((0, helper_1.formatResponse)('error', 'Cannot update a completed challenge'));
+        }
+        // if the startDate is in the past and the endDate is not yet passed, change also the challenge status to ongoing
+        if (new Date(startDate) < today && new Date(endDate) > today) {
+            value.status = 'ongoing';
         }
         const updatedChallenge = yield challengeModel_1.default.findByIdAndUpdate(req.params.id, Object.assign(Object.assign({}, value), { endDate, startDate, duration }), { new: true });
         logger_1.default.info('Challenge updated successfully', { id: req.params.id });
@@ -223,7 +228,7 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
             }
         });
         if (updatedChallenge) {
-            const notificationMessage = `The challenge "${updatedChallenge.challengeName}" has been updated. Please review the details.`;
+            const notificationMessage = `The challenge "${updatedChallenge.challengeName}" has been updated. Changes include: ${Object.keys(value).join(', ')}. Please review the details.`;
             yield notifyUsers('admin', 'Challenge Updated', notificationMessage);
             yield notifyUsers('participant', 'Challenge Updated', notificationMessage);
         }

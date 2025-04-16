@@ -26,8 +26,7 @@ const seedseedChallengeCategorys = () => __awaiter(void 0, void 0, void 0, funct
             { challengeCategoryName: 'Tech & IT', description: 'Challenges related to technology and information technology.' },
             { challengeCategoryName: 'Data & AI', description: 'Challenges related to data analysis, artificial intelligence, and machine learning.' },
             { challengeCategoryName: 'Digital Marketing & Communications', description: 'Challenges related to online marketing, branding, and communication strategies.' },
-            { challengeCategoryName: 'Digital Creative & Content Production', description: 'Challenges related to creating digital content and creative production.' },
-            { challengeCategoryName: 'Others', description: 'Miscellaneous challenges that do not fit into other categories.' },
+            { challengeCategoryName: 'Digital Creative & Content Production', description: 'Challenges related to creating digital content and creative production.' }
         ];
         // Clear existing challengeCategory
         yield challengeCategoryModel_1.default.deleteMany({});

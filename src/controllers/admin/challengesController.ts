@@ -203,6 +203,7 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
     try {
         const startDate = convertToISO(value.startDate);
         const endDate = convertToISO(value.endDate);
+        const today = new Date();
 
         const duration = getDuration(endDate, startDate);
 
@@ -217,6 +218,12 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
             logger.warn('Attempted to update a completed challenge', { id: req.params.id });
             return res.status(StatusCodes.FORBIDDEN).json(formatResponse('error', 'Cannot update a completed challenge'));
         }
+
+        // if the startDate is in the past and the endDate is not yet passed, change also the challenge status to ongoing
+        if (new Date(startDate) < today && new Date(endDate) > today) {
+            value.status = 'ongoing';
+        }   
+
 
         const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id, { ...value, endDate, startDate, duration }, { new: true });
         logger.info('Challenge updated successfully', { id: req.params.id });
@@ -238,7 +245,7 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
         };
 
         if (updatedChallenge) {
-            const notificationMessage = `The challenge "${updatedChallenge.challengeName}" has been updated. Please review the details.`;
+            const notificationMessage = `The challenge "${updatedChallenge.challengeName}" has been updated. Changes include: ${Object.keys(value).join(', ')}. Please review the details.`;
             await notifyUsers('admin', 'Challenge Updated', notificationMessage);
             await notifyUsers('participant', 'Challenge Updated', notificationMessage);
         }
