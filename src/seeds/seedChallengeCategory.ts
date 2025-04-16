@@ -12,18 +12,11 @@ const seedseedChallengeCategorys = async () => {
 
         // Define the challengeCategory to seed
         const challengeCategory = [
-            { challengeCategoryName: 'Web development', description: 'Challenges related to building and maintaining websites and web applications.' },
-            { challengeCategoryName: 'Mobile development', description: 'Challenges focused on creating applications for mobile devices.' },
-            { challengeCategoryName: 'Data science', description: 'Challenges involving data analysis, machine learning, and statistical modeling.' },
-            { challengeCategoryName: 'Game development', description: 'Challenges related to designing and developing video games.' },
-            { challengeCategoryName: 'Artificial Intelligence', description: 'Challenges involving AI algorithms, models, and applications.' },
-            { challengeCategoryName: 'Blockchain', description: 'Challenges related to blockchain technology and decentralized applications.' },
-            { challengeCategoryName: 'Internet of Things (IoT)', description: 'Challenges focused on IoT devices and applications.' },
-            { challengeCategoryName: 'DevOps', description: 'Challenges related to software development and IT operations integration.' },
-            { challengeCategoryName: 'UI/UX Design', description: 'Challenges focused on user interface and user experience design.' },
-            { challengeCategoryName: 'AR/VR Development', description: 'Challenges related to augmented reality and virtual reality applications.' },
-            { challengeCategoryName: 'Robotics', description: 'Challenges focused on designing and programming robots.' },
-            { challengeCategoryName: 'Game Development', description: 'Challenges related to creating video games.' }
+            { challengeCategoryName: 'Tech & IT', description: 'Challenges related to technology and information technology.' },
+            { challengeCategoryName: 'Data & AI', description: 'Challenges related to data analysis, artificial intelligence, and machine learning.' },
+            { challengeCategoryName: 'Digital Marketing & Communications', description: 'Challenges related to online marketing, branding, and communication strategies.' },
+            { challengeCategoryName: 'Digital Creative & Content Production', description: 'Challenges related to creating digital content and creative production.' },
+            { challengeCategoryName: 'Others', description: 'Miscellaneous challenges that do not fit into other categories.' },
         ];
 
         // Clear existing challengeCategory
