@@ -89,8 +89,8 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                     notificationService.createNotification({
                         timestamp: new Date(),
                         type: 'info',
-                        title: 'New Participant Joined Challenge',
-                        message: `A new participant has joined the challenge: ${challenge.challengeName}. Please review their details.`,
+                        title: 'Participant Joined Challenge',
+                        message: `A participant has successfully joined the challenge: "${challenge.challengeName}". You can review their details in the admin dashboard.`,
                         userId: admin._id,
                         status: 'unread'
                     })
@@ -479,12 +479,12 @@ const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {
 
         await Promise.all(admins.map((admin: any) =>
             notificationService.createNotification({
-                timestamp: new Date(),
-                type: 'warning',
-                title: 'Late Submission Attempt',
-                message: `A challenge submission attempt was made after the deadline by ${participant.teamLead}.`,
-                userId: admin._id,
-                status: 'unread'
+            timestamp: new Date(),
+            type: 'warning',
+            title: 'Late Challenge Submission Attempt',
+            message: `A late submission attempt was made for the challenge by team lead ${participant.teamLead}. Please review the details in the admin dashboard.`,
+            userId: admin._id,
+            status: 'unread'
             })
         ));
         logger.info('Notification sent to admins successfully');
@@ -521,12 +521,12 @@ const notifyAdminsAndMembersOfSubmission = async (participant: any, challenge: a
 
         await Promise.all(admins.map((admin: any) =>
             notificationService.createNotification({
-                timestamp: new Date(),
-                type: 'info',
-                title: 'Challenge Submitted',
-                message: `A challenge has been submitted by ${participant.teamLead}.`,
-                userId: admin._id,
-                status: 'unread'
+            timestamp: new Date(),
+            type: 'info',
+            title: 'New Challenge Submission',
+            message: `A new challenge submission has been made by team lead ${participant.teamLead}. Please review the submission details in the admin dashboard.`,
+            userId: admin._id,
+            status: 'unread'
             })
         ));
         logger.info('Notification sent to admins successfully');

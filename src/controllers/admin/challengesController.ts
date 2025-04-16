@@ -182,8 +182,8 @@ export const createChallenge = async (req: Request, res: Response): Promise<Resp
             }
         };
 
-        await notifyUsers('admin', 'Challenge Created', 'A new challenge has been created. Please review the details.');
-        await notifyUsers('participant', 'Challenge Created', 'A new challenge has been created. Please check your dashboard for details.');
+        await notifyUsers('admin', 'Challenge Created', `A new challenge named "${savedChallenge.challengeName}" has been created. Please review the details.`);
+        await notifyUsers('participant', 'Challenge Created', `A new challenge named "${savedChallenge.challengeName}" has been created. Please check your dashboard for details.`);
 
         return res.status(StatusCodes.CREATED).json(formatResponse('success', 'Challenge created successfully', savedChallenge));
     } catch (error) {
@@ -237,8 +237,11 @@ export const updateChallenge = async (req: Request, res: Response): Promise<Resp
             }
         };
 
-        await notifyUsers('admin', 'Challenge Updated', 'The challenge has been updated. Please review the details.');
-        await notifyUsers('participant', 'Challenge Updated', 'The challenge has been updated. Please check your dashboard for details.');
+        if (updatedChallenge) {
+            const notificationMessage = `The challenge "${updatedChallenge.challengeName}" has been updated. Please review the details.`;
+            await notifyUsers('admin', 'Challenge Updated', notificationMessage);
+            await notifyUsers('participant', 'Challenge Updated', notificationMessage);
+        }
 
         return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge updated successfully', updatedChallenge));
     } catch (error) {
@@ -272,7 +275,7 @@ export const deleteChallenge = async (req: Request, res: Response): Promise<Resp
                 await notificationService.createNotification(notification);
             }
         }
-        return res.status(StatusCodes.OK).json(formatResponse('success', 'Challenge deleted successfully'));
+        return res.status(StatusCodes.OK).json(formatResponse('success', `Challenge "${deletedChallenge.challengeName}" deleted successfully`));
     } catch (error) {
         logger.error('Error deleting challenge', { id: req.params.id, error });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(formatResponse('error', 'Error deleting challenge', error));
@@ -361,7 +364,7 @@ export const createChallengeCategory = async (req: Request, res: Response): Prom
                     timestamp: new Date(),
                     type: 'info',
                     title: 'Challenge Category Created',
-                    message: `A new challenge category has been created. Please review the details.`,
+                    message: `A new challenge category named "${savedChallengeCategory.challengeCategoryName}" has been created. Please review the details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -502,8 +505,8 @@ export const createPrizeCategory = async (req: Request, res: Response): Promise<
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'Prize Category Created',
-                    message: `A new prize category has been created. Please review the details.`,
+                    title: 'New Prize Category Added',
+                    message: `A new prize category named "${value.prizeName}" has been added. Please review the details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -599,7 +602,7 @@ export const updateChallengeStatus = async (req: Request, res: Response): Promis
                     timestamp: new Date(),
                     type: 'info',
                     title: 'Challenge Status Updated',
-                    message: `The status of the challenge has been updated. Please review the details.`,
+                    message: `The status of the challenge "${challenge.challengeName}" has been updated to "${status}". Please review the details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -615,7 +618,7 @@ export const updateChallengeStatus = async (req: Request, res: Response): Promis
                     timestamp: new Date(),
                     type: 'info',
                     title: 'Challenge Status Updated',
-                    message: `The status of the challenge has been updated. Please check your dashboard for details.`,
+                    message: `The status of the challenge "${challenge.challengeName}" has been updated to "${status}". Please check your dashboard for details.`,
                     userId: participant.teamLead,
                     status: 'unread'
                 };
@@ -666,8 +669,8 @@ export const updateGracePeriod = async (req: Request, res: Response): Promise<Re
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'Challenge Deadline Updated',
-                    message: `The Deadline for the challenge has been updated. Please review the details.`,
+                    title: 'Challenge Deadline Extended',
+                    message: `The deadline for the challenge "${challenge.challengeName}" has been extended to ${new Date(new_submissionDate).toLocaleString()}. Please review the updated details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -681,8 +684,8 @@ export const updateGracePeriod = async (req: Request, res: Response): Promise<Re
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'Challenge Deadline Updated',
-                    message: `The Deadline for the challenge has been updated. Please check your dashboard for details.`,
+                    title: 'Challenge Deadline Extended',
+                    message: `The deadline for the challenge "${challenge.challengeName}" has been extended to ${new Date(new_submissionDate).toLocaleString()}. Please check your dashboard for the updated details.`,
                     userId: participant.teamLead,
                     status: 'unread'
                 };

@@ -80,8 +80,8 @@ const joinChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 yield Promise.all(admins.map((admin) => notificationService.createNotification({
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'New Participant Joined Challenge',
-                    message: `A new participant has joined the challenge: ${challenge.challengeName}. Please review their details.`,
+                    title: 'Participant Joined Challenge',
+                    message: `A participant has successfully joined the challenge: "${challenge.challengeName}". You can review their details in the admin dashboard.`,
                     userId: admin._id,
                     status: 'unread'
                 })));
@@ -401,8 +401,8 @@ const notifyAdminsOfLateSubmission = (participant, user) => __awaiter(void 0, vo
         yield Promise.all(admins.map((admin) => notificationService.createNotification({
             timestamp: new Date(),
             type: 'warning',
-            title: 'Late Submission Attempt',
-            message: `A challenge submission attempt was made after the deadline by ${participant.teamLead}.`,
+            title: 'Late Challenge Submission Attempt',
+            message: `A late submission attempt was made for the challenge by team lead ${participant.teamLead}. Please review the details in the admin dashboard.`,
             userId: admin._id,
             status: 'unread'
         })));
@@ -429,8 +429,8 @@ const notifyAdminsAndMembersOfSubmission = (participant, challenge) => __awaiter
         yield Promise.all(admins.map((admin) => notificationService.createNotification({
             timestamp: new Date(),
             type: 'info',
-            title: 'Challenge Submitted',
-            message: `A challenge has been submitted by ${participant.teamLead}.`,
+            title: 'New Challenge Submission',
+            message: `A new challenge submission has been made by team lead ${participant.teamLead}. Please review the submission details in the admin dashboard.`,
             userId: admin._id,
             status: 'unread'
         })));

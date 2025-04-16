@@ -173,8 +173,8 @@ const createChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
                 yield notificationService.createNotification(notifications);
             }
         });
-        yield notifyUsers('admin', 'Challenge Created', 'A new challenge has been created. Please review the details.');
-        yield notifyUsers('participant', 'Challenge Created', 'A new challenge has been created. Please check your dashboard for details.');
+        yield notifyUsers('admin', 'Challenge Created', `A new challenge named "${savedChallenge.challengeName}" has been created. Please review the details.`);
+        yield notifyUsers('participant', 'Challenge Created', `A new challenge named "${savedChallenge.challengeName}" has been created. Please check your dashboard for details.`);
         return res.status(http_status_codes_1.StatusCodes.CREATED).json((0, helper_1.formatResponse)('success', 'Challenge created successfully', savedChallenge));
     }
     catch (error) {
@@ -222,8 +222,11 @@ const updateChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
                 yield notificationService.createNotification(notifications);
             }
         });
-        yield notifyUsers('admin', 'Challenge Updated', 'The challenge has been updated. Please review the details.');
-        yield notifyUsers('participant', 'Challenge Updated', 'The challenge has been updated. Please check your dashboard for details.');
+        if (updatedChallenge) {
+            const notificationMessage = `The challenge "${updatedChallenge.challengeName}" has been updated. Please review the details.`;
+            yield notifyUsers('admin', 'Challenge Updated', notificationMessage);
+            yield notifyUsers('participant', 'Challenge Updated', notificationMessage);
+        }
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge updated successfully', updatedChallenge));
     }
     catch (error) {
@@ -257,7 +260,7 @@ const deleteChallenge = (req, res) => __awaiter(void 0, void 0, void 0, function
                 yield notificationService.createNotification(notification);
             }
         }
-        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'Challenge deleted successfully'));
+        return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', `Challenge "${deletedChallenge.challengeName}" deleted successfully`));
     }
     catch (error) {
         logger_1.default.error('Error deleting challenge', { id: req.params.id, error });
@@ -343,7 +346,7 @@ const createChallengeCategory = (req, res) => __awaiter(void 0, void 0, void 0, 
                     timestamp: new Date(),
                     type: 'info',
                     title: 'Challenge Category Created',
-                    message: `A new challenge category has been created. Please review the details.`,
+                    message: `A new challenge category named "${savedChallengeCategory.challengeCategoryName}" has been created. Please review the details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -485,8 +488,8 @@ const createPrizeCategory = (req, res) => __awaiter(void 0, void 0, void 0, func
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'Prize Category Created',
-                    message: `A new prize category has been created. Please review the details.`,
+                    title: 'New Prize Category Added',
+                    message: `A new prize category named "${value.prizeName}" has been added. Please review the details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -583,7 +586,7 @@ const updateChallengeStatus = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     timestamp: new Date(),
                     type: 'info',
                     title: 'Challenge Status Updated',
-                    message: `The status of the challenge has been updated. Please review the details.`,
+                    message: `The status of the challenge "${challenge.challengeName}" has been updated to "${status}". Please review the details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -598,7 +601,7 @@ const updateChallengeStatus = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     timestamp: new Date(),
                     type: 'info',
                     title: 'Challenge Status Updated',
-                    message: `The status of the challenge has been updated. Please check your dashboard for details.`,
+                    message: `The status of the challenge "${challenge.challengeName}" has been updated to "${status}". Please check your dashboard for details.`,
                     userId: participant.teamLead,
                     status: 'unread'
                 };
@@ -644,8 +647,8 @@ const updateGracePeriod = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'Challenge Deadline Updated',
-                    message: `The Deadline for the challenge has been updated. Please review the details.`,
+                    title: 'Challenge Deadline Extended',
+                    message: `The deadline for the challenge "${challenge.challengeName}" has been extended to ${new Date(new_submissionDate).toLocaleString()}. Please review the updated details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -659,8 +662,8 @@ const updateGracePeriod = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'Challenge Deadline Updated',
-                    message: `The Deadline for the challenge has been updated. Please check your dashboard for details.`,
+                    title: 'Challenge Deadline Extended',
+                    message: `The deadline for the challenge "${challenge.challengeName}" has been extended to ${new Date(new_submissionDate).toLocaleString()}. Please check your dashboard for the updated details.`,
                     userId: participant.teamLead,
                     status: 'unread'
                 };

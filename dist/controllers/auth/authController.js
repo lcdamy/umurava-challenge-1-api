@@ -79,7 +79,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     timestamp: new Date(),
                     type: 'info',
                     title: 'New User Registration',
-                    message: `A new user has registered on the platform. Please review their details.`,
+                    message: `A new user, ${value.names}, has registered on the platform with the email ${value.email}. Please review their details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -124,7 +124,7 @@ const registerAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     timestamp: new Date(),
                     type: 'info',
                     title: 'New Admin Registration',
-                    message: `A new admin has been registered on the platform. Please review their details.`,
+                    message: `A new admin, ${value.names}, has been registered on the platform with the email ${value.email}. Please review their details.`,
                     userId: admin._id,
                     status: 'unread'
                 };
@@ -441,8 +441,8 @@ const deleteProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 const notification = {
                     timestamp: new Date(),
                     type: 'info',
-                    title: 'User Profile Deleted',
-                    message: `User ${updatedUser.names} has deleted their profile.`,
+                    title: 'User Profile Deletion',
+                    message: `The user ${updatedUser.names} (${updatedUser.email}) has deleted their profile. Please review this action if necessary.`,
                     userId: admin._id,
                     status: 'unread'
                 };
