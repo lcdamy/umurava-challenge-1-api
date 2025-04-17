@@ -6,7 +6,7 @@ export interface IUser extends Document {
     userRole: 'admin' | 'participant';
     profile_url: string;
     password: string;
-    status: 'active' | 'inactive' | 'slept';
+    status: 'active' | 'inactive' | 'slept' | 'deactivate';
 }
 
 const UserSchema = new Schema<IUser>({
@@ -34,7 +34,7 @@ const UserSchema = new Schema<IUser>({
     },
     status: {
         type: String,
-        enum: ['active', 'inactive', 'slept'],
+        enum: ['active', 'inactive', 'deactivate', 'slept'],
         default: 'inactive'
     },
 

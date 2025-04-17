@@ -12,7 +12,7 @@ import { SubmitChallengeDTO } from '../../dtos/submitChallengeDTO';
 
 const JoinChallengeDTO = require('../../dtos/joinChallengeDTO');
 
-
+const { FRONTEND_URL } = process.env;
 const userService = new UserSercice();
 const notificationService = new NoticationSercice();
 
@@ -80,8 +80,8 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                         subject: 'Participant Joined Challenge',
                         name: 'Admin',
                         message: `A participant has joined the challenge: ${challenge.challengeName}.`,
-                        link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard',
-                        link_label: 'View Dashboard'
+                        link: `${FRONTEND_URL}/login`,
+                        link_label: 'Login to Dashboard'
                     }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
                 ));
 
@@ -107,7 +107,7 @@ export const joinChallenge = async (req: Request, res: Response): Promise<Respon
                     subject: 'You Have Been Added to a Challenge',
                     name: 'Team Member',
                     message: `You have been added to the challenge: ${challenge.challengeName}.`,
-                    link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${challenge._id}`,
+                    link: `${FRONTEND_URL}/challenges/${challenge._id}`,
                     link_label: 'View Challenge'
                 }).catch(error => logger.error(`Error sending email to ${member}:`, error))
             ));
@@ -341,7 +341,7 @@ export const approveRejectChallengeSubmission = async (req: Request, res: Respon
                 subject: 'Challenge Submission Status Updated',
                 name: 'Team Member',
                 message,
-                link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${participant.challengeId}`,
+                link: `${FRONTEND_URL}/challenges/${participant.challengeId}`,
                 link_label: 'View Challenge'
             }).catch(error => logger.error(`Error sending email to ${email}:`, error))
         ));
@@ -467,8 +467,8 @@ const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {
             subject: 'Challenge Submission Attempt After Deadline',
             name: 'Admin',
             message: `A challenge submission attempt was made after the deadline by ${participant.teamLead} (${user ? (user as any).email : 'Unknown Email'}).`,
-            link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard',
-            link_label: 'View Dashboard'
+            link: `${FRONTEND_URL}/login`,
+            link_label: 'Login to Dashboard'
         };
 
         await Promise.all(adminEmails.map((adminEmail: string) =>
@@ -479,12 +479,12 @@ const notifyAdminsOfLateSubmission = async (participant: any, user: any) => {
 
         await Promise.all(admins.map((admin: any) =>
             notificationService.createNotification({
-            timestamp: new Date(),
-            type: 'warning',
-            title: 'Late Challenge Submission Attempt',
-            message: `A late submission attempt was made for the challenge by team lead ${participant.teamLead}. Please review the details in the admin dashboard.`,
-            userId: admin._id,
-            status: 'unread'
+                timestamp: new Date(),
+                type: 'warning',
+                title: 'Late Challenge Submission Attempt',
+                message: `A late submission attempt was made for the challenge by team lead ${participant.teamLead}. Please review the details in the admin dashboard.`,
+                userId: admin._id,
+                status: 'unread'
             })
         ));
         logger.info('Notification sent to admins successfully');
@@ -513,20 +513,20 @@ const notifyAdminsAndMembersOfSubmission = async (participant: any, challenge: a
                 subject: 'Challenge Submitted',
                 name: 'Admin',
                 message: `A challenge has been submitted by ${participant.teamLead}.`,
-                link: 'https://umurava-skills-challenge-xi.vercel.app/admin/dashboard',
-                link_label: 'View Dashboard'
+                link: `${FRONTEND_URL}/login`,
+                link_label: 'Login to Dashboard'
             }).catch(error => logger.error(`Error sending email to ${adminEmail}:`, error))
         ));
 
 
         await Promise.all(admins.map((admin: any) =>
             notificationService.createNotification({
-            timestamp: new Date(),
-            type: 'info',
-            title: 'New Challenge Submission',
-            message: `A new challenge submission has been made by team lead ${participant.teamLead}. Please review the submission details in the admin dashboard.`,
-            userId: admin._id,
-            status: 'unread'
+                timestamp: new Date(),
+                type: 'info',
+                title: 'New Challenge Submission',
+                message: `A new challenge submission has been made by team lead ${participant.teamLead}. Please review the submission details in the admin dashboard.`,
+                userId: admin._id,
+                status: 'unread'
             })
         ));
         logger.info('Notification sent to admins successfully');
@@ -541,7 +541,7 @@ const notifyAdminsAndMembersOfSubmission = async (participant: any, challenge: a
             subject: 'Challenge Submitted',
             name: 'Team Member',
             message: `The challenge has been submitted by ${participant.teamLead}.`,
-            link: `https://umurava-skills-challenge-xi.vercel.app/challenges/${challenge._id}`,
+            link: `${FRONTEND_URL}/challenges/${challenge._id}`,
             link_label: 'View Challenge'
         }).catch(error => logger.error(`Error sending email to ${member}:`, error))
     ));

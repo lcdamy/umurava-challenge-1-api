@@ -122,15 +122,15 @@ export const registerAdmin = async (req: Request, res: Response): Promise<Respon
         const admins = await User.find({ userRole: 'admin', status: 'active', email: { $ne: value.email } });
         if (admins.length > 0) {
             for (const admin of admins) {
-            const notification = {
-                timestamp: new Date(),
-                type: 'info',
-                title: 'New Admin Registration',
-                message: `A new admin, ${value.names}, has been registered on the platform with the email ${value.email}. Please review their details.`,
-                userId: admin._id,
-                status: 'unread'
-            };
-            await notificationService.createNotification(notification);
+                const notification = {
+                    timestamp: new Date(),
+                    type: 'info',
+                    title: 'New Admin Registration',
+                    message: `A new admin, ${value.names}, has been registered on the platform with the email ${value.email}. Please review their details.`,
+                    userId: admin._id,
+                    status: 'unread'
+                };
+                await notificationService.createNotification(notification);
             }
         }
 
@@ -169,14 +169,16 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         const errorMessages = errors.map((error: any) => error.message).join(', ');
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
+
     const { email, password } = value;
 
-    if (!email || !password) {
-        logger.warn('Missing email or password in login request');
-        return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Email and password are required'));
-    }
-
     try {
+        // Ensure email and password are provided
+        if (!email || !password) {
+            logger.warn('Missing email or password in login request');
+            return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'Email and password are required'));
+        }
+
         // Find user by email
         const user = await User.findOne({ email }).select('+password'); // Ensure password is selected
         if (!user) {
@@ -184,16 +186,16 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
             return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Invalid email or password'));
         }
 
-        // check if the user is active
-        if (user.status === 'inactive') {
-            logger.warn('Login failed: user not active', { email });
-            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Your account is inactive. Please verify your email to activate your account.'));
-        }
+        // Check user status
+        const statusMessages: Record<string, string> = {
+            inactive: 'Your account is inactive. Please verify your email to activate your account.',
+            slept: 'Your account has been deleted. Please contact support for assistance.',
+            deactivate: 'Your account is deactivated. Please contact support for assistance.',
+        };
 
-        // check if the user is deleted
-        if (user.status === 'slept') {
-            logger.warn('Login failed: user not active', { email });
-            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Your account has been deleted. Please contact support for assistance.'));
+        if (user.status in statusMessages) {
+            logger.warn('Login failed: user not active', { email, status: user.status });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', statusMessages[user.status]));
         }
 
         // Compare passwords
@@ -204,9 +206,12 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         }
 
         // Generate token
-        const token = generateToken({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
-        logger.info('User logged in successfully', { id: user._id });
+        const token = generateToken(
+            { id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole },
+            86400 // 1 day expiration
+        );
 
+        logger.info('User logged in successfully', { id: user._id });
         return res.status(StatusCodes.OK).json(formatResponse('success', 'User logged in successfully', { token }));
     } catch (error) {
         logger.error('Error during login', { error });
@@ -261,6 +266,15 @@ export const forgetPassword = async (req: Request, res: Response): Promise<Respo
             logger.warn('Password reset request failed: user not found', { email });
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'No account found with the provided email address'));
         }
+        // if user is slept or deactivate, return error message
+        if (['slept', 'deactivate'].includes(user.status)) {
+            const statusMessages: Record<string, string> = {
+                slept: 'Your account has been deleted. Please contact support for assistance.',
+                deactivate: 'Your account is deactivated. Please contact support for assistance.',
+            };
+            logger.warn('Password reset request failed: user not active', { email, status: user.status });
+            return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', statusMessages[user.status]));
+        }
         //change the status of the user to inactive
         user.status = 'inactive';
         await user.save();
@@ -298,7 +312,6 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
         const errorMessages = errors.map((error: any) => error.message).join(', ');
         return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', errorMessages, errors));
     }
-
     try {
         // Extract values from the request body
         const { token, newPassword } = value;
@@ -363,7 +376,7 @@ export const getTokenByEmail = async (req: Request, res: Response): Promise<Resp
             await user.save();
             logger.info('New user created for social login', { id: user._id });
         }
-        
+
         if (user.status === 'slept') {
             logger.warn('Login failed: user not active', { email });
             return res.status(StatusCodes.UNAUTHORIZED).json(formatResponse('error', 'Your account has been deleted. Please contact support for assistance.'));
@@ -568,10 +581,10 @@ export const getAllUsers = async (req: Request, res: Response): Promise<Response
         const paginatedData = {
             users,
             pagination: {
-            currentPage: page,
-            totalPages: Math.ceil(total / limit),
-            pageSize: limit,
-            totalItems: total,
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                pageSize: limit,
+                totalItems: total,
             },
         };
 
@@ -615,7 +628,7 @@ export const deactivateAccount = async (req: Request, res: Response): Promise<Re
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
         }
         // Find the user by ID and update the status to 'inactive'
-        const updatedUser = await User.findByIdAndUpdate(id, { status: 'inactive' }, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(id, { status: 'deactivate' }, { new: true });
         if (!updatedUser) {
             logger.warn('User not found for deactivation', id);
             return res.status(StatusCodes.NOT_FOUND).json(formatResponse('error', 'User not found'));

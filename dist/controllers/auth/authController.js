@@ -165,26 +165,27 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', errorMessages, errors));
     }
     const { email, password } = value;
-    if (!email || !password) {
-        logger_1.default.warn('Missing email or password in login request');
-        return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Email and password are required'));
-    }
     try {
+        // Ensure email and password are provided
+        if (!email || !password) {
+            logger_1.default.warn('Missing email or password in login request');
+            return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'Email and password are required'));
+        }
         // Find user by email
         const user = yield userModel_1.default.findOne({ email }).select('+password'); // Ensure password is selected
         if (!user) {
             logger_1.default.warn('Login failed: user not found', { email });
             return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Invalid email or password'));
         }
-        // check if the user is active
-        if (user.status === 'inactive') {
-            logger_1.default.warn('Login failed: user not active', { email });
-            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Your account is inactive. Please verify your email to activate your account.'));
-        }
-        // check if the user is deleted
-        if (user.status === 'slept') {
-            logger_1.default.warn('Login failed: user not active', { email });
-            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Your account has been deleted. Please contact support for assistance.'));
+        // Check user status
+        const statusMessages = {
+            inactive: 'Your account is inactive. Please verify your email to activate your account.',
+            slept: 'Your account has been deleted. Please contact support for assistance.',
+            deactivate: 'Your account is deactivated. Please contact support for assistance.',
+        };
+        if (user.status in statusMessages) {
+            logger_1.default.warn('Login failed: user not active', { email, status: user.status });
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', statusMessages[user.status]));
         }
         // Compare passwords
         const isPasswordValid = yield authService.comparePassword(password, user.password);
@@ -193,7 +194,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', 'Invalid email or password'));
         }
         // Generate token
-        const token = (0, helper_1.generateToken)({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400); // 1 day expiration
+        const token = (0, helper_1.generateToken)({ id: user._id, names: user.names, email: user.email, profile_url: user.profile_url, role: user.userRole }, 86400 // 1 day expiration
+        );
         logger_1.default.info('User logged in successfully', { id: user._id });
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'User logged in successfully', { token }));
     }
@@ -247,6 +249,15 @@ const forgetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
         if (!user) {
             logger_1.default.warn('Password reset request failed: user not found', { email });
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'No account found with the provided email address'));
+        }
+        // if user is slept or deactivate, return error message
+        if (['slept', 'deactivate'].includes(user.status)) {
+            const statusMessages = {
+                slept: 'Your account has been deleted. Please contact support for assistance.',
+                deactivate: 'Your account is deactivated. Please contact support for assistance.',
+            };
+            logger_1.default.warn('Password reset request failed: user not active', { email, status: user.status });
+            return res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED).json((0, helper_1.formatResponse)('error', statusMessages[user.status]));
         }
         //change the status of the user to inactive
         user.status = 'inactive';
@@ -571,7 +582,7 @@ const deactivateAccount = (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
         }
         // Find the user by ID and update the status to 'inactive'
-        const updatedUser = yield userModel_1.default.findByIdAndUpdate(id, { status: 'inactive' }, { new: true });
+        const updatedUser = yield userModel_1.default.findByIdAndUpdate(id, { status: 'deactivate' }, { new: true });
         if (!updatedUser) {
             logger_1.default.warn('User not found for deactivation', id);
             return res.status(http_status_codes_1.StatusCodes.NOT_FOUND).json((0, helper_1.formatResponse)('error', 'User not found'));
