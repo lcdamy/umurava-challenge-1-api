@@ -377,11 +377,12 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
             return res.status(StatusCodes.BAD_REQUEST).json(formatResponse('error', 'User ID is required'));
         }
 
-        const [openChallenges, joinedChallenges] = await Promise.all([
+        const [openChallenges, ongoingChallenges, joinedChallenges] = await Promise.all([
             Challenge.find({ ...searchQuery, status: 'open' }).sort({ createdAt: -1 }),
+            Challenge.find({ ...searchQuery, status: 'ongoing' }).sort({ createdAt: -1 }),
             ChallengeParticipantsModel.find({ teamLead: userId })
-                .populate('challengeId', 'challengeName status startDate endDate')
-                .populate('members', 'email')
+            .populate('challengeId', 'challengeName status startDate endDate')
+            .populate('members', 'email')
         ]);
 
         const challengesFromJoinedChallenges = await Promise.all(joinedChallenges.map(async (joinedChallenge: any) => {
@@ -408,13 +409,21 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
 
         const challenges = openChallenges.map((openChallenge: any) => {
             const joinedChallenge = validJoinedChallenges.find((joinedChallenge: any) =>
-                joinedChallenge._id?.toString() === openChallenge._id?.toString()
+            joinedChallenge._id?.toString() === openChallenge._id?.toString()
             );
             return {
-                ...openChallenge.toObject(),
-                joined_status: !!joinedChallenge || validJoinedChallenges.some((jc: any) => jc._id?.toString() === openChallenge._id?.toString())
+            ...openChallenge.toObject(),
+            joined_status: !!joinedChallenge || validJoinedChallenges.some((jc: any) => jc._id?.toString() === openChallenge._id?.toString())
             };
-        }).concat(validJoinedChallenges.map((joinedChallenge: any) => ({
+        }).concat(ongoingChallenges.map((ongoingChallenge: any) => {
+            const joinedChallenge = validJoinedChallenges.find((joinedChallenge: any) =>
+            joinedChallenge._id?.toString() === ongoingChallenge._id?.toString()
+            );
+            return {
+            ...ongoingChallenge.toObject(),
+            joined_status: !!joinedChallenge || validJoinedChallenges.some((jc: any) => jc._id?.toString() === ongoingChallenge._id?.toString())
+            };
+        })).concat(validJoinedChallenges.map((joinedChallenge: any) => ({
             ...joinedChallenge,
             joined_status: true
         }))).filter((challenge: any, index: number, self: any[]) =>

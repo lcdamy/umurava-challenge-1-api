@@ -327,8 +327,9 @@ const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, f
             logger_1.default.warn('User ID is required');
             return res.status(http_status_codes_1.StatusCodes.BAD_REQUEST).json((0, helper_1.formatResponse)('error', 'User ID is required'));
         }
-        const [openChallenges, joinedChallenges] = yield Promise.all([
+        const [openChallenges, ongoingChallenges, joinedChallenges] = yield Promise.all([
             challengeModel_1.default.find(Object.assign(Object.assign({}, searchQuery), { status: 'open' })).sort({ createdAt: -1 }),
+            challengeModel_1.default.find(Object.assign(Object.assign({}, searchQuery), { status: 'ongoing' })).sort({ createdAt: -1 }),
             challengeParticipantsModel_1.default.find({ teamLead: userId })
                 .populate('challengeId', 'challengeName status startDate endDate')
                 .populate('members', 'email')
@@ -350,7 +351,10 @@ const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, f
         const challenges = openChallenges.map((openChallenge) => {
             const joinedChallenge = validJoinedChallenges.find((joinedChallenge) => { var _a, _b; return ((_a = joinedChallenge._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = openChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); });
             return Object.assign(Object.assign({}, openChallenge.toObject()), { joined_status: !!joinedChallenge || validJoinedChallenges.some((jc) => { var _a, _b; return ((_a = jc._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = openChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }) });
-        }).concat(validJoinedChallenges.map((joinedChallenge) => (Object.assign(Object.assign({}, joinedChallenge), { joined_status: true })))).filter((challenge, index, self) => index === self.findIndex((c) => { var _a, _b; return ((_a = c._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = challenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }));
+        }).concat(ongoingChallenges.map((ongoingChallenge) => {
+            const joinedChallenge = validJoinedChallenges.find((joinedChallenge) => { var _a, _b; return ((_a = joinedChallenge._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = ongoingChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); });
+            return Object.assign(Object.assign({}, ongoingChallenge.toObject()), { joined_status: !!joinedChallenge || validJoinedChallenges.some((jc) => { var _a, _b; return ((_a = jc._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = ongoingChallenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }) });
+        })).concat(validJoinedChallenges.map((joinedChallenge) => (Object.assign(Object.assign({}, joinedChallenge), { joined_status: true })))).filter((challenge, index, self) => index === self.findIndex((c) => { var _a, _b; return ((_a = c._id) === null || _a === void 0 ? void 0 : _a.toString()) === ((_b = challenge._id) === null || _b === void 0 ? void 0 : _b.toString()); }));
         const filteredChallenges = challenges.filter((challenge) => {
             if (status) {
                 return challenge.status === status;
