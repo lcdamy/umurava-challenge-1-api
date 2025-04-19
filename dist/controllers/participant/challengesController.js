@@ -369,7 +369,7 @@ const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, f
         }
         logger_1.default.info('All challenges retrieved successfully', paginatedChallenges);
         return res.status(http_status_codes_1.StatusCodes.OK).json((0, helper_1.formatResponse)('success', 'All challenges retrieved successfully', {
-            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges, totalClosedChallenges },
             challenges: paginatedChallenges,
             pagination: {
                 currentPage: pageNumber,

@@ -443,7 +443,7 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
 
         logger.info('All challenges retrieved successfully', paginatedChallenges);
         return res.status(StatusCodes.OK).json(formatResponse('success', 'All challenges retrieved successfully', {
-            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges },
+            aggregates: { totalChallenges, totalCompletedChallenges, totalOpenChallenges, totalOngoingChallenges, totalClosedChallenges },
             challenges: paginatedChallenges,
             pagination: {
                 currentPage: pageNumber,
