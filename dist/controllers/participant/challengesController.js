@@ -361,6 +361,7 @@ const getAllJoinedChallenges = (req, res) => __awaiter(void 0, void 0, void 0, f
         const totalCompletedChallenges = filteredChallenges.filter((challenge) => challenge.status === 'completed').length;
         const totalOpenChallenges = filteredChallenges.filter((challenge) => challenge.status === 'open').length;
         const totalOngoingChallenges = filteredChallenges.filter((challenge) => challenge.status === 'ongoing').length;
+        const totalClosedChallenges = filteredChallenges.filter((challenge) => challenge.status === 'closed').length;
         const paginatedChallenges = filteredChallenges.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
         if (paginatedChallenges.length === 0) {
             logger_1.default.warn('No challenges found');

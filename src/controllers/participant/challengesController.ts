@@ -432,6 +432,7 @@ export const getAllJoinedChallenges = async (req: Request, res: Response): Promi
         const totalCompletedChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'completed').length;
         const totalOpenChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'open').length;
         const totalOngoingChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'ongoing').length;
+        const totalClosedChallenges = filteredChallenges.filter((challenge: any) => challenge.status === 'closed').length;
 
         const paginatedChallenges = filteredChallenges.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
 
