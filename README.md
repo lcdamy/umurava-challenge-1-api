@@ -42,4 +42,11 @@ To run database migrations, use:
 npm run migrate:up
 ```
 
+## Running Seeds
+
+To run database migrations, use:
+```bash
+npm run seed:all
+```
+
 The built files will be in the `dist` directory.
