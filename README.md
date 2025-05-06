@@ -35,6 +35,17 @@ To build the project for production, run:
 npm run build
 ```
 
+## Setting Up Environment Variables
+
+Create a `.env` file and add all the required environment variables by referring to the `.env.example` file.
+
+To do this quickly, you can run:
+```bash
+cp .env.example .env
+```
+
+Make sure to update the `ADMIN_USER_EMAIL` variable in the `.env` file with a valid email address. This will be used to create a super admin account.
+
 ## Running Seeds
 
 To run database migrations, use:

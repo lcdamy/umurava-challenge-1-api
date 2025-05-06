@@ -36,8 +36,6 @@ dist/
 
 # Misc
 .DS_Store
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -68,3 +66,7 @@ dist/
 
 # logs
 combined.log
+config.bat
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
