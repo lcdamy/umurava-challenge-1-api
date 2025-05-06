@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const { FRONTEND_URL } = process.env;
+const { ADMIN_USER_EMAIL } = process.env;
 
 const seedFirstAdmin = async () => {
     try {
@@ -27,7 +28,7 @@ const seedFirstAdmin = async () => {
         // Create the first admin user
         const adminUser = new User({
             names: 'Super Admin',
-            email: 'zudanga@gmail.com',
+            email: ADMIN_USER_EMAIL,
             userRole: 'admin',
             profile_url: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
             password: hashedPassword,

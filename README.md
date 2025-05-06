@@ -35,13 +35,6 @@ To build the project for production, run:
 npm run build
 ```
 
-## Running Migrations
-
-To run database migrations, use:
-```bash
-npm run migrate:up
-```
-
 ## Running Seeds
 
 To run database migrations, use:
